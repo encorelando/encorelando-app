@@ -10,7 +10,7 @@ module.exports = {
     'plugin:react/recommended',
     'plugin:react/jsx-runtime',
     'plugin:react-hooks/recommended',
-    'prettier',
+    'prettier'
   ],
   parserOptions: {
     ecmaFeatures: {
@@ -24,6 +24,7 @@ module.exports = {
     'prettier/prettier': 'error',
     'react/prop-types': 'warn',
     'no-unused-vars': 'warn',
+    'react/react-in-jsx-scope': 'off' // Not needed for React 17+
   },
   settings: {
     react: {
