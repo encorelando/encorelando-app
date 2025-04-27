@@ -1,0 +1,26 @@
+[build]
+  command = "npm run build"
+  publish = "build"
+  functions = "functions"
+
+# Production context
+[context.production]
+  environment = { NODE_ENV = "production" }
+
+# Deploy Preview context
+[context.deploy-preview]
+  environment = { NODE_ENV = "production" }
+
+# Branch Deploy context
+[context.branch-deploy]
+  environment = { NODE_ENV = "production" }
+
+# Dev context
+[context.develop]
+  environment = { NODE_ENV = "development" }
+
+# Redirects for SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
