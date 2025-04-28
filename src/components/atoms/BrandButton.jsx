@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
@@ -17,8 +16,9 @@ const BrandButton = ({
   className = '',
 }) => {
   // Base classes that ensure proper touch target size for mobile
-  const baseClasses = 'inline-flex items-center justify-center transition-all min-h-touch rounded font-poppins font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50';
-  
+  const baseClasses =
+    'inline-flex items-center justify-center transition-all min-h-touch rounded font-poppins font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50';
+
   // Variant-specific classes based on new branding
   const variantClasses = {
     primary: 'bg-sunset-orange text-white hover:bg-magenta-pink',
@@ -27,23 +27,23 @@ const BrandButton = ({
     ghost: 'text-white hover:bg-white hover:bg-opacity-10',
     danger: 'bg-error text-white hover:opacity-90',
   };
-  
+
   // Size classes - ensuring at least 44px height for touch targets on mobile
   const sizeClasses = {
     sm: 'text-sm px-xs py-xxs',
     md: 'text-base px-md py-xs',
     lg: 'text-lg px-lg py-sm',
   };
-  
+
   // Disable styles
   const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
-  
+
   // Full width class
   const widthClass = fullWidth ? 'w-full' : '';
-  
+
   // Combined classes
   const combinedClasses = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${disabledClasses} ${widthClass} ${className}`;
-  
+
   return (
     <button
       type={type}

@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import Typography from '../atoms/Typography';
 import Input from '../atoms/Input';
@@ -35,7 +34,7 @@ const FormField = ({
           </Typography>
         </label>
       )}
-      
+
       {/* Input */}
       <Input
         id={fieldId}
@@ -50,25 +49,17 @@ const FormField = ({
         fullWidth
         {...inputProps}
       />
-      
+
       {/* Error message */}
       {error && (
-        <Typography 
-          variant="caption" 
-          color="error" 
-          className="mt-xxs"
-        >
+        <Typography variant="caption" color="error" className="mt-xxs">
           {error}
         </Typography>
       )}
-      
+
       {/* Helper text */}
       {helperText && !error && (
-        <Typography 
-          variant="caption" 
-          color="medium-gray" 
-          className="mt-xxs"
-        >
+        <Typography variant="caption" color="medium-gray" className="mt-xxs">
           {helperText}
         </Typography>
       )}
@@ -80,8 +71,16 @@ FormField.propTypes = {
   id: PropTypes.string,
   label: PropTypes.string,
   type: PropTypes.oneOf([
-    'text', 'email', 'password', 'number', 'tel', 'date', 
-    'time', 'url', 'search', 'datetime-local'
+    'text',
+    'email',
+    'password',
+    'number',
+    'tel',
+    'date',
+    'time',
+    'url',
+    'search',
+    'datetime-local',
   ]),
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onChange: PropTypes.func,

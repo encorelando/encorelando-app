@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import Typography from '../atoms/Typography';
 import Icon from '../atoms/Icon';
@@ -14,15 +14,14 @@ const ExpandableSection = ({
   className = '',
   titleVariant = 'h4',
   icon,
-  darkMode = false,
 }) => {
   const [expanded, setExpanded] = useState(initialExpanded);
-  
+
   // Handle toggle
   const toggleExpanded = () => {
     setExpanded(!expanded);
   };
-  
+
   // Generate unique ID for accessibility
   const headerId = `header-${title?.replace(/\s+/g, '-').toLowerCase()}`;
   const contentId = `content-${title?.replace(/\s+/g, '-').toLowerCase()}`;
@@ -39,22 +38,18 @@ const ExpandableSection = ({
         id={headerId}
       >
         <div className="flex items-center">
-          {icon && (
-            <Icon name={icon} size="md" className="mr-sm" />
-          )}
-          
-          <Typography variant={titleVariant}>
-            {title}
-          </Typography>
+          {icon && <Icon name={icon} size="md" className="mr-sm" />}
+
+          <Typography variant={titleVariant}>{title}</Typography>
         </div>
-        
+
         <Icon
           name={expanded ? 'chevron-up' : 'chevron-down'}
           size="md"
           className="ml-sm transition-transform duration-200"
         />
       </button>
-      
+
       {/* Content */}
       <div
         id={contentId}
@@ -64,9 +59,7 @@ const ExpandableSection = ({
           expanded ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="px-md pb-md">
-          {children}
-        </div>
+        <div className="px-md pb-md">{children}</div>
       </div>
     </div>
   );

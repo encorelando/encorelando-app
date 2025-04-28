@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 import Icon from '../atoms/Icon';
@@ -8,21 +7,13 @@ import Typography from '../atoms/Typography';
  * Navigation item component for bottom navigation
  * Mobile-optimized with appropriate touch target sizes
  */
-const NavItem = ({
-  to,
-  icon,
-  label,
-  exact = false,
-  onClick,
-  className = '',
-}) => {
+const NavItem = ({ to, icon, label, exact = false, onClick, className = '' }) => {
   // Base classes ensuring touch-friendly targets for mobile
   const baseClasses = 'flex flex-col items-center justify-center min-h-touch px-sm py-xs';
-  
+
   // Active and inactive classes for mobile visibility
   const activeClass = 'text-primary';
-  const inactiveClass = 'text-medium-gray';
-  
+
   // Combined classes
   const combinedClasses = `${baseClasses} ${className}`;
 
@@ -36,17 +27,13 @@ const NavItem = ({
     >
       {({ isActive }) => (
         <>
-          <Icon 
-            name={icon} 
-            size="md" 
-            color={isActive ? 'primary' : 'medium-gray'} 
+          <Icon
+            name={icon}
+            size="md"
+            color={isActive ? 'primary' : 'medium-gray'}
             className="mb-xxs"
           />
-          <Typography 
-            variant="caption" 
-            color={isActive ? 'primary' : 'medium-gray'} 
-            align="center"
-          >
+          <Typography variant="caption" color={isActive ? 'primary' : 'medium-gray'} align="center">
             {label}
           </Typography>
         </>

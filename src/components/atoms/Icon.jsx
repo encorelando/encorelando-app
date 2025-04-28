@@ -1,13 +1,32 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 
 // Import icons from react-icons
 import {
-  FiHome, FiCalendar, FiMusic, FiMapPin, FiSearch,
-  FiClock, FiInfo, FiChevronRight, FiChevronLeft,
-  FiChevronDown, FiChevronUp, FiX, FiPlus, FiMinus,
-  FiStar, FiHeart, FiFilter, FiUser, FiSettings,
-  FiArrowLeft, FiList, FiGrid, FiAlertCircle, FiCheckCircle,
+  FiHome,
+  FiCalendar,
+  FiMusic,
+  FiMapPin,
+  FiSearch,
+  FiClock,
+  FiInfo,
+  FiChevronRight,
+  FiChevronLeft,
+  FiChevronDown,
+  FiChevronUp,
+  FiX,
+  FiPlus,
+  FiMinus,
+  FiStar,
+  FiHeart,
+  FiFilter,
+  FiUser,
+  FiSettings,
+  FiArrowLeft,
+  FiList,
+  FiGrid,
+  FiAlertCircle,
+  FiCheckCircle,
+  FiImage,
 } from 'react-icons/fi';
 
 /**
@@ -17,39 +36,40 @@ import {
 const Icon = ({ name, size = 'md', color = 'currentColor', className = '' }) => {
   // Map of icon names to components
   const icons = {
-    'home': FiHome,
-    'calendar': FiCalendar,
-    'music': FiMusic,
+    home: FiHome,
+    calendar: FiCalendar,
+    music: FiMusic,
     'map-pin': FiMapPin,
-    'search': FiSearch,
-    'clock': FiClock,
-    'info': FiInfo,
-    'chevron-right': FiChevronRight, 
+    search: FiSearch,
+    clock: FiClock,
+    info: FiInfo,
+    'chevron-right': FiChevronRight,
     'chevron-left': FiChevronLeft,
     'chevron-down': FiChevronDown,
     'chevron-up': FiChevronUp,
-    'x': FiX,
-    'plus': FiPlus,
-    'minus': FiMinus,
-    'star': FiStar,
-    'heart': FiHeart,
-    'filter': FiFilter,
-    'user': FiUser,
-    'settings': FiSettings,
-    'arrow-left': FiArrowLeft, 
-    'list': FiList,
-    'grid': FiGrid,
-    'alert': FiAlertCircle,
-    'check': FiCheckCircle,
+    x: FiX,
+    plus: FiPlus,
+    minus: FiMinus,
+    star: FiStar,
+    heart: FiHeart,
+    filter: FiFilter,
+    user: FiUser,
+    settings: FiSettings,
+    'arrow-left': FiArrowLeft,
+    list: FiList,
+    grid: FiGrid,
+    alert: FiAlertCircle,
+    check: FiCheckCircle,
+    image: FiImage,
   };
 
   // Icon sizes in pixels - ensuring visibility on mobile
   const sizes = {
-    'xs': 16,
-    'sm': 20,
-    'md': 24,
-    'lg': 28,
-    'xl': 32,
+    xs: 16,
+    sm: 20,
+    md: 24,
+    lg: 28,
+    xl: 32,
   };
 
   // Get the icon component
@@ -62,12 +82,7 @@ const Icon = ({ name, size = 'md', color = 'currentColor', className = '' }) => 
   }
 
   return (
-    <IconComponent 
-      size={sizes[size]} 
-      color={color} 
-      className={className}
-      aria-hidden="true" 
-    />
+    <IconComponent size={sizes[size]} color={color} className={className} aria-hidden="true" />
   );
 };
 

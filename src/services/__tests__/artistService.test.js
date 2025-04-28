@@ -17,7 +17,7 @@ describe('artistService', () => {
       // Mock the Supabase response
       const mockData = [
         { id: 'a1', name: 'Test Artist', genres: ['Rock'] },
-        { id: 'a2', name: 'Another Artist', genres: ['Jazz', 'Blues'] }
+        { id: 'a2', name: 'Another Artist', genres: ['Jazz', 'Blues'] },
       ];
       const mockResponse = {
         data: mockData,
@@ -336,7 +336,9 @@ describe('artistService', () => {
       });
 
       // Assert that service throws the error
-      await expect(artistService.getPopularArtists()).rejects.toThrow('API error for popular artists');
+      await expect(artistService.getPopularArtists()).rejects.toThrow(
+        'API error for popular artists'
+      );
     });
   });
 
@@ -497,7 +499,9 @@ describe('artistService', () => {
 
       // Assert that service throws the error
       const genre = 'Rock';
-      await expect(artistService.getArtistsByGenre(genre)).rejects.toThrow('API error for genre artists');
+      await expect(artistService.getArtistsByGenre(genre)).rejects.toThrow(
+        'API error for genre artists'
+      );
     });
   });
 });

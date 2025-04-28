@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
@@ -56,17 +55,17 @@ const Typography = ({
 
   // Color classes updated for dark theme
   const colorClasses = {
-    'primary': 'text-sunset-orange',
-    'secondary': 'text-magenta-pink',
-    'accent': 'text-deep-orchid',
+    primary: 'text-sunset-orange',
+    secondary: 'text-magenta-pink',
+    accent: 'text-deep-orchid',
     'accent-alt': 'text-neon-blue',
-    'white': 'text-white',
+    white: 'text-white',
     'medium-gray': 'text-white text-opacity-70',
     'light-gray': 'text-white text-opacity-50',
-    'error': 'text-error',
-    'success': 'text-success',
-    'warning': 'text-warning',
-    'info': 'text-info',
+    error: 'text-error',
+    success: 'text-success',
+    warning: 'text-warning',
+    info: 'text-info',
   };
 
   // Alignment classes
@@ -75,31 +74,38 @@ const Typography = ({
     center: 'text-center',
     right: 'text-right',
   };
-  
+
   // Gradient text effect
   const gradientClass = gradient ? 'brand-gradient-text' : '';
 
   // Combined classes
-  const combinedClasses = `${fontClasses[variant]} ${variantClasses[variant]} ${gradient ? '' : colorClasses[color]} ${alignClasses[align]} ${gradientClass} ${className}`;
+  const combinedClasses = `${fontClasses[variant]} ${variantClasses[variant]} ${
+    gradient ? '' : colorClasses[color]
+  } ${alignClasses[align]} ${gradientClass} ${className}`;
 
-  return (
-    <Element className={combinedClasses}>
-      {children}
-    </Element>
-  );
+  return <Element className={combinedClasses}>{children || ''}</Element>;
 };
 
 Typography.propTypes = {
   variant: PropTypes.oneOf(['h1', 'h2', 'h3', 'h4', 'body1', 'body2', 'caption', 'button']),
   color: PropTypes.oneOf([
-    'primary', 'secondary', 'accent', 'accent-alt', 'white', 
-    'medium-gray', 'light-gray', 'error', 'success', 'warning', 'info'
+    'primary',
+    'secondary',
+    'accent',
+    'accent-alt',
+    'white',
+    'medium-gray',
+    'light-gray',
+    'error',
+    'success',
+    'warning',
+    'info',
   ]),
   align: PropTypes.oneOf(['left', 'center', 'right']),
   gradient: PropTypes.bool,
   className: PropTypes.string,
   element: PropTypes.string,
-  children: PropTypes.node.isRequired,
+  children: PropTypes.node,
 };
 
 export default Typography;

@@ -2,7 +2,7 @@
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": "explicit"
   },
   "eslint.validate": ["javascript", "javascriptreact"],
   "prettier.singleQuote": true,
@@ -13,5 +13,16 @@
     "javascript": "javascript",
     "javascriptreact": "javascriptreact"
   },
-  "tailwindCSS.emmetCompletions": true
+  "tailwindCSS.emmetCompletions": true,
+  "cSpell.words": [
+    "ampm",
+    "couldn",
+    "desaturation",
+    "encorelando",
+    "ilike",
+    "Lando",
+    "Perfs",
+    "Scrollability",
+    "supabase"
+  ]
 }

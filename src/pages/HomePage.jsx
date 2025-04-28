@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import HomePageLayout from '../components/templates/HomePageLayout';
 import HorizontalScroller from '../components/organisms/HorizontalScroller';
@@ -15,26 +15,56 @@ import useArtists from '../hooks/useArtists';
 import useFestivals from '../hooks/useFestivals';
 
 /**
+ * Groups performances by artist to consolidate multiple shows
+ * @param {Array} concerts - List of concert performances
+ * @returns {Array} - Grouped performances by artist
+ */
+const groupPerformancesByArtist = concerts => {
+  const groupedMap = concerts.reduce((groups, concert) => {
+    const artist = concert.artist || concert.artists;
+    const artistId = artist?.id || 'unknown';
+
+    if (!groups[artistId]) {
+      groups[artistId] = {
+        artistId,
+        artistName: artist?.name || 'Unknown Artist',
+        performances: [],
+      };
+    }
+
+    groups[artistId].performances.push(concert);
+    return groups;
+  }, {});
+
+  // Convert map to array and sort by artist name
+  return Object.values(groupedMap).sort((a, b) => a.artistName.localeCompare(b.artistName));
+};
+
+/**
  * HomePage component with the new EncoreLando branding
  * Mobile-optimized with dark background and vibrant accents
  */
 const HomePage = () => {
   // State for today's date
   const [today] = useState(new Date());
-  
-  // Fetch today's concerts
-  const { concerts, loading: concertsLoading, error: concertsError } = useConcerts({
-    startDate: today,
+
+  // Fetch today's concerts - make sure we capture the full date range for today
+  const {
+    concerts,
+    loading: concertsLoading,
+    error: concertsError,
+  } = useConcerts({
+    startDate: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0),
     endDate: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59),
   });
-  
+
   // Fetch popular artists
   const { artists, loading: artistsLoading } = useArtists({ limit: 10 });
-  
+
   // Fetch active festivals
-  const { festivals, loading: festivalsLoading } = useFestivals({ 
+  const { festivals, loading: festivalsLoading } = useFestivals({
     isActive: true,
-    limit: 5
+    limit: 5,
   });
 
   // Building sections for the home page with updated branding
@@ -44,10 +74,10 @@ const HomePage = () => {
       title: "Today's Performances",
       titleComponent: (
         <BrandHeading level={2} gradient className="mb-xs">
-          Today's Performances
+          Today&apos;s Performances
         </BrandHeading>
       ),
-      subtitle: "Live music happening today across Orlando theme parks",
+      subtitle: 'Live music happening today across Orlando theme parks',
       subtitleComponent: (
         <Typography variant="body1" color="medium-gray" className="mb-md">
           Live music happening today across Orlando theme parks
@@ -62,7 +92,7 @@ const HomePage = () => {
           ) : concertsError ? (
             <div className="text-center py-lg">
               <Typography variant="body1" color="error">
-                Unable to load today's concerts
+                Unable to load today&apos;s concerts
               </Typography>
             </div>
           ) : concerts.length === 0 ? (
@@ -73,14 +103,33 @@ const HomePage = () => {
             </div>
           ) : (
             <HorizontalScroller itemWidth={300}>
-              {concerts.map((concert, index) => (
-                <div key={concert.id} className="w-[300px]">
-                  <PerformanceCard 
-                    performance={concert} 
-                    featured={index === 0} // Feature the first item
-                  />
-                </div>
-              ))}
+              {groupPerformancesByArtist(concerts).map((group, index) => {
+                // Safety check for valid performances
+                if (!group.performances || group.performances.length === 0) {
+                  return null;
+                }
+
+                return (
+                  <div key={group.artistId} className="w-[300px]">
+                    {group.performances.length > 1 ? (
+                      <PerformanceCard
+                        performance={{
+                          ...group.performances[0],
+                          name: group.artistName,
+                          performanceTimes: group.performances.map(p => ({
+                            id: p.id,
+                            startTime: p.startTime || p.start_time,
+                            endTime: p.endTime || p.end_time,
+                          })),
+                        }}
+                        featured={index === 0}
+                      />
+                    ) : (
+                      <PerformanceCard performance={group.performances[0]} featured={index === 0} />
+                    )}
+                  </div>
+                );
+              })}
             </HorizontalScroller>
           )}
         </div>
@@ -88,16 +137,18 @@ const HomePage = () => {
       action: (
         <div className="flex justify-center mt-md">
           <Link to="/calendar">
-            <Button variant="secondary" size="md">View Calendar</Button>
+            <Button variant="secondary" size="md">
+              View Calendar
+            </Button>
           </Link>
         </div>
       ),
-      divider: <Divider gradient margin="lg" />
+      divider: <Divider gradient margin="lg" />,
     },
-    
+
     // Featured Artists Section
     {
-      title: "Featured Artists",
+      title: 'Featured Artists',
       titleComponent: (
         <BrandHeading level={2} gradient className="mb-md">
           Featured Artists
@@ -119,8 +170,8 @@ const HomePage = () => {
             <HorizontalScroller itemWidth={250}>
               {artists.map((artist, index) => (
                 <div key={artist.id} className="w-[250px]">
-                  <ArtistCard 
-                    artist={artist} 
+                  <ArtistCard
+                    artist={artist}
                     featured={index === 0} // Feature the first item
                   />
                 </div>
@@ -132,56 +183,62 @@ const HomePage = () => {
       action: (
         <div className="flex justify-center mt-md">
           <Link to="/artists">
-            <Button variant="secondary" size="md">View All Artists</Button>
+            <Button variant="secondary" size="md">
+              View All Artists
+            </Button>
           </Link>
         </div>
       ),
-      divider: festivals.length > 0 ? <Divider gradient margin="lg" /> : null
+      divider: festivals.length > 0 ? <Divider gradient margin="lg" /> : null,
     },
-    
+
     // Current Festivals Section (only shown if there are active festivals)
-    ...(festivals.length > 0 ? [{
-      title: "Current Festivals",
-      titleComponent: (
-        <BrandHeading level={2} gradient className="mb-md">
-          Current Festivals
-        </BrandHeading>
-      ),
-      content: (
-        <div>
-          {festivalsLoading && !festivals.length ? (
-            <div className="flex justify-center py-xl">
-              <Spinner color="deep-orchid" />
-            </div>
-          ) : (
-            <HorizontalScroller itemWidth={300}>
-              {festivals.map((festival, index) => (
-                <div key={festival.id} className="w-[300px]">
-                  <FestivalCard 
-                    festival={festival} 
-                    featured={index === 0} // Feature the first item
-                  />
-                </div>
-              ))}
-            </HorizontalScroller>
-          )}
-        </div>
-      ),
-      action: (
-        <div className="flex justify-center mt-md">
-          <Link to="/festivals">
-            <Button variant="secondary" size="md">View All Festivals</Button>
-          </Link>
-        </div>
-      ),
-    }] : []),
+    ...(festivals.length > 0
+      ? [
+          {
+            title: 'Current Festivals',
+            titleComponent: (
+              <BrandHeading level={2} gradient className="mb-md">
+                Current Festivals
+              </BrandHeading>
+            ),
+            content: (
+              <div>
+                {festivalsLoading && !festivals.length ? (
+                  <div className="flex justify-center py-xl">
+                    <Spinner color="deep-orchid" />
+                  </div>
+                ) : (
+                  <HorizontalScroller itemWidth={300}>
+                    {festivals.map((festival, index) => (
+                      <div key={festival.id} className="w-[300px]">
+                        <FestivalCard
+                          festival={festival}
+                          featured={index === 0} // Feature the first item
+                        />
+                      </div>
+                    ))}
+                  </HorizontalScroller>
+                )}
+              </div>
+            ),
+            action: (
+              <div className="flex justify-center mt-md">
+                <Link to="/festivals">
+                  <Button variant="secondary" size="md">
+                    View All Festivals
+                  </Button>
+                </Link>
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
-    <div className="bg-background min-h-screen pb-nav">
-      <HomePageLayout
-        sections={homeSections}
-      />
+    <div className="bg-background min-h-screen pb-16">
+      <HomePageLayout sections={homeSections} />
     </div>
   );
 };

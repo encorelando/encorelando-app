@@ -13,38 +13,43 @@ const searchService = {
    * @param {number} options.limit - Number of results per type (default: 5)
    * @returns {Promise<Object>} - Search results grouped by entity type
    */
-  async globalSearch(query, { types = ['concerts', 'artists', 'venues', 'festivals', 'parks'], limit = 5 } = {}) {
+  async globalSearch(
+    query,
+    { types = ['concerts', 'artists', 'venues', 'festivals', 'parks'], limit = 5 } = {}
+  ) {
     if (!query || query.trim() === '') {
       return {
         artists: [],
         concerts: [],
         venues: [],
         festivals: [],
-        parks: []
+        parks: [],
       };
     }
-    
+
     // Create an object to store our results
     const results = {
       artists: [],
       concerts: [],
       venues: [],
       festivals: [],
-      parks: []
+      parks: [],
     };
-    
+
     // Build queries in parallel for better mobile performance
     const promises = [];
-    
+
     // Search artists if requested
     if (types.includes('artists')) {
       const artistPromise = supabase
         .from('artists')
-        .select(`
+        .select(
+          `
           id,
           name,
           image_url
-        `)
+        `
+        )
         .ilike('name', `%${query}%`)
         .order('name')
         .limit(limit)
@@ -55,20 +60,26 @@ const searchService = {
           }
           return data;
         });
-      
-      promises.push(artistPromise.then(data => { results.artists = data; }));
+
+      promises.push(
+        artistPromise.then(data => {
+          results.artists = data;
+        })
+      );
     }
-    
+
     // Search concerts if requested
     if (types.includes('concerts')) {
       const concertPromise = supabase
         .from('concerts')
-        .select(`
+        .select(
+          `
           id,
           start_time,
           artists:artist_id (name),
           venues:venue_id (name)
-        `)
+        `
+        )
         .or(`artists.name.ilike.%${query}%,venues.name.ilike.%${query}%`)
         .gte('start_time', new Date().toISOString())
         .order('start_time')
@@ -80,19 +91,25 @@ const searchService = {
           }
           return data;
         });
-      
-      promises.push(concertPromise.then(data => { results.concerts = data; }));
+
+      promises.push(
+        concertPromise.then(data => {
+          results.concerts = data;
+        })
+      );
     }
-    
+
     // Search venues if requested
     if (types.includes('venues')) {
       const venuePromise = supabase
         .from('venues')
-        .select(`
+        .select(
+          `
           id,
           name,
           parks:park_id (name)
-        `)
+        `
+        )
         .ilike('name', `%${query}%`)
         .order('name')
         .limit(limit)
@@ -103,20 +120,26 @@ const searchService = {
           }
           return data;
         });
-      
-      promises.push(venuePromise.then(data => { results.venues = data; }));
+
+      promises.push(
+        venuePromise.then(data => {
+          results.venues = data;
+        })
+      );
     }
-    
+
     // Search festivals if requested
     if (types.includes('festivals')) {
       const festivalPromise = supabase
         .from('festivals')
-        .select(`
+        .select(
+          `
           id,
           name,
           start_date,
           end_date
-        `)
+        `
+        )
         .ilike('name', `%${query}%`)
         .order('start_date')
         .limit(limit)
@@ -127,18 +150,24 @@ const searchService = {
           }
           return data;
         });
-      
-      promises.push(festivalPromise.then(data => { results.festivals = data; }));
+
+      promises.push(
+        festivalPromise.then(data => {
+          results.festivals = data;
+        })
+      );
     }
-    
+
     // Search parks if requested
     if (types.includes('parks')) {
       const parkPromise = supabase
         .from('parks')
-        .select(`
+        .select(
+          `
           id,
           name
-        `)
+        `
+        )
         .ilike('name', `%${query}%`)
         .order('name')
         .limit(limit)
@@ -149,13 +178,17 @@ const searchService = {
           }
           return data;
         });
-      
-      promises.push(parkPromise.then(data => { results.parks = data; }));
+
+      promises.push(
+        parkPromise.then(data => {
+          results.parks = data;
+        })
+      );
     }
-    
+
     // Wait for all search queries to complete
     await Promise.all(promises);
-    
+
     return results;
   },
 
@@ -170,26 +203,30 @@ const searchService = {
     if (!query || query.trim() === '') {
       return [];
     }
-    
+
     const { data, error } = await supabase
       .from('concerts')
-      .select(`
+      .select(
+        `
         id,
         start_time,
         end_time,
         artists:artist_id (id, name),
         venues:venue_id (id, name),
         festivals:festival_id (id, name)
-      `)
-      .or(`artists.name.ilike.%${query}%,venues.name.ilike.%${query}%,festivals.name.ilike.%${query}%`)
+      `
+      )
+      .or(
+        `artists.name.ilike.%${query}%,venues.name.ilike.%${query}%,festivals.name.ilike.%${query}%`
+      )
       .order('start_time')
       .limit(limit);
-    
+
     if (error) {
       console.error(`Error searching concerts with query "${query}":`, error);
       throw error;
     }
-    
+
     return data;
   },
 
@@ -205,37 +242,41 @@ const searchService = {
     // Create start and end of day timestamps
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
-    
+
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
-    
+
     let dbQuery = supabase
       .from('concerts')
-      .select(`
+      .select(
+        `
         id,
         start_time,
         end_time,
         artists:artist_id (id, name),
         venues:venue_id (id, name),
         festivals:festival_id (id, name)
-      `)
+      `
+      )
       .gte('start_time', startOfDay.toISOString())
       .lte('start_time', endOfDay.toISOString())
       .order('start_time')
       .limit(limit);
-    
+
     // Add text search if query is provided
     if (query && query.trim() !== '') {
-      dbQuery = dbQuery.or(`artists.name.ilike.%${query}%,venues.name.ilike.%${query}%,festivals.name.ilike.%${query}%`);
+      dbQuery = dbQuery.or(
+        `artists.name.ilike.%${query}%,venues.name.ilike.%${query}%,festivals.name.ilike.%${query}%`
+      );
     }
-    
+
     const { data, error } = await dbQuery;
-    
+
     if (error) {
       console.error(`Error searching events for date ${date}:`, error);
       throw error;
     }
-    
+
     return data;
   },
 
@@ -253,34 +294,30 @@ const searchService = {
    * @returns {Promise<Array>} - Concerts matching search
    */
   async searchWithFilters(filters = {}, { limit = 20 } = {}) {
-    const { 
-      query, 
-      parkId, 
-      artistId, 
-      venueId, 
-      festivalId, 
-      startDate, 
-      endDate 
-    } = filters;
-    
+    const { query, parkId, artistId, venueId, festivalId, startDate, endDate } = filters;
+
     let dbQuery = supabase
       .from('concerts')
-      .select(`
+      .select(
+        `
         id,
         start_time,
         end_time,
         artists:artist_id (id, name),
         venues:venue_id (id, name, parks:park_id (id, name)),
         festivals:festival_id (id, name)
-      `)
+      `
+      )
       .order('start_time')
       .limit(limit);
-    
+
     // Apply text search if provided
     if (query && query.trim() !== '') {
-      dbQuery = dbQuery.or(`artists.name.ilike.%${query}%,venues.name.ilike.%${query}%,festivals.name.ilike.%${query}%`);
+      dbQuery = dbQuery.or(
+        `artists.name.ilike.%${query}%,venues.name.ilike.%${query}%,festivals.name.ilike.%${query}%`
+      );
     }
-    
+
     // Apply date filters
     if (startDate) {
       dbQuery = dbQuery.gte('start_time', startDate.toISOString());
@@ -288,37 +325,37 @@ const searchService = {
       // Default to upcoming only if no start date specified
       dbQuery = dbQuery.gte('start_time', new Date().toISOString());
     }
-    
+
     if (endDate) {
       dbQuery = dbQuery.lte('start_time', endDate.toISOString());
     }
-    
+
     // Apply entity filters
     if (artistId) {
       dbQuery = dbQuery.eq('artist_id', artistId);
     }
-    
+
     if (venueId) {
       dbQuery = dbQuery.eq('venue_id', venueId);
     }
-    
+
     if (festivalId) {
       dbQuery = dbQuery.eq('festival_id', festivalId);
     }
-    
+
     if (parkId) {
       dbQuery = dbQuery.eq('venues.park_id', parkId);
     }
-    
+
     const { data, error } = await dbQuery;
-    
+
     if (error) {
       console.error('Error searching with filters:', error);
       throw error;
     }
-    
+
     return data;
-  }
+  },
 };
 
 export default searchService;

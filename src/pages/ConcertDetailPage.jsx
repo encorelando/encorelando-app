@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DetailPageLayout from '../components/templates/DetailPageLayout';
 import Typography from '../components/atoms/Typography';
@@ -19,10 +19,10 @@ const ConcertDetailPage = () => {
   const [concert, setConcert] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Use custom hook
   const { getConcertById } = useConcerts();
-  
+
   // Fetch concert details
   useEffect(() => {
     const fetchConcertDetails = async () => {
@@ -37,10 +37,10 @@ const ConcertDetailPage = () => {
         setLoading(false);
       }
     };
-    
+
     fetchConcertDetails();
   }, [id, getConcertById]);
-  
+
   // Show loading state
   if (loading) {
     return (
@@ -49,14 +49,11 @@ const ConcertDetailPage = () => {
       </div>
     );
   }
-  
+
   // Show error state
   if (error || !concert) {
     return (
-      <DetailPageLayout
-        title="Concert Not Found"
-        imageUrl="/images/placeholder-concert.jpg"
-      >
+      <DetailPageLayout title="Concert Not Found" imageUrl="/images/placeholder-concert.jpg">
         <Typography variant="body1" color="error">
           {error || 'Could not find the requested concert.'}
         </Typography>
@@ -66,21 +63,35 @@ const ConcertDetailPage = () => {
       </DetailPageLayout>
     );
   }
-  
+
+  // Check if required nested objects exist
+  if (!concert.artist || !concert.venue) {
+    return (
+      <DetailPageLayout title="Concert Data Error" imageUrl="/images/placeholder-concert.jpg">
+        <Typography variant="body1" color="error">
+          The concert data is incomplete. Missing artist or venue information.
+        </Typography>
+        <Button variant="primary" className="mt-lg" onClick={() => window.history.back()}>
+          Go Back
+        </Button>
+      </DetailPageLayout>
+    );
+  }
+
   // Get artist and venue from concert data
   const { artist, venue, festival, start_time, end_time, notes } = concert;
-  
+
   // Format date and time
   const formattedDate = formatDate(start_time);
   const timeRange = `${formatTime(start_time)}${end_time ? ` - ${formatTime(end_time)}` : ''}`;
-  
+
   // Check if concert has already occurred
   const isPast = new Date(start_time) < new Date();
 
   return (
     <DetailPageLayout
       title={artist.name}
-      subtitle={venue.name}
+      subtitle="" // Remove the venue name from the header to prevent overlap
       imageUrl={artist.image_url || '/images/placeholder-concert.jpg'}
     >
       {/* Status badge */}
@@ -90,45 +101,41 @@ const ConcertDetailPage = () => {
         ) : (
           <Badge text="Upcoming Event" variant="primary" />
         )}
-        
+
         {/* Festival badge */}
-        {festival && (
-          <Badge text={festival.name} variant="secondary" className="ml-xs" />
-        )}
+        {festival && <Badge text={festival.name} variant="secondary" className="ml-xs" />}
       </div>
-      
+
       {/* Date and time */}
       <Card className="mb-lg p-md">
         <div className="flex items-center mb-sm">
           <Icon name="calendar" size="md" className="mr-sm text-primary" />
-          <Typography variant="h3">
-            {formattedDate}
-          </Typography>
+          <Typography variant="h3">{formattedDate}</Typography>
         </div>
-        
+
         <div className="flex items-center">
           <Icon name="clock" size="md" className="mr-sm text-primary" />
-          <Typography variant="h4">
-            {timeRange}
-          </Typography>
+          <Typography variant="h4">{timeRange}</Typography>
         </div>
       </Card>
-      
+
       {/* Venue information */}
       <div className="mb-lg">
-        <Typography variant="h3" className="mb-sm">Venue</Typography>
+        <Typography variant="h3" className="mb-sm">
+          Venue
+        </Typography>
         <Link to={`/venues/${venue.id}`}>
           <Card variant="interactive" className="p-md">
             <Typography variant="h4" className="mb-xs">
               {venue.name}
             </Typography>
-            
+
             {venue.location_details && (
               <Typography variant="body2" color="medium-gray" className="mb-xs">
                 {venue.location_details}
               </Typography>
             )}
-            
+
             {venue.park && (
               <div className="flex items-center mt-xs text-primary">
                 <Icon name="map-pin" size="sm" className="mr-xs" />
@@ -137,23 +144,25 @@ const ConcertDetailPage = () => {
                 </Typography>
               </div>
             )}
-            
+
             <div className="absolute right-md top-1/2 transform -translate-y-1/2">
               <Icon name="chevron-right" size="md" color="medium-gray" />
             </div>
           </Card>
         </Link>
       </div>
-      
+
       {/* Artist information */}
       <div className="mb-lg">
-        <Typography variant="h3" className="mb-sm">Artist</Typography>
+        <Typography variant="h3" className="mb-sm">
+          Artist
+        </Typography>
         <Link to={`/artists/${artist.id}`}>
           <Card variant="interactive" className="p-md">
             <Typography variant="h4" className="mb-xs">
               {artist.name}
             </Typography>
-            
+
             {artist.genres && artist.genres.length > 0 && (
               <div className="flex flex-wrap gap-xs mt-xs">
                 {artist.genres.slice(0, 3).map(genre => (
@@ -166,26 +175,26 @@ const ConcertDetailPage = () => {
                 )}
               </div>
             )}
-            
+
             <div className="absolute right-md top-1/2 transform -translate-y-1/2">
               <Icon name="chevron-right" size="md" color="medium-gray" />
             </div>
           </Card>
         </Link>
       </div>
-      
+
       {/* Notes */}
       {notes && (
         <div className="mb-lg">
-          <Typography variant="h3" className="mb-sm">Performance Notes</Typography>
+          <Typography variant="h3" className="mb-sm">
+            Performance Notes
+          </Typography>
           <Card className="p-md">
-            <Typography variant="body1">
-              {notes}
-            </Typography>
+            <Typography variant="body1">{notes}</Typography>
           </Card>
         </div>
       )}
-      
+
       {/* Add to calendar button (if upcoming) */}
       {!isPast && (
         <Button variant="primary" fullWidth className="mt-lg">

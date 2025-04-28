@@ -390,7 +390,9 @@ describe('concertService', () => {
       });
 
       // Assert that service throws the error
-      await expect(concertService.getUpcomingConcerts()).rejects.toThrow('API error for upcoming concerts');
+      await expect(concertService.getUpcomingConcerts()).rejects.toThrow(
+        'API error for upcoming concerts'
+      );
     });
   });
 
@@ -494,7 +496,9 @@ describe('concertService', () => {
 
       // Assert that service throws the error
       const date = '2025-05-01';
-      await expect(concertService.getConcertsByDate(date)).rejects.toThrow('API error for date concerts');
+      await expect(concertService.getConcertsByDate(date)).rejects.toThrow(
+        'API error for date concerts'
+      );
     });
   });
 
@@ -583,7 +587,9 @@ describe('concertService', () => {
 
       // Assert that service throws the error
       const artistId = 'artist-123';
-      await expect(concertService.getConcertsByArtist(artistId)).rejects.toThrow('API error for artist concerts');
+      await expect(concertService.getConcertsByArtist(artistId)).rejects.toThrow(
+        'API error for artist concerts'
+      );
     });
   });
 
@@ -702,7 +708,9 @@ describe('concertService', () => {
 
       // Assert that service throws the error
       const festivalId = 'festival-123';
-      await expect(concertService.getConcertsByFestival(festivalId)).rejects.toThrow('API error for festival concerts');
+      await expect(concertService.getConcertsByFestival(festivalId)).rejects.toThrow(
+        'API error for festival concerts'
+      );
     });
   });
 });

@@ -13,24 +13,24 @@ const useArtists = (initialFilters = {}) => {
   const [pagination, setPagination] = useState({
     total: 0,
     limit: 20,
-    offset: 0
+    offset: 0,
   });
   const [filters, setFilters] = useState(initialFilters);
-  
+
   /**
    * Fetch artists with current filters
    */
   const fetchArtists = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const { data, pagination: paginationData } = await artistService.getArtists({
         ...filters,
         limit: pagination.limit,
-        offset: pagination.offset
+        offset: pagination.offset,
       });
-      
+
       setArtists(data);
       setPagination(paginationData);
     } catch (err) {
@@ -40,57 +40,57 @@ const useArtists = (initialFilters = {}) => {
       setLoading(false);
     }
   }, [filters, pagination.limit, pagination.offset]);
-  
+
   // Fetch artists on mount and when filters change
   useEffect(() => {
     fetchArtists();
   }, [fetchArtists]);
-  
+
   /**
    * Update filters and reset pagination
    * @param {Object} newFilters - New filter values
    */
-  const updateFilters = useCallback((newFilters) => {
+  const updateFilters = useCallback(newFilters => {
     setFilters(prevFilters => ({
       ...prevFilters,
-      ...newFilters
+      ...newFilters,
     }));
-    
+
     // Reset to first page when filters change
     setPagination(prev => ({
       ...prev,
-      offset: 0
+      offset: 0,
     }));
   }, []);
-  
+
   /**
    * Load next page of results
    */
   const loadMore = useCallback(() => {
     if (loading || artists.length >= pagination.total) return;
-    
+
     setPagination(prev => ({
       ...prev,
-      offset: prev.offset + prev.limit
+      offset: prev.offset + prev.limit,
     }));
-  }, [loading, artists.length, pagination.total, pagination.limit]);
-  
+  }, [loading, artists.length, pagination.total]);
+
   /**
    * Refresh artist data
    */
   const refresh = useCallback(() => {
     fetchArtists();
   }, [fetchArtists]);
-  
+
   /**
    * Get a single artist by ID
    * @param {string} id - Artist UUID
    * @returns {Promise<Object>} - Artist data
    */
-  const getArtistById = useCallback(async (id) => {
+  const getArtistById = useCallback(async id => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await artistService.getArtistById(id);
       return data;
@@ -102,16 +102,16 @@ const useArtists = (initialFilters = {}) => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Search artists by name
    * @param {string} query - Search term
    * @returns {Promise<Array>} - Artist data
    */
-  const searchArtists = useCallback(async (query) => {
+  const searchArtists = useCallback(async query => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const { data } = await artistService.searchArtists(query);
       return data;
@@ -123,16 +123,16 @@ const useArtists = (initialFilters = {}) => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Get artists by festival
    * @param {string} festivalId - Festival UUID
    * @returns {Promise<Array>} - Artist data
    */
-  const getArtistsByFestival = useCallback(async (festivalId) => {
+  const getArtistsByFestival = useCallback(async festivalId => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await artistService.getArtistsByFestival(festivalId);
       return data;
@@ -144,7 +144,7 @@ const useArtists = (initialFilters = {}) => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Get artists with upcoming concerts
    * @param {Object} options - Options
@@ -153,7 +153,7 @@ const useArtists = (initialFilters = {}) => {
   const getArtistsWithUpcomingConcerts = useCallback(async (options = {}) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await artistService.getArtistsWithUpcomingConcerts(options);
       return data;
@@ -165,7 +165,7 @@ const useArtists = (initialFilters = {}) => {
       setLoading(false);
     }
   }, []);
-  
+
   return {
     artists,
     loading,
@@ -178,7 +178,7 @@ const useArtists = (initialFilters = {}) => {
     getArtistById,
     searchArtists,
     getArtistsByFestival,
-    getArtistsWithUpcomingConcerts
+    getArtistsWithUpcomingConcerts,
   };
 };
 

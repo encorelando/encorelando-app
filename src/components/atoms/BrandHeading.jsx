@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
@@ -14,10 +13,10 @@ const BrandHeading = ({
 }) => {
   // Determine heading level (h1-h6)
   const HeadingTag = `h${level}`;
-  
+
   // Base classes - using Poppins font for headings per brand guidelines
   const baseClasses = 'font-poppins font-semibold';
-  
+
   // Size classes based on heading level
   const sizeClasses = {
     1: 'text-2xl sm:text-3xl lg:text-4xl',
@@ -27,25 +26,21 @@ const BrandHeading = ({
     5: 'text-sm sm:text-base lg:text-lg',
     6: 'text-xs sm:text-sm lg:text-base',
   };
-  
+
   // Alignment classes
   const alignClasses = {
     left: 'text-left',
     center: 'text-center',
     right: 'text-right',
   };
-  
+
   // Gradient text effect
   const gradientClasses = gradient ? 'brand-gradient-text' : 'text-white';
-  
+
   // Combined classes
   const combinedClasses = `${baseClasses} ${sizeClasses[level]} ${alignClasses[align]} ${gradientClasses} ${className}`;
 
-  return (
-    <HeadingTag className={combinedClasses}>
-      {children}
-    </HeadingTag>
-  );
+  return <HeadingTag className={combinedClasses}>{children}</HeadingTag>;
 };
 
 BrandHeading.propTypes = {

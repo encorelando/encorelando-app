@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import Icon from './Icon';
 
@@ -6,17 +5,10 @@ import Icon from './Icon';
  * Tag component for displaying labels and categories
  * Mobile-optimized for touch interaction
  */
-const Tag = ({
-  text,
-  color = 'primary',
-  onClick,
-  closable = false,
-  onClose,
-  className = '',
-}) => {
+const Tag = ({ text, color = 'primary', onClick, closable = false, onClose, className = '' }) => {
   // Base classes ensuring touch-friendly size
   const baseClasses = 'inline-flex items-center rounded-full py-xs px-sm text-sm';
-  
+
   // Color classes
   const colorClasses = {
     primary: 'bg-primary-light bg-opacity-20 text-primary',
@@ -27,20 +19,20 @@ const Tag = ({
     info: 'bg-info bg-opacity-20 text-info',
     gray: 'bg-light-gray text-medium-gray',
   };
-  
+
   // Interactive classes
   const interactiveClasses = onClick ? 'cursor-pointer hover:bg-opacity-30' : '';
-  
+
   // Combined classes
   const combinedClasses = `${baseClasses} ${colorClasses[color]} ${interactiveClasses} ${className}`;
-  
+
   // Handle click event
-  const handleClick = (e) => {
+  const handleClick = e => {
     if (onClick) onClick(e);
   };
-  
+
   // Handle close button click
-  const handleClose = (e) => {
+  const handleClose = e => {
     e.stopPropagation();
     if (onClose) onClose(e);
   };
@@ -53,7 +45,7 @@ const Tag = ({
       tabIndex={onClick ? 0 : undefined}
     >
       <span>{text}</span>
-      
+
       {closable && (
         <button
           type="button"

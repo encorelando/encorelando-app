@@ -51,3 +51,18 @@ h1, h2, h3, h4, h5, h6 {
   background-clip: text;
   color: transparent;
 }
+
+/* Image filter utilities */
+.grayscale {
+  filter: grayscale(100%);
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  -ms-filter: grayscale(100%);
+}
+
+.saturate-0 {
+  filter: saturate(0);
+  -webkit-filter: saturate(0);
+  -moz-filter: saturate(0);
+  -ms-filter: saturate(0);
+}

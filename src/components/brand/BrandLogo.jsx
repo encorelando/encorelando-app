@@ -1,30 +1,25 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
  * BrandLogo component for displaying the EncoreLando logo
  * Following the updated branding guidelines
  */
-const BrandLogo = ({
-  variant = 'white',
-  size = 'md',
-  className = '',
-}) => {
+const BrandLogo = ({ variant = 'white', size = 'md', className = '' }) => {
   // Base classes
   const baseClasses = 'inline-block';
-  
+
   // Size mapping for different logo sizes (in pixels)
   const sizeMap = {
-    'xs': 32,
-    'sm': 64,
-    'md': 128,
-    'lg': 256,
-    'xl': 512,
+    xs: 32,
+    sm: 64,
+    md: 128,
+    lg: 256,
+    xl: 512,
   };
-  
+
   // Calculate image size
   const pixelSize = typeof size === 'string' ? sizeMap[size] : size;
-  
+
   // Determine logo path based on variant
   let logoPath;
   switch (variant) {
@@ -39,17 +34,17 @@ const BrandLogo = ({
       logoPath = `/logo/encorelando-logo-white-${pixelSize}px.webp`;
       break;
   }
-  
+
   // Fallback to PNG if WebP not supported (handled via CSS)
   const logoPathPng = logoPath.replace('.webp', '.png');
-  
+
   // Combined classes
   const combinedClasses = `${baseClasses} ${className}`;
 
   return (
     <picture>
       <source srcSet={logoPath} type="image/webp" />
-      <img 
+      <img
         src={logoPathPng}
         alt="EncoreLando"
         width={pixelSize}
@@ -62,10 +57,7 @@ const BrandLogo = ({
 
 BrandLogo.propTypes = {
   variant: PropTypes.oneOf(['white', 'black', 'gradient']),
-  size: PropTypes.oneOfType([
-    PropTypes.oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
-    PropTypes.number
-  ]),
+  size: PropTypes.oneOfType([PropTypes.oneOf(['xs', 'sm', 'md', 'lg', 'xl']), PropTypes.number]),
   className: PropTypes.string,
 };
 

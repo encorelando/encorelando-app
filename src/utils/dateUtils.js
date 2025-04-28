@@ -8,31 +8,64 @@
  * @param {string|Date} date - Date to format
  * @returns {string} - Formatted date string (e.g., "Mon, Apr 15")
  */
-export const formatDate = (date) => {
+export const formatDate = date => {
+  // Return a placeholder if date is undefined or null
+  if (!date) {
+    return 'TBD';
+  }
+
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
+
   // Format: "Mon, Apr 15"
   return dateObj.toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   });
 };
 
 /**
- * Format a date string or Date object to display time format
+ * Format a date string or Date object to display time format without timezone adjustments
  * @param {string|Date} date - Date to format
  * @returns {string} - Formatted time string (e.g., "7:30 PM")
  */
-export const formatTime = (date) => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
-  // Format: "7:30 PM"
-  return dateObj.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
-  });
+export const formatTime = date => {
+  // Return a placeholder if date is undefined or null
+  if (!date) {
+    return 'TBD';
+  }
+
+  // If the date is provided as a string
+  if (typeof date === 'string') {
+    // Parse the time portion only from the ISO string to prevent timezone adjustments
+    const timeMatch = date.match(/(\d{2}):(\d{2}):(\d{2})/);
+
+    if (timeMatch) {
+      const [, hours, minutes] = timeMatch;
+      const hourNum = parseInt(hours, 10);
+      const ampm = hourNum >= 12 ? 'PM' : 'AM';
+      const hour12 = hourNum % 12 || 12; // Convert 24h to 12h format
+
+      return `${hour12}:${minutes} ${ampm}`;
+    }
+
+    // If no time pattern was found in the string, create a date object
+    const dateObj = new Date(date);
+    const hours = dateObj.getHours();
+    const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const hour12 = hours % 12 || 12;
+
+    return `${hour12}:${minutes} ${ampm}`;
+  }
+
+  // If it's already a Date object, format it without timezone adjustments
+  const hours = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const hour12 = hours % 12 || 12;
+
+  return `${hour12}:${minutes} ${ampm}`;
 };
 
 /**
@@ -42,20 +75,33 @@ export const formatTime = (date) => {
  * @returns {string} - Formatted date range (e.g., "Apr 15 - Apr 20")
  */
 export const formatDateRange = (startDate, endDate) => {
+  // Handle missing dates
+  if (!startDate && !endDate) {
+    return 'Dates TBD';
+  }
+
+  if (!startDate) {
+    return `Ends ${formatDate(endDate)}`;
+  }
+
+  if (!endDate) {
+    return `Starts ${formatDate(startDate)}`;
+  }
+
   const startObj = typeof startDate === 'string' ? new Date(startDate) : startDate;
   const endObj = typeof endDate === 'string' ? new Date(endDate) : endDate;
-  
+
   // Format: "Apr 15 - Apr 20"
   const startFormatted = startObj.toLocaleDateString('en-US', {
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   });
-  
+
   const endFormatted = endObj.toLocaleDateString('en-US', {
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   });
-  
+
   return `${startFormatted} - ${endFormatted}`;
 };
 
@@ -64,53 +110,242 @@ export const formatDateRange = (startDate, endDate) => {
  * @param {string|Date} date - Date to format
  * @returns {string} - Relative date description
  */
-export const getRelativeDate = (date) => {
+export const getRelativeDate = date => {
+  // Return placeholder if date is undefined or null
+  if (!date) {
+    return 'Date TBD';
+  }
+
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  
+
   // Set to midnight for comparison
   today.setHours(0, 0, 0, 0);
   tomorrow.setHours(0, 0, 0, 0);
   const compareDate = new Date(dateObj);
   compareDate.setHours(0, 0, 0, 0);
-  
+
   // Check if date is today or tomorrow
   if (compareDate.getTime() === today.getTime()) {
     return 'Today';
   } else if (compareDate.getTime() === tomorrow.getTime()) {
     return 'Tomorrow';
   }
-  
+
   // If date is within the next 6 days (this week), return day of week
   const dayDiff = Math.floor((compareDate - today) / (1000 * 60 * 60 * 24));
   if (dayDiff > 0 && dayDiff < 7) {
     return dateObj.toLocaleDateString('en-US', { weekday: 'long' });
   }
-  
+
   // Otherwise, return formatted date
   return formatDate(dateObj);
 };
 
 /**
- * Group performances by date
+ * Extract valid date string from a date object or string
+ * Handles timezone issues by using local date components
+ * @param {Date|string} date - The date to process
+ * @returns {string|null} - YYYY-MM-DD format date string or null if invalid
+ */
+export const getValidDateString = date => {
+  if (!date) return null;
+
+  try {
+    let dateObj;
+
+    // If it's a string, parse it carefully to avoid timezone shifts
+    if (typeof date === 'string') {
+      // First try to extract just the date part from an ISO string
+      const datePart = date.split('T')[0];
+      if (datePart && datePart.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        // Use current date with the year/month/day from the string
+        const [year, month, day] = datePart.split('-').map(Number);
+        dateObj = new Date();
+        dateObj.setFullYear(year);
+        dateObj.setMonth(month - 1); // JS months are 0-based
+        dateObj.setDate(day);
+        dateObj.setHours(0, 0, 0, 0); // Reset time part
+      } else {
+        // Regular date parsing as fallback
+        dateObj = new Date(date);
+      }
+    } else {
+      // It's already a Date object
+      dateObj = new Date(date.getTime());
+    }
+
+    // Check for invalid dates
+    if (isNaN(dateObj.getTime())) return null;
+
+    // Use the current date's components in local timezone
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  } catch (e) {
+    console.error('Error extracting date:', e);
+    return null;
+  }
+};
+
+/**
+ * Group performances by date - uses current date to get the correct local date
  * @param {Array} performances - Array of performance objects
  * @returns {Object} - Object with dates as keys and arrays of performances as values
  */
-export const groupPerformancesByDate = (performances) => {
+export const groupPerformancesByDate = performances => {
+  if (!performances || !Array.isArray(performances) || performances.length === 0) {
+    return {};
+  }
+
   return performances.reduce((groups, performance) => {
-    const date = new Date(performance.startTime);
-    date.setHours(0, 0, 0, 0);
-    const dateStr = date.toISOString().split('T')[0];
-    
+    if (!performance) return groups;
+
+    // Handle both camelCase and snake_case property names
+    const startTime = performance.startTime || performance.start_time;
+    if (!startTime) {
+      // If no start time is available, skip this performance
+      return groups;
+    }
+
+    // Get a valid date string - corrected for timezone
+    const dateStr = getValidDateString(startTime);
+    if (!dateStr) return groups;
+
     if (!groups[dateStr]) {
       groups[dateStr] = [];
     }
-    
+
     groups[dateStr].push(performance);
     return groups;
   }, {});
+};
+
+/**
+ * Get today's date as a YYYY-MM-DD string in local timezone
+ * @returns {string} Today's date string
+ */
+export const getTodayDateString = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+/**
+ * Group performances by date and then by venue for artists
+ * @param {Array} performances - Array of performance objects
+ * @returns {Object} - Object with dates as keys and arrays of consolidated performances
+ */
+export const groupArtistPerformancesByDateAndVenue = performances => {
+  // Safety check for inputs
+  if (!performances || !Array.isArray(performances) || performances.length === 0) {
+    return {};
+  }
+
+  // Filter out invalid performances
+  const validPerformances = performances.filter(
+    perf => perf && perf.id && (perf.startTime || perf.start_time)
+  );
+
+  if (validPerformances.length === 0) return {};
+
+  // Group by date first - with timezone correction
+  const byDate = groupPerformancesByDate(validPerformances);
+  const consolidatedByDate = {};
+
+  // Process each date group
+  Object.entries(byDate).forEach(([dateStr, datePerformances]) => {
+    // Skip invalid dates
+    if (!dateStr || dateStr === 'undefined' || !datePerformances.length) return;
+
+    // Group by venue
+    const byVenueId = {};
+
+    datePerformances.forEach(perf => {
+      if (!perf || !perf.id) return;
+
+      // Get venue ID safely
+      const venue = perf.venue || perf.venues || {};
+      const venueId = venue.id || 'unknown';
+
+      if (!byVenueId[venueId]) {
+        byVenueId[venueId] = [];
+      }
+
+      byVenueId[venueId].push(perf);
+    });
+
+    // Consolidate performances at each venue
+    const consolidated = [];
+
+    Object.values(byVenueId).forEach(venuePerfs => {
+      if (!venuePerfs.length) return;
+
+      if (venuePerfs.length === 1) {
+        // Single performance, add as-is
+        consolidated.push(venuePerfs[0]);
+      } else {
+        // Multiple performances, consolidate
+        try {
+          // Sort by start time
+          const sortedPerfs = [...venuePerfs].sort((a, b) => {
+            const aStart = a.startTime || a.start_time;
+            const bStart = b.startTime || b.start_time;
+            if (!aStart || !bStart) return 0;
+            return new Date(aStart) - new Date(bStart);
+          });
+
+          // Create consolidated performance
+          const base = sortedPerfs[0];
+          if (!base) return;
+
+          // Build time slots array
+          const timeSlots = sortedPerfs
+            .map(p => {
+              if (!p) return null;
+              return {
+                id: p.id,
+                startTime: p.startTime || p.start_time,
+                endTime: p.endTime || p.end_time,
+              };
+            })
+            .filter(Boolean);
+
+          if (timeSlots.length) {
+            consolidated.push({
+              ...base,
+              id: `${base.id}-consolidated`,
+              performanceTimes: timeSlots,
+            });
+          }
+        } catch (err) {
+          console.error('Error consolidating performances:', err);
+          // Fallback: add all performances individually
+          venuePerfs.forEach(p => {
+            if (p && p.id) consolidated.push(p);
+          });
+        }
+      }
+    });
+
+    // Sort by time and add to result
+    if (consolidated.length) {
+      consolidatedByDate[dateStr] = consolidated.sort((a, b) => {
+        const aTime = a.startTime || a.start_time;
+        const bTime = b.startTime || b.start_time;
+        if (!aTime || !bTime) return 0;
+        return new Date(aTime) - new Date(bTime);
+      });
+    }
+  });
+
+  return consolidatedByDate;
 };
 
 /**
@@ -118,7 +353,12 @@ export const groupPerformancesByDate = (performances) => {
  * @param {string|Date} date - Date to check
  * @returns {boolean} - True if date is in the past
  */
-export const isDatePast = (date) => {
+export const isDatePast = date => {
+  // If date is undefined or null, consider it as a future date
+  if (!date) {
+    return false;
+  }
+
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
   return dateObj < now;
@@ -129,6 +369,16 @@ export const isDatePast = (date) => {
  * @param {Date} date - Date to format
  * @returns {string} - Formatted date string (YYYY-MM-DD)
  */
-export const formatDateForApi = (date) => {
-  return date.toISOString().split('T')[0];
+export const formatDateForApi = date => {
+  if (!date) {
+    console.error('Date is undefined in formatDateForApi');
+    // Return today's date as a fallback
+    return getTodayDateString();
+  }
+
+  // Ensure we're using local date components to avoid timezone issues
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };

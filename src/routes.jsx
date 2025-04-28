@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Spinner from './components/atoms/Spinner';
 
@@ -42,21 +42,17 @@ const AppRoutes = () => {
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/artists" element={<ArtistDirectoryPage />} />
         <Route path="/search" element={<SearchPage />} />
-        
         {/* Detail pages */}
         <Route path="/artists/:id" element={<ArtistDetailPage />} />
         <Route path="/concerts/:id" element={<ConcertDetailPage />} />
         <Route path="/festivals/:id" element={<FestivalDetailPage />} />
         <Route path="/venues/:id" element={<VenueDetailPage />} />
         <Route path="/parks/:id" element={<ParkDetailPage />} />
-        
         {/* Branding showcase */}
         <Route path="/brand" element={<BrandExamplePage />} />
-        
         {/* Redirect legacy routes */}
         <Route path="/events" element={<Navigate to="/calendar" replace />} />
         <Route path="/performers" element={<Navigate to="/artists" replace />} />
-        
         {/* 404 page */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

@@ -17,7 +17,7 @@ describe('parkService', () => {
       // Mock the Supabase response
       const mockData = [
         { id: 'p1', name: 'Test Park' },
-        { id: 'p2', name: 'Another Park' }
+        { id: 'p2', name: 'Another Park' },
       ];
       const mockResponse = {
         data: mockData,
@@ -269,8 +269,20 @@ describe('parkService', () => {
     it('should fetch festivals for a park', async () => {
       // Mock the Supabase response
       const mockFestivals = [
-        { id: 'f1', name: 'Festival 1', park_id: 'p1', start_date: '2025-05-01', end_date: '2025-05-05' },
-        { id: 'f2', name: 'Festival 2', park_id: 'p1', start_date: '2025-06-01', end_date: '2025-06-05' },
+        {
+          id: 'f1',
+          name: 'Festival 1',
+          park_id: 'p1',
+          start_date: '2025-05-01',
+          end_date: '2025-05-05',
+        },
+        {
+          id: 'f2',
+          name: 'Festival 2',
+          park_id: 'p1',
+          start_date: '2025-06-01',
+          end_date: '2025-06-05',
+        },
       ];
       const mockResponse = {
         data: mockFestivals,
@@ -353,7 +365,9 @@ describe('parkService', () => {
 
       // Assert that service throws the error
       const parkId = 'p1';
-      await expect(parkService.getParkFestivals(parkId)).rejects.toThrow('API error for park festivals');
+      await expect(parkService.getParkFestivals(parkId)).rejects.toThrow(
+        'API error for park festivals'
+      );
     });
   });
 
@@ -470,7 +484,9 @@ describe('parkService', () => {
 
       // Assert that service throws the error
       const parkId = 'p1';
-      await expect(parkService.getParkConcerts(parkId)).rejects.toThrow('API error for park concerts');
+      await expect(parkService.getParkConcerts(parkId)).rejects.toThrow(
+        'API error for park concerts'
+      );
     });
   });
 

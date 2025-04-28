@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 import Icon from '../atoms/Icon';
@@ -17,17 +16,17 @@ const BottomNavigation = ({ className = '' }) => {
     { to: '/artists', label: 'Artists', icon: 'music' },
     { to: '/search', label: 'Search', icon: 'search' },
   ];
-  
+
   return (
-    <nav 
-      className={`fixed bottom-0 left-0 right-0 bg-background bg-opacity-95 z-10 ${className}`}
+    <nav
+      className={`fixed bottom-0 left-0 right-0 bg-background bg-opacity-95 z-10 h-16 ${className}`}
       aria-label="Main navigation"
     >
       {/* Gradient line at the top of the navigation */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-brand-gradient" />
-      
-      <div className="flex items-center justify-around max-w-content mx-auto">
-        {navItems.map((item) => (
+
+      <div className="flex items-center justify-around max-w-content mx-auto h-full">
+        {navItems.map(item => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -43,18 +42,14 @@ const BottomNavigation = ({ className = '' }) => {
                 {/* Icon with gradient background when active */}
                 <div className={`${isActive ? 'p-[2px] bg-brand-gradient rounded-full' : ''}`}>
                   <div className={`rounded-full ${isActive ? 'bg-background p-[2px]' : ''}`}>
-                    <Icon 
-                      name={item.icon} 
-                      size="md" 
-                      color={isActive ? 'white' : 'medium-gray'} 
-                    />
+                    <Icon name={item.icon} size="md" color={isActive ? 'white' : 'medium-gray'} />
                   </div>
                 </div>
-                
+
                 {/* Label */}
-                <Typography 
-                  variant="caption" 
-                  color={isActive ? 'white' : 'medium-gray'} 
+                <Typography
+                  variant="caption"
+                  color={isActive ? 'white' : 'medium-gray'}
                   align="center"
                   className="mt-xxs"
                 >

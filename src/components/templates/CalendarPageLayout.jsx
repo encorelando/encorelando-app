@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import PageLayout from './PageLayout';
 import Calendar from '../organisms/Calendar';
@@ -21,15 +21,15 @@ const CalendarPageLayout = ({
 }) => {
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [showCalendar, setShowCalendar] = useState(true);
-  
+
   // Handle date selection
-  const handleDateSelect = (date) => {
+  const handleDateSelect = date => {
     setSelectedDate(date);
     if (onDateSelect) {
       onDateSelect(date);
     }
   };
-  
+
   // Toggle calendar visibility
   const toggleCalendar = () => {
     setShowCalendar(!showCalendar);
@@ -38,23 +38,23 @@ const CalendarPageLayout = ({
   return (
     <PageLayout className={className}>
       {/* Calendar header with toggle */}
-      <div className="bg-white sticky top-0 z-10 shadow-sm border-b border-light-gray">
+      <div className="bg-background sticky top-0 z-10 shadow-sm border-b border-deep-orchid border-opacity-30">
         <div className="flex items-center justify-between p-md">
-          <Typography variant="h3">
-            Calendar
-          </Typography>
-          
+          <Typography variant="h3">Calendar</Typography>
+
           <IconButton
             icon={showCalendar ? 'chevron-up' : 'chevron-down'}
             ariaLabel={showCalendar ? 'Hide calendar' : 'Show calendar'}
             onClick={toggleCalendar}
           />
         </div>
-        
+
         {/* Collapsible calendar */}
-        <div className={`overflow-hidden transition-all duration-300 ${
-          showCalendar ? 'max-h-[400px]' : 'max-h-0'
-        }`}>
+        <div
+          className={`overflow-hidden transition-all duration-300 ${
+            showCalendar ? 'max-h-[350px]' : 'max-h-0'
+          }`}
+        >
           <div className="p-md pb-lg">
             <Calendar
               selectedDate={selectedDate}
@@ -63,30 +63,24 @@ const CalendarPageLayout = ({
             />
           </div>
         </div>
-        
+
         {/* Selected date display - always visible */}
-        <div className="flex items-center justify-between p-md border-t border-light-gray">
-          <Typography variant="h4">
-            {formatDate(selectedDate)}
-          </Typography>
-          
-          {filterComponent && (
-            <div>{filterComponent}</div>
-          )}
+        <div className="flex items-center justify-between p-md border-t border-deep-orchid border-opacity-30">
+          <Typography variant="h4">{formatDate(selectedDate)}</Typography>
+
+          {filterComponent && <div>{filterComponent}</div>}
         </div>
       </div>
-      
+
       {/* Results title */}
       {resultsTitle && (
         <div className="p-md">
           <Typography variant="h3">{resultsTitle}</Typography>
         </div>
       )}
-      
+
       {/* Results content */}
-      <div className="px-md">
-        {children}
-      </div>
+      <div className="px-md">{children}</div>
     </PageLayout>
   );
 };

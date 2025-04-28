@@ -31,10 +31,10 @@ const HorizontalScroller = ({
     if (!container) return;
 
     const { scrollLeft, scrollWidth, clientWidth } = container;
-    
+
     // Can scroll left if not at the beginning
     setCanScrollLeft(scrollLeft > 0);
-    
+
     // Can scroll right if there's more content to show
     setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5); // 5px buffer for rounding errors
   };
@@ -47,7 +47,7 @@ const HorizontalScroller = ({
   // Scroll left
   const scrollLeft = () => {
     if (!scrollContainerRef.current) return;
-    
+
     const container = scrollContainerRef.current;
     // Scroll one item width to the left
     container.scrollBy({
@@ -59,7 +59,7 @@ const HorizontalScroller = ({
   // Scroll right
   const scrollRight = () => {
     if (!scrollContainerRef.current) return;
-    
+
     const container = scrollContainerRef.current;
     // Scroll one item width to the right
     container.scrollBy({
@@ -74,10 +74,8 @@ const HorizontalScroller = ({
       {(title || showControls) && (
         <div className="flex items-center justify-between mb-md px-md">
           {/* Title */}
-          {title && (
-            <Typography variant="h3">{title}</Typography>
-          )}
-          
+          {title && <Typography variant="h3">{title}</Typography>}
+
           {/* Navigation controls - only shown on larger screens */}
           {showControls && (
             <div className="hidden sm:flex items-center">
@@ -98,7 +96,7 @@ const HorizontalScroller = ({
           )}
         </div>
       )}
-      
+
       {/* Scrollable content */}
       <div
         ref={scrollContainerRef}
@@ -106,17 +104,17 @@ const HorizontalScroller = ({
         onScroll={handleScroll}
       >
         {/* Add left padding */}
-        <div className="pl-md"/>
-        
+        <div className="pl-md" />
+
         {/* Render children with spacing */}
         {React.Children.map(children, (child, index) => (
           <div key={index} className="flex-shrink-0 snap-start mr-md">
             {child}
           </div>
         ))}
-        
+
         {/* Add right padding */}
-        <div className="pr-md"/>
+        <div className="pr-md" />
       </div>
     </div>
   );

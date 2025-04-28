@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import PageLayout from '../components/templates/PageLayout';
 import Typography from '../components/atoms/Typography';
@@ -16,41 +15,37 @@ const NotFoundPage = () => {
       <div className="flex flex-col items-center justify-center min-h-screen text-center px-md py-xl text-white">
         {/* Updated icon with brand colors */}
         <Icon name="info" size="xl" color="sunset-orange" className="mb-md" />
-        
+
         {/* Updated typography to match branding */}
         <BrandHeading level={1} gradient className="mb-sm">
           Page Not Found
         </BrandHeading>
-        
+
         <Typography variant="body1" color="medium-gray" className="mb-lg max-w-md mx-auto">
-          We couldn't find the page you're looking for. It might have been removed, 
+          We couldn&apos;t find the page you&apos;re looking for. It might have been removed,
           renamed, or temporarily unavailable.
         </Typography>
-        
+
         <div className="space-y-md w-full max-w-md">
           <Link to="/">
             <Button variant="gradient" fullWidth>
               Go to Home Page
             </Button>
           </Link>
-          
+
           <Link to="/calendar">
             <Button variant="secondary" fullWidth>
               View Concert Calendar
             </Button>
           </Link>
-          
+
           <Link to="/search">
             <Button variant="secondary" fullWidth>
               Search for Concerts
             </Button>
           </Link>
-          
-          <Button 
-            variant="ghost" 
-            fullWidth
-            onClick={() => window.history.back()}
-          >
+
+          <Button variant="ghost" fullWidth onClick={() => window.history.back()}>
             Go Back
           </Button>
         </div>

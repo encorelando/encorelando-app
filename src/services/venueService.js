@@ -13,41 +13,40 @@ const venueService = {
    * @param {number} options.offset - Offset for pagination (default: 0)
    * @returns {Promise<Object>} Object with venues array and pagination info
    */
-  async getVenues({
-    parkId,
-    limit = 20,
-    offset = 0
-  } = {}) {
+  async getVenues({ parkId, limit = 20, offset = 0 } = {}) {
     let query = supabase
       .from('venues')
-      .select(`
+      .select(
+        `
         id,
         name,
         image_url,
         parks:park_id (id, name)
-      `, { count: 'exact' })
+      `,
+        { count: 'exact' }
+      )
       .order('name')
       .range(offset, offset + limit - 1);
-    
+
     // Apply park filter if provided
     if (parkId) {
       query = query.eq('park_id', parkId);
     }
-    
+
     const { data, error, count } = await query;
-    
+
     if (error) {
       console.error('Error fetching venues:', error);
       throw error;
     }
-    
+
     return {
       data,
       pagination: {
         total: count,
         limit,
-        offset
-      }
+        offset,
+      },
     };
   },
 
@@ -60,7 +59,8 @@ const venueService = {
     // First get the venue details
     const { data: venue, error: venueError } = await supabase
       .from('venues')
-      .select(`
+      .select(
+        `
         id,
         name,
         description,
@@ -72,42 +72,45 @@ const venueService = {
           id,
           name
         )
-      `)
+      `
+      )
       .eq('id', id)
       .single();
-    
+
     if (venueError) {
       console.error(`Error fetching venue with ID ${id}:`, venueError);
       throw venueError;
     }
-    
+
     // Then get upcoming performances at this venue
     const { data: performances, error: performancesError } = await supabase
       .from('concerts')
-      .select(`
+      .select(
+        `
         id,
         start_time,
         end_time,
         artists:artist_id (id, name),
         festivals:festival_id (id, name)
-      `)
+      `
+      )
       .eq('venue_id', id)
       .gte('start_time', new Date().toISOString())
       .order('start_time');
-    
+
     if (performancesError) {
       console.error(`Error fetching performances for venue ${id}:`, performancesError);
       // Don't throw here, we still want to return the venue data
       return {
         ...venue,
-        upcoming_performances: []
+        upcoming_performances: [],
       };
     }
-    
+
     // Combine the results
     return {
       ...venue,
-      upcoming_performances: performances || []
+      upcoming_performances: performances || [],
     };
   },
 
@@ -119,21 +122,23 @@ const venueService = {
   async getVenuesByPark(parkId) {
     const { data, error } = await supabase
       .from('venues')
-      .select(`
+      .select(
+        `
         id,
         name,
         description,
         location_details,
         image_url
-      `)
+      `
+      )
       .eq('park_id', parkId)
       .order('name');
-    
+
     if (error) {
       console.error(`Error fetching venues for park ${parkId}:`, error);
       throw error;
     }
-    
+
     return data;
   },
 
@@ -146,26 +151,26 @@ const venueService = {
   async getVenuesWithUpcomingConcerts({ limit = 20 } = {}) {
     const { data, error } = await supabase
       .from('venues')
-      .select(`
+      .select(
+        `
         id,
         name,
         image_url,
         parks:park_id (id, name)
-      `)
-      .in('id', 
-        supabase
-          .from('concerts')
-          .select('venue_id')
-          .gte('start_time', new Date().toISOString())
+      `
+      )
+      .in(
+        'id',
+        supabase.from('concerts').select('venue_id').gte('start_time', new Date().toISOString())
       )
       .order('name')
       .limit(limit);
-    
+
     if (error) {
       console.error('Error fetching venues with upcoming concerts:', error);
       throw error;
     }
-    
+
     return data;
   },
 
@@ -178,26 +183,28 @@ const venueService = {
     if (!query || query.trim() === '') {
       return { data: [] };
     }
-    
+
     const { data, error } = await supabase
       .from('venues')
-      .select(`
+      .select(
+        `
         id,
         name,
         image_url,
         parks:park_id (id, name)
-      `)
+      `
+      )
       .ilike('name', `%${query}%`)
       .order('name')
       .limit(20);
-    
+
     if (error) {
       console.error(`Error searching venues with query "${query}":`, error);
       throw error;
     }
-    
+
     return { data };
-  }
+  },
 };
 
 export default venueService;

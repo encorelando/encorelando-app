@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import ExpandableSection from '../molecules/ExpandableSection';
 import FilterChip from '../molecules/FilterChip';
@@ -21,7 +20,7 @@ const FilterAccordion = ({
   darkMode = false,
 }) => {
   // Handle chip selection
-  const handleChipClick = (value) => {
+  const handleChipClick = value => {
     if (multiSelect) {
       // For multi-select, toggle the value
       const newValues = selectedValues.includes(value)
@@ -48,7 +47,7 @@ const FilterAccordion = ({
         </Typography>
       ) : (
         <div className="flex flex-wrap gap-sm">
-          {options.map((option) => (
+          {options.map(option => (
             <FilterChip
               key={option.value}
               label={option.label}

@@ -58,7 +58,10 @@ describe('searchService', () => {
 
     it('should combine entity results from multiple services', async () => {
       // Mock service responses with different counts to show combined results
-      const mockConcerts = [{ id: 'c1', name: 'Test Concert 1' }, { id: 'c2', name: 'Test Concert 2' }];
+      const mockConcerts = [
+        { id: 'c1', name: 'Test Concert 1' },
+        { id: 'c2', name: 'Test Concert 2' },
+      ];
       const mockArtists = [{ id: 'a1', name: 'Test Artist' }];
       const mockVenues = []; // Empty results for venues
       const mockParks = [{ id: 'p1', name: 'Test Park' }];
@@ -89,11 +92,13 @@ describe('searchService', () => {
       const mockArtists = [{ id: 'a1', name: 'Test Artist' }];
       concertService.searchConcerts = jest.fn().mockResolvedValue(mockConcerts);
       artistService.searchArtists = jest.fn().mockResolvedValue(mockArtists);
-      
+
       // Mock errors for other services
       venueService.searchVenues = jest.fn().mockRejectedValue(new Error('Venue search failed'));
       parkService.searchParks = jest.fn().mockRejectedValue(new Error('Park search failed'));
-      festivalService.searchFestivals = jest.fn().mockRejectedValue(new Error('Festival search failed'));
+      festivalService.searchFestivals = jest
+        .fn()
+        .mockRejectedValue(new Error('Festival search failed'));
 
       // Call the service function
       const query = 'test';
@@ -102,7 +107,7 @@ describe('searchService', () => {
       // Verify successful results are returned
       expect(result.concerts).toEqual(mockConcerts);
       expect(result.artists).toEqual(mockArtists);
-      
+
       // Verify failed services return empty arrays
       expect(result.venues).toEqual([]);
       expect(result.parks).toEqual([]);
@@ -114,14 +119,14 @@ describe('searchService', () => {
     it('should search concerts and include related entities', async () => {
       // Mock service response
       const mockConcerts = [
-        { 
-          id: 'c1', 
-          start_time: '2025-05-01T20:00:00Z', 
+        {
+          id: 'c1',
+          start_time: '2025-05-01T20:00:00Z',
           artists: { name: 'Test Artist' },
-          venues: { name: 'Test Venue' }
-        }
+          venues: { name: 'Test Venue' },
+        },
       ];
-      
+
       // Setup service mock
       concertService.searchConcerts = jest.fn().mockResolvedValue(mockConcerts);
 
@@ -143,9 +148,11 @@ describe('searchService', () => {
 
       // Call the service function
       const query = 'test';
-      
+
       // Verify error is thrown with appropriate message
-      await expect(searchService.searchConcerts(query)).rejects.toThrow('Error in searchConcerts: Search failed');
+      await expect(searchService.searchConcerts(query)).rejects.toThrow(
+        'Error in searchConcerts: Search failed'
+      );
     });
   });
 
@@ -153,7 +160,7 @@ describe('searchService', () => {
     it('should search artists with the specified limit', async () => {
       // Mock service response
       const mockArtists = [{ id: 'a1', name: 'Test Artist' }];
-      
+
       // Setup service mock
       artistService.searchArtists = jest.fn().mockResolvedValue(mockArtists);
 
@@ -175,9 +182,11 @@ describe('searchService', () => {
 
       // Call the service function
       const query = 'test';
-      
+
       // Verify error is thrown with appropriate message
-      await expect(searchService.searchArtists(query)).rejects.toThrow('Error in searchArtists: Artist search failed');
+      await expect(searchService.searchArtists(query)).rejects.toThrow(
+        'Error in searchArtists: Artist search failed'
+      );
     });
   });
 
@@ -185,7 +194,7 @@ describe('searchService', () => {
     it('should search venues with the specified limit', async () => {
       // Mock service response
       const mockVenues = [{ id: 'v1', name: 'Test Venue' }];
-      
+
       // Setup service mock
       venueService.searchVenues = jest.fn().mockResolvedValue(mockVenues);
 
@@ -207,9 +216,11 @@ describe('searchService', () => {
 
       // Call the service function
       const query = 'test';
-      
+
       // Verify error is thrown with appropriate message
-      await expect(searchService.searchVenues(query)).rejects.toThrow('Error in searchVenues: Venue search failed');
+      await expect(searchService.searchVenues(query)).rejects.toThrow(
+        'Error in searchVenues: Venue search failed'
+      );
     });
   });
 
@@ -217,7 +228,7 @@ describe('searchService', () => {
     it('should search parks with the specified limit', async () => {
       // Mock service response
       const mockParks = [{ id: 'p1', name: 'Test Park' }];
-      
+
       // Setup service mock
       parkService.searchParks = jest.fn().mockResolvedValue(mockParks);
 
@@ -239,9 +250,11 @@ describe('searchService', () => {
 
       // Call the service function
       const query = 'test';
-      
+
       // Verify error is thrown with appropriate message
-      await expect(searchService.searchParks(query)).rejects.toThrow('Error in searchParks: Park search failed');
+      await expect(searchService.searchParks(query)).rejects.toThrow(
+        'Error in searchParks: Park search failed'
+      );
     });
   });
 
@@ -249,7 +262,7 @@ describe('searchService', () => {
     it('should search festivals with the specified limit', async () => {
       // Mock service response
       const mockFestivals = [{ id: 'f1', name: 'Test Festival' }];
-      
+
       // Setup service mock
       festivalService.searchFestivals = jest.fn().mockResolvedValue(mockFestivals);
 
@@ -267,13 +280,17 @@ describe('searchService', () => {
 
     it('should handle errors gracefully', async () => {
       // Mock error response
-      festivalService.searchFestivals = jest.fn().mockRejectedValue(new Error('Festival search failed'));
+      festivalService.searchFestivals = jest
+        .fn()
+        .mockRejectedValue(new Error('Festival search failed'));
 
       // Call the service function
       const query = 'test';
-      
+
       // Verify error is thrown with appropriate message
-      await expect(searchService.searchFestivals(query)).rejects.toThrow('Error in searchFestivals: Festival search failed');
+      await expect(searchService.searchFestivals(query)).rejects.toThrow(
+        'Error in searchFestivals: Festival search failed'
+      );
     });
   });
 
@@ -282,9 +299,9 @@ describe('searchService', () => {
       // Mock service response
       const mockConcerts = [
         { id: 'c1', start_time: '2025-05-01T20:00:00Z' },
-        { id: 'c2', start_time: '2025-05-01T18:00:00Z' }
+        { id: 'c2', start_time: '2025-05-01T18:00:00Z' },
       ];
-      
+
       // Setup service mock
       concertService.getConcertsByDate = jest.fn().mockResolvedValue(mockConcerts);
 
@@ -302,7 +319,7 @@ describe('searchService', () => {
     it('should apply park and festival filters when provided', async () => {
       // Mock service response
       const mockConcerts = [{ id: 'c1', start_time: '2025-05-01T20:00:00Z' }];
-      
+
       // Setup service mock
       concertService.getConcertsByDate = jest.fn().mockResolvedValue(mockConcerts);
 
@@ -317,13 +334,17 @@ describe('searchService', () => {
 
     it('should handle errors gracefully', async () => {
       // Mock error response
-      concertService.getConcertsByDate = jest.fn().mockRejectedValue(new Error('Date search failed'));
+      concertService.getConcertsByDate = jest
+        .fn()
+        .mockRejectedValue(new Error('Date search failed'));
 
       // Call the service function
       const date = '2025-05-01';
-      
+
       // Verify error is thrown with appropriate message
-      await expect(searchService.searchByDate(date)).rejects.toThrow('Error in searchByDate: Date search failed');
+      await expect(searchService.searchByDate(date)).rejects.toThrow(
+        'Error in searchByDate: Date search failed'
+      );
     });
   });
 
@@ -332,9 +353,9 @@ describe('searchService', () => {
       // Mock service response
       const mockConcerts = [
         { id: 'c1', start_time: '2025-05-01T20:00:00Z' },
-        { id: 'c2', start_time: '2025-05-02T19:00:00Z' }
+        { id: 'c2', start_time: '2025-05-02T19:00:00Z' },
       ];
-      
+
       // Setup service mock
       concertService.getUpcomingConcerts = jest.fn().mockResolvedValue(mockConcerts);
 
@@ -352,7 +373,7 @@ describe('searchService', () => {
     it('should apply park and festival filters when provided', async () => {
       // Mock service response
       const mockConcerts = [{ id: 'c1', start_time: '2025-05-01T20:00:00Z' }];
-      
+
       // Setup service mock
       concertService.getUpcomingConcerts = jest.fn().mockResolvedValue(mockConcerts);
 
@@ -366,12 +387,16 @@ describe('searchService', () => {
 
     it('should handle errors gracefully', async () => {
       // Mock error response
-      concertService.getUpcomingConcerts = jest.fn().mockRejectedValue(new Error('Upcoming search failed'));
+      concertService.getUpcomingConcerts = jest
+        .fn()
+        .mockRejectedValue(new Error('Upcoming search failed'));
 
       // Call the service function
-      
+
       // Verify error is thrown with appropriate message
-      await expect(searchService.searchUpcoming()).rejects.toThrow('Error in searchUpcoming: Upcoming search failed');
+      await expect(searchService.searchUpcoming()).rejects.toThrow(
+        'Error in searchUpcoming: Upcoming search failed'
+      );
     });
   });
 });

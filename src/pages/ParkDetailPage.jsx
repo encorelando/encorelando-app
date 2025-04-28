@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DetailPageLayout from '../components/templates/DetailPageLayout';
 import Typography from '../components/atoms/Typography';
@@ -23,13 +23,13 @@ const ParkDetailPage = () => {
   const [park, setPark] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Use custom hooks
   const { getParkById } = useParks();
   const { getVenuesByPark, venues } = useVenues();
   const { getConcertsByPark, concerts, loading: concertsLoading } = useConcerts();
   const { getFestivalsByPark, festivals } = useFestivals();
-  
+
   // Fetch park details
   useEffect(() => {
     const fetchParkDetails = async () => {
@@ -37,12 +37,12 @@ const ParkDetailPage = () => {
         setLoading(true);
         const parkData = await getParkById(id);
         setPark(parkData);
-        
+
         // Fetch related data
         await Promise.all([
           getVenuesByPark(id),
           getConcertsByPark(id, { limit: 10 }),
-          getFestivalsByPark(id)
+          getFestivalsByPark(id),
         ]);
       } catch (err) {
         console.error('Error fetching park details:', err);
@@ -51,10 +51,10 @@ const ParkDetailPage = () => {
         setLoading(false);
       }
     };
-    
+
     fetchParkDetails();
   }, [id, getParkById, getVenuesByPark, getConcertsByPark, getFestivalsByPark]);
-  
+
   // Show loading state
   if (loading) {
     return (
@@ -63,14 +63,11 @@ const ParkDetailPage = () => {
       </div>
     );
   }
-  
+
   // Show error state
   if (error || !park) {
     return (
-      <DetailPageLayout
-        title="Park Not Found"
-        imageUrl="/images/placeholder-park.jpg"
-      >
+      <DetailPageLayout title="Park Not Found" imageUrl="/images/placeholder-park.jpg">
         <Typography variant="body1" color="error">
           {error || 'Could not find the requested park.'}
         </Typography>
@@ -82,23 +79,20 @@ const ParkDetailPage = () => {
   }
 
   return (
-    <DetailPageLayout
-      title={park.name}
-      imageUrl={park.image_url || '/images/placeholder-park.jpg'}
-    >
+    <DetailPageLayout title={park.name} imageUrl={park.image_url || '/images/placeholder-park.jpg'}>
       {/* Park description */}
       {park.description && (
         <div className="mb-lg">
-          <Typography variant="body1">
-            {park.description}
-          </Typography>
+          <Typography variant="body1">{park.description}</Typography>
         </div>
       )}
-      
+
       {/* Active festivals section */}
       {festivals.length > 0 && (
         <div className="mb-xl">
-          <Typography variant="h3" className="mb-md">Current & Upcoming Festivals</Typography>
+          <Typography variant="h3" className="mb-md">
+            Current & Upcoming Festivals
+          </Typography>
           <HorizontalScroller>
             {festivals.map(festival => (
               <div key={festival.id} className="w-[300px]">
@@ -108,11 +102,13 @@ const ParkDetailPage = () => {
           </HorizontalScroller>
         </div>
       )}
-      
+
       {/* Venues section */}
       {venues.length > 0 && (
         <div className="mb-xl">
-          <Typography variant="h3" className="mb-md">Music Venues</Typography>
+          <Typography variant="h3" className="mb-md">
+            Music Venues
+          </Typography>
           <div className="space-y-md">
             {venues.map(venue => (
               <Link key={venue.id} to={`/venues/${venue.id}`}>
@@ -120,13 +116,13 @@ const ParkDetailPage = () => {
                   <Typography variant="h4" className="mb-xs">
                     {venue.name}
                   </Typography>
-                  
+
                   {venue.location_details && (
                     <Typography variant="body2" color="medium-gray">
                       {venue.location_details}
                     </Typography>
                   )}
-                  
+
                   <div className="absolute right-md top-1/2 transform -translate-y-1/2">
                     <Icon name="chevron-right" size="md" color="medium-gray" />
                   </div>
@@ -136,26 +132,28 @@ const ParkDetailPage = () => {
           </div>
         </div>
       )}
-      
+
       {/* Today's performances */}
       <div className="mb-xl">
-        <Typography variant="h3" className="mb-md">Today's Performances</Typography>
+        <Typography variant="h3" className="mb-md">
+          Today&apos;s Performances
+        </Typography>
         <PerformanceList
           performances={concerts}
           loading={concertsLoading}
           emptyMessage="No performances scheduled for today"
         />
-        
+
         <Link to={`/calendar`} className="block mt-md">
           <Button variant="outline" fullWidth>
             View Full Schedule
           </Button>
         </Link>
       </div>
-      
+
       {/* Website link */}
       {park.website_url && (
-        <Button 
+        <Button
           variant="outline"
           fullWidth
           className="mt-lg"

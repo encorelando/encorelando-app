@@ -16,20 +16,20 @@ describe('festivalService', () => {
     it('should fetch festivals with default parameters', async () => {
       // Mock the Supabase response
       const mockData = [
-        { 
-          id: 'f1', 
+        {
+          id: 'f1',
           name: 'Test Festival',
           start_date: '2025-05-01',
           end_date: '2025-05-03',
-          parks: { id: 'p1', name: 'Test Park' } 
+          parks: { id: 'p1', name: 'Test Park' },
         },
-        { 
-          id: 'f2', 
+        {
+          id: 'f2',
           name: 'Another Festival',
           start_date: '2025-06-01',
           end_date: '2025-06-05',
-          parks: { id: 'p2', name: 'Another Park' } 
-        }
+          parks: { id: 'p2', name: 'Another Park' },
+        },
       ];
       const mockResponse = {
         data: mockData,
@@ -252,7 +252,9 @@ describe('festivalService', () => {
 
       // Assert that service throws the error
       const festivalId = 'non-existent-id';
-      await expect(festivalService.getFestivalById(festivalId)).rejects.toThrow('Festival not found');
+      await expect(festivalService.getFestivalById(festivalId)).rejects.toThrow(
+        'Festival not found'
+      );
     });
   });
 
@@ -316,7 +318,9 @@ describe('festivalService', () => {
       });
 
       // Assert that service throws the error
-      await expect(festivalService.getCurrentFestivals()).rejects.toThrow('API error for current festivals');
+      await expect(festivalService.getCurrentFestivals()).rejects.toThrow(
+        'API error for current festivals'
+      );
     });
   });
 
@@ -408,7 +412,9 @@ describe('festivalService', () => {
       });
 
       // Assert that service throws the error
-      await expect(festivalService.getUpcomingFestivals()).rejects.toThrow('API error for upcoming festivals');
+      await expect(festivalService.getUpcomingFestivals()).rejects.toThrow(
+        'API error for upcoming festivals'
+      );
     });
   });
 
@@ -416,8 +422,20 @@ describe('festivalService', () => {
     it('should fetch festivals by park ID', async () => {
       // Mock the Supabase response
       const mockFestivals = [
-        { id: 'f1', name: 'Park Festival 1', park_id: 'p1', start_date: '2025-05-01', end_date: '2025-05-05' },
-        { id: 'f2', name: 'Park Festival 2', park_id: 'p1', start_date: '2025-06-01', end_date: '2025-06-05' },
+        {
+          id: 'f1',
+          name: 'Park Festival 1',
+          park_id: 'p1',
+          start_date: '2025-05-01',
+          end_date: '2025-05-05',
+        },
+        {
+          id: 'f2',
+          name: 'Park Festival 2',
+          park_id: 'p1',
+          start_date: '2025-06-01',
+          end_date: '2025-06-05',
+        },
       ];
       const mockResponse = {
         data: mockFestivals,
@@ -500,7 +518,9 @@ describe('festivalService', () => {
 
       // Assert that service throws the error
       const parkId = 'p1';
-      await expect(festivalService.getFestivalsByPark(parkId)).rejects.toThrow('API error for park festivals');
+      await expect(festivalService.getFestivalsByPark(parkId)).rejects.toThrow(
+        'API error for park festivals'
+      );
     });
   });
 
@@ -619,7 +639,9 @@ describe('festivalService', () => {
 
       // Assert that service throws the error
       const festivalId = 'f1';
-      await expect(festivalService.getFestivalConcerts(festivalId)).rejects.toThrow('API error for festival concerts');
+      await expect(festivalService.getFestivalConcerts(festivalId)).rejects.toThrow(
+        'API error for festival concerts'
+      );
     });
   });
 
@@ -685,7 +707,9 @@ describe('festivalService', () => {
 
       // Assert that service throws the error
       const query = 'test';
-      await expect(festivalService.searchFestivals(query)).rejects.toThrow('API error for festival search');
+      await expect(festivalService.searchFestivals(query)).rejects.toThrow(
+        'API error for festival search'
+      );
     });
   });
 });

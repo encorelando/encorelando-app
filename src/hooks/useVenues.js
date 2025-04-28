@@ -13,24 +13,24 @@ const useVenues = (initialFilters = {}) => {
   const [pagination, setPagination] = useState({
     total: 0,
     limit: 20,
-    offset: 0
+    offset: 0,
   });
   const [filters, setFilters] = useState(initialFilters);
-  
+
   /**
    * Fetch venues with current filters
    */
   const fetchVenues = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const { data, pagination: paginationData } = await venueService.getVenues({
         ...filters,
         limit: pagination.limit,
-        offset: pagination.offset
+        offset: pagination.offset,
       });
-      
+
       setVenues(data);
       setPagination(paginationData);
     } catch (err) {
@@ -40,57 +40,57 @@ const useVenues = (initialFilters = {}) => {
       setLoading(false);
     }
   }, [filters, pagination.limit, pagination.offset]);
-  
+
   // Fetch venues on mount and when filters change
   useEffect(() => {
     fetchVenues();
   }, [fetchVenues]);
-  
+
   /**
    * Update filters and reset pagination
    * @param {Object} newFilters - New filter values
    */
-  const updateFilters = useCallback((newFilters) => {
+  const updateFilters = useCallback(newFilters => {
     setFilters(prevFilters => ({
       ...prevFilters,
-      ...newFilters
+      ...newFilters,
     }));
-    
+
     // Reset to first page when filters change
     setPagination(prev => ({
       ...prev,
-      offset: 0
+      offset: 0,
     }));
   }, []);
-  
+
   /**
    * Load next page of results
    */
   const loadMore = useCallback(() => {
     if (loading || venues.length >= pagination.total) return;
-    
+
     setPagination(prev => ({
       ...prev,
-      offset: prev.offset + prev.limit
+      offset: prev.offset + prev.limit,
     }));
-  }, [loading, venues.length, pagination.total, pagination.limit]);
-  
+  }, [loading, venues.length, pagination.total]);
+
   /**
    * Refresh venue data
    */
   const refresh = useCallback(() => {
     fetchVenues();
   }, [fetchVenues]);
-  
+
   /**
    * Get a single venue by ID
    * @param {string} id - Venue UUID
    * @returns {Promise<Object>} - Venue data
    */
-  const getVenueById = useCallback(async (id) => {
+  const getVenueById = useCallback(async id => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await venueService.getVenueById(id);
       return data;
@@ -102,16 +102,16 @@ const useVenues = (initialFilters = {}) => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Get venues by park
    * @param {string} parkId - Park UUID
    * @returns {Promise<Array>} - Venue data
    */
-  const getVenuesByPark = useCallback(async (parkId) => {
+  const getVenuesByPark = useCallback(async parkId => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await venueService.getVenuesByPark(parkId);
       return data;
@@ -123,7 +123,7 @@ const useVenues = (initialFilters = {}) => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Get venues with upcoming concerts
    * @param {Object} options - Options
@@ -132,7 +132,7 @@ const useVenues = (initialFilters = {}) => {
   const getVenuesWithUpcomingConcerts = useCallback(async (options = {}) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await venueService.getVenuesWithUpcomingConcerts(options);
       return data;
@@ -144,16 +144,16 @@ const useVenues = (initialFilters = {}) => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Search venues by name
    * @param {string} query - Search term
    * @returns {Promise<Array>} - Venue data
    */
-  const searchVenues = useCallback(async (query) => {
+  const searchVenues = useCallback(async query => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const { data } = await venueService.searchVenues(query);
       return data;
@@ -165,7 +165,7 @@ const useVenues = (initialFilters = {}) => {
       setLoading(false);
     }
   }, []);
-  
+
   return {
     venues,
     loading,
@@ -178,7 +178,7 @@ const useVenues = (initialFilters = {}) => {
     getVenueById,
     getVenuesByPark,
     getVenuesWithUpcomingConcerts,
-    searchVenues
+    searchVenues,
   };
 };
 

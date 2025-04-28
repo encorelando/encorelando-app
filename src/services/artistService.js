@@ -24,12 +24,13 @@ const artistService = {
     limit = 20,
     offset = 0,
     sort = 'name',
-    order = 'asc'
+    order = 'asc',
   } = {}) {
     // Start building the query
     let query = supabase
       .from('artists')
-      .select(`
+      .select(
+        `
         id,
         name,
         image_url,
@@ -38,42 +39,40 @@ const artistService = {
       )
       .order(sort, { ascending: order === 'asc' })
       .range(offset, offset + limit - 1);
-    
+
     // Apply filters if provided
     if (name) {
       query = query.ilike('name', `%${name}%`);
     }
-    
+
     if (genre) {
       // Filter by array containing the genre
       query = query.contains('genres', [genre]);
     }
-    
+
     if (festivalId) {
-      // For festival filtering, we need a more complex query 
+      // For festival filtering, we need a more complex query
       // using concerts as a junction to find artists performing at the festival
-      query = query.in('id', 
-        supabase
-          .from('concerts')
-          .select('artist_id')
-          .eq('festival_id', festivalId)
+      query = query.in(
+        'id',
+        supabase.from('concerts').select('artist_id').eq('festival_id', festivalId)
       );
     }
-    
+
     const { data, error, count } = await query;
-    
+
     if (error) {
       console.error('Error fetching artists:', error);
       throw error;
     }
-    
+
     return {
       data,
       pagination: {
         total: count,
         limit,
-        offset
-      }
+        offset,
+      },
     };
   },
 
@@ -89,39 +88,41 @@ const artistService = {
       .select('*')
       .eq('id', id)
       .single();
-    
+
     if (artistError) {
       console.error(`Error fetching artist with ID ${id}:`, artistError);
       throw artistError;
     }
-    
+
     // Then get upcoming performances by this artist
     const { data: performances, error: performancesError } = await supabase
       .from('concerts')
-      .select(`
+      .select(
+        `
         id,
         start_time,
         end_time,
         venues:venue_id (id, name),
         festivals:festival_id (id, name)
-      `)
+      `
+      )
       .eq('artist_id', id)
       .gte('start_time', new Date().toISOString())
       .order('start_time');
-    
+
     if (performancesError) {
       console.error(`Error fetching performances for artist ${id}:`, performancesError);
       // Don't throw here, we still want to return the artist data
       return {
         ...artist,
-        upcoming_performances: []
+        upcoming_performances: [],
       };
     }
-    
+
     // Combine the results
     return {
       ...artist,
-      upcoming_performances: performances || []
+      upcoming_performances: performances || [],
     };
   },
 
@@ -134,24 +135,26 @@ const artistService = {
     if (!query || query.trim() === '') {
       return { data: [] };
     }
-    
+
     const { data, error } = await supabase
       .from('artists')
-      .select(`
+      .select(
+        `
         id,
         name,
         image_url,
         genres
-      `)
+      `
+      )
       .ilike('name', `%${query}%`)
       .order('name')
       .limit(20);
-    
+
     if (error) {
       console.error(`Error searching artists with query "${query}":`, error);
       throw error;
     }
-    
+
     return { data };
   },
 
@@ -164,25 +167,22 @@ const artistService = {
     // Get artists performing at this festival
     const { data, error } = await supabase
       .from('artists')
-      .select(`
+      .select(
+        `
         id,
         name,
         image_url,
         genres
-      `)
-      .in('id', 
-        supabase
-          .from('concerts')
-          .select('artist_id')
-          .eq('festival_id', festivalId)
+      `
       )
+      .in('id', supabase.from('concerts').select('artist_id').eq('festival_id', festivalId))
       .order('name');
-    
+
     if (error) {
       console.error(`Error fetching artists for festival ${festivalId}:`, error);
       throw error;
     }
-    
+
     return data;
   },
 
@@ -196,28 +196,28 @@ const artistService = {
     // This is a more complex query to get artists with upcoming performances
     const { data, error } = await supabase
       .from('artists')
-      .select(`
+      .select(
+        `
         id,
         name,
         image_url,
         genres
-      `)
-      .in('id', 
-        supabase
-          .from('concerts')
-          .select('artist_id')
-          .gte('start_time', new Date().toISOString())
+      `
+      )
+      .in(
+        'id',
+        supabase.from('concerts').select('artist_id').gte('start_time', new Date().toISOString())
       )
       .order('name')
       .limit(limit);
-    
+
     if (error) {
       console.error('Error fetching artists with upcoming concerts:', error);
       throw error;
     }
-    
+
     return data;
-  }
+  },
 };
 
 export default artistService;

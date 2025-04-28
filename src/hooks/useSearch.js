@@ -11,12 +11,12 @@ const useSearch = () => {
     concerts: [],
     venues: [],
     festivals: [],
-    parks: []
+    parks: [],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   /**
    * Perform a global search across all entities
    * @param {string} query - Search term
@@ -29,16 +29,16 @@ const useSearch = () => {
         concerts: [],
         venues: [],
         festivals: [],
-        parks: []
+        parks: [],
       });
       setSearchTerm('');
       return;
     }
-    
+
     setLoading(true);
     setError(null);
     setSearchTerm(query);
-    
+
     try {
       const data = await searchService.globalSearch(query, options);
       setResults(data);
@@ -49,7 +49,7 @@ const useSearch = () => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Search concerts with text search
    * @param {string} query - Search term
@@ -59,7 +59,7 @@ const useSearch = () => {
   const searchConcerts = useCallback(async (query, options = {}) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await searchService.searchConcerts(query, options);
       return data;
@@ -71,7 +71,7 @@ const useSearch = () => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Search for events on a specific date with optional text query
    * @param {string} date - ISO8601 date (YYYY-MM-DD)
@@ -82,7 +82,7 @@ const useSearch = () => {
   const searchByDateAndTerm = useCallback(async (date, query = '', options = {}) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await searchService.searchByDateAndTerm(date, query, options);
       return data;
@@ -94,7 +94,7 @@ const useSearch = () => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Search for upcoming events with filters
    * @param {Object} filters - Filter parameters
@@ -104,7 +104,7 @@ const useSearch = () => {
   const searchWithFilters = useCallback(async (filters = {}, options = {}) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await searchService.searchWithFilters(filters, options);
       return data;
@@ -116,7 +116,7 @@ const useSearch = () => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Reset search results
    */
@@ -126,48 +126,46 @@ const useSearch = () => {
       concerts: [],
       venues: [],
       festivals: [],
-      parks: []
+      parks: [],
     });
     setSearchTerm('');
     setError(null);
   }, []);
-  
+
   /**
    * Check if there are any results across all entity types
    */
   const hasResults = useCallback(() => {
-    return Object.values(results).some(entityResults => 
-      entityResults && entityResults.length > 0
-    );
+    return Object.values(results).some(entityResults => entityResults && entityResults.length > 0);
   }, [results]);
-  
+
   /**
    * Get total number of results across all entity types
    */
   const getTotalResultsCount = useCallback(() => {
     return Object.values(results).reduce(
-      (total, entityResults) => total + (entityResults ? entityResults.length : 0), 
+      (total, entityResults) => total + (entityResults ? entityResults.length : 0),
       0
     );
   }, [results]);
-  
+
   return {
     // State
     results,
     loading,
     error,
     searchTerm,
-    
+
     // Action methods
     globalSearch,
     searchConcerts,
     searchByDateAndTerm,
     searchWithFilters,
     clearSearch,
-    
+
     // Helper methods
     hasResults,
-    getTotalResultsCount
+    getTotalResultsCount,
   };
 };
 

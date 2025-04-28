@@ -12,19 +12,21 @@ const parkService = {
   async getParks() {
     const { data, error } = await supabase
       .from('parks')
-      .select(`
+      .select(
+        `
         id,
         name,
         description,
         image_url
-      `)
+      `
+      )
       .order('name');
-    
+
     if (error) {
       console.error('Error fetching parks:', error);
       throw error;
     }
-    
+
     return { data };
   },
 
@@ -37,7 +39,8 @@ const parkService = {
     // First get the park details
     const { data: park, error: parkError } = await supabase
       .from('parks')
-      .select(`
+      .select(
+        `
         id,
         name,
         description,
@@ -45,76 +48,83 @@ const parkService = {
         image_url,
         created_at,
         updated_at
-      `)
+      `
+      )
       .eq('id', id)
       .single();
-    
+
     if (parkError) {
       console.error(`Error fetching park with ID ${id}:`, parkError);
       throw parkError;
     }
-    
+
     // Get venues in this park
     const { data: venues, error: venuesError } = await supabase
       .from('venues')
-      .select(`
+      .select(
+        `
         id,
         name,
         image_url
-      `)
+      `
+      )
       .eq('park_id', id)
       .order('name');
-    
+
     if (venuesError) {
       console.error(`Error fetching venues for park ${id}:`, venuesError);
       // Continue with empty venues
     }
-    
+
     // Get current festivals in this park
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    
+
     const { data: currentFestivals, error: currentFestivalsError } = await supabase
       .from('festivals')
-      .select(`
+      .select(
+        `
         id,
         name,
         start_date,
         end_date
-      `)
+      `
+      )
       .eq('park_id', id)
       .lte('start_date', today)
       .gte('end_date', today)
       .order('start_date');
-    
+
     if (currentFestivalsError) {
       console.error(`Error fetching current festivals for park ${id}:`, currentFestivalsError);
       // Continue with empty current festivals
     }
-    
+
     // Get upcoming festivals in this park
     const { data: upcomingFestivals, error: upcomingFestivalsError } = await supabase
       .from('festivals')
-      .select(`
+      .select(
+        `
         id,
         name,
         start_date,
         end_date
-      `)
+      `
+      )
       .eq('park_id', id)
       .gt('start_date', today)
       .order('start_date');
-    
+
     if (upcomingFestivalsError) {
       console.error(`Error fetching upcoming festivals for park ${id}:`, upcomingFestivalsError);
       // Continue with empty upcoming festivals
     }
-    
+
     // Combine the results
     return {
       ...park,
       venues: venues || [],
       current_festivals: currentFestivals || [],
-      upcoming_festivals: upcomingFestivals || []
+      upcoming_festivals: upcomingFestivals || [],
     };
   },
 
@@ -125,29 +135,30 @@ const parkService = {
   async getParksWithUpcomingConcerts() {
     const { data, error } = await supabase
       .from('parks')
-      .select(`
+      .select(
+        `
         id,
         name,
         image_url
-      `)
-      .in('id', 
+      `
+      )
+      .in(
+        'id',
         supabase
           .from('venues')
           .select('park_id')
-          .in('id', 
-            supabase
-              .from('concerts')
-              .select('venue_id')
-              .gte('start_time', new Date().toISOString())
+          .in(
+            'id',
+            supabase.from('concerts').select('venue_id').gte('start_time', new Date().toISOString())
           )
       )
       .order('name');
-    
+
     if (error) {
       console.error('Error fetching parks with upcoming concerts:', error);
       throw error;
     }
-    
+
     return data;
   },
 
@@ -160,22 +171,24 @@ const parkService = {
     if (!query || query.trim() === '') {
       return { data: [] };
     }
-    
+
     const { data, error } = await supabase
       .from('parks')
-      .select(`
+      .select(
+        `
         id,
         name,
         image_url
-      `)
+      `
+      )
       .ilike('name', `%${query}%`)
       .order('name');
-    
+
     if (error) {
       console.error(`Error searching parks with query "${query}":`, error);
       throw error;
     }
-    
+
     return { data };
   },
 
@@ -189,31 +202,28 @@ const parkService = {
   async getUpcomingConcertsByPark(parkId, { limit = 20 } = {}) {
     const { data, error } = await supabase
       .from('concerts')
-      .select(`
+      .select(
+        `
         id,
         start_time,
         end_time,
         artists:artist_id (id, name),
         venues:venue_id (id, name),
         festivals:festival_id (id, name)
-      `)
-      .in('venue_id', 
-        supabase
-          .from('venues')
-          .select('id')
-          .eq('park_id', parkId)
+      `
       )
+      .in('venue_id', supabase.from('venues').select('id').eq('park_id', parkId))
       .gte('start_time', new Date().toISOString())
       .order('start_time')
       .limit(limit);
-    
+
     if (error) {
       console.error(`Error fetching upcoming concerts for park ${parkId}:`, error);
       throw error;
     }
-    
+
     return data;
-  }
+  },
 };
 
 export default parkService;

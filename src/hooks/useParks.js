@@ -9,14 +9,14 @@ const useParks = () => {
   const [parks, setParks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   /**
    * Fetch all parks
    */
   const fetchParks = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const { data } = await parkService.getParks();
       setParks(data);
@@ -27,28 +27,28 @@ const useParks = () => {
       setLoading(false);
     }
   }, []);
-  
+
   // Fetch parks on mount
   useEffect(() => {
     fetchParks();
   }, [fetchParks]);
-  
+
   /**
    * Refresh park data
    */
   const refresh = useCallback(() => {
     fetchParks();
   }, [fetchParks]);
-  
+
   /**
    * Get a single park by ID with venues and festivals
    * @param {string} id - Park UUID
    * @returns {Promise<Object>} - Park data
    */
-  const getParkById = useCallback(async (id) => {
+  const getParkById = useCallback(async id => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await parkService.getParkById(id);
       return data;
@@ -60,7 +60,7 @@ const useParks = () => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Get parks with upcoming concerts
    * @returns {Promise<Array>} - Park data
@@ -68,7 +68,7 @@ const useParks = () => {
   const getParksWithUpcomingConcerts = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await parkService.getParksWithUpcomingConcerts();
       return data;
@@ -80,16 +80,16 @@ const useParks = () => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Search parks by name
    * @param {string} query - Search term
    * @returns {Promise<Array>} - Park data
    */
-  const searchParks = useCallback(async (query) => {
+  const searchParks = useCallback(async query => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const { data } = await parkService.searchParks(query);
       return data;
@@ -101,7 +101,7 @@ const useParks = () => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Get upcoming concerts by park
    * @param {string} parkId - Park UUID
@@ -111,7 +111,7 @@ const useParks = () => {
   const getUpcomingConcertsByPark = useCallback(async (parkId, options = {}) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await parkService.getUpcomingConcertsByPark(parkId, options);
       return data;
@@ -123,7 +123,7 @@ const useParks = () => {
       setLoading(false);
     }
   }, []);
-  
+
   return {
     parks,
     loading,
@@ -132,7 +132,7 @@ const useParks = () => {
     getParkById,
     getParksWithUpcomingConcerts,
     searchParks,
-    getUpcomingConcertsByPark
+    getUpcomingConcertsByPark,
   };
 };
 

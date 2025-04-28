@@ -9,13 +9,7 @@ import Divider from '../atoms/Divider';
  * SearchFilters component for combining multiple filter accordions
  * Mobile-optimized with collapsible sections
  */
-const SearchFilters = ({
-  filters,
-  selectedFilters,
-  onFilterChange,
-  onReset,
-  className = '',
-}) => {
+const SearchFilters = ({ filters, selectedFilters, onFilterChange, onReset, className = '' }) => {
   // Check if any filters are selected
   const hasActiveFilters = Object.values(selectedFilters).some(
     values => Array.isArray(values) && values.length > 0
@@ -34,20 +28,16 @@ const SearchFilters = ({
       {/* Header */}
       <div className="flex items-center justify-between p-md">
         <Typography variant="h3">Filters</Typography>
-        
+
         {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onReset}
-          >
+          <Button variant="ghost" size="sm" onClick={onReset}>
             Reset All
           </Button>
         )}
       </div>
-      
+
       <Divider margin="none" />
-      
+
       {/* Filter sections */}
       {filters.map((filterGroup, index) => (
         <React.Fragment key={filterGroup.key}>
@@ -56,17 +46,17 @@ const SearchFilters = ({
             icon={filterGroup.icon}
             options={filterGroup.options}
             selectedValues={selectedFilters[filterGroup.key] || []}
-            onChange={(values) => handleFilterChange(filterGroup.key, values)}
+            onChange={values => handleFilterChange(filterGroup.key, values)}
             showCounts={filterGroup.showCounts !== false}
             initialExpanded={index === 0} // First filter expanded by default
             multiSelect={filterGroup.multiSelect !== false}
           />
-          
+
           {/* No divider after last item */}
           {index < filters.length - 1 && <Divider margin="none" />}
         </React.Fragment>
       ))}
-      
+
       {/* Apply filters button - mobile friendly footer */}
       <div className="sticky bottom-0 p-md bg-white border-t border-light-gray shadow-lg">
         <Button

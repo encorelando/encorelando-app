@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SearchPageLayout from '../components/templates/SearchPageLayout';
 import SearchFilters from '../components/organisms/SearchFilters';
@@ -20,9 +20,9 @@ const SearchPage = () => {
   // Get search query from URL
   const location = useLocation();
   const navigate = useNavigate();
-  const queryParams = new URLSearchParams(location.search);
+  const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const initialQuery = queryParams.get('q') || '';
-  
+
   // State for search and filters
   const [searchValue, setSearchValue] = useState(initialQuery);
   const [showFilters, setShowFilters] = useState(false);
@@ -31,47 +31,43 @@ const SearchPage = () => {
     parkIds: [],
     dates: [],
   });
-  
+
   // Fetch search results
-  const {
-    results,
-    loading,
-    error,
-    globalSearch,
-  } = useSearch();
-  
+  const { results, loading, error, globalSearch } = useSearch();
+
   // Update URL when search changes
   useEffect(() => {
     if (searchValue) {
       queryParams.set('q', searchValue);
       navigate({ search: queryParams.toString() }, { replace: true });
-      
+
       // Perform search with filters
       globalSearch(searchValue, {
-        entityTypes: selectedFilters.entityTypes.length > 0 
-          ? selectedFilters.entityTypes 
-          : ['concerts', 'artists', 'festivals', 'venues'],
+        entityTypes:
+          selectedFilters.entityTypes.length > 0
+            ? selectedFilters.entityTypes
+            : ['concerts', 'artists', 'festivals', 'venues'],
         parkIds: selectedFilters.parkIds,
         dates: selectedFilters.dates,
       });
     }
-  }, [searchValue, selectedFilters]);
-  
+  }, [globalSearch, navigate, queryParams, searchValue, selectedFilters]);
+
   // Handle search submission
-  const handleSearch = (value) => {
+  const handleSearch = value => {
     setSearchValue(value);
   };
-  
+
   // Toggle filters visibility
   const toggleFilters = () => {
     setShowFilters(prev => !prev);
   };
-  
+
   // Handle filter changes
-  const handleFilterChange = (newFilters) => {
+  const handleFilterChange = newFilters => {
     setSelectedFilters(newFilters);
   };
-  
+
   // Reset all filters
   const resetFilters = () => {
     setSelectedFilters({
@@ -80,7 +76,7 @@ const SearchPage = () => {
       dates: [],
     });
   };
-  
+
   // Filter configurations
   const filterGroups = [
     {
@@ -122,14 +118,14 @@ const SearchPage = () => {
       multiSelect: false,
     },
   ];
-  
+
   // Calculate total results count
-  const resultsCount = 
-    (results.concerts?.length || 0) + 
-    (results.artists?.length || 0) + 
-    (results.festivals?.length || 0) + 
+  const resultsCount =
+    (results.concerts?.length || 0) +
+    (results.artists?.length || 0) +
+    (results.festivals?.length || 0) +
     (results.venues?.length || 0);
-    
+
   // Display empty state with dark theme styling
   const renderEmptyState = () => (
     <div className="text-center py-xl">
@@ -164,11 +160,7 @@ const SearchPage = () => {
               />
             </div>
             <div className="p-md border-t border-white border-opacity-10">
-              <Button
-                variant="gradient"
-                fullWidth
-                onClick={toggleFilters}
-              >
+              <Button variant="gradient" fullWidth onClick={toggleFilters}>
                 Apply Filters
               </Button>
             </div>
@@ -191,7 +183,7 @@ const SearchPage = () => {
               <Spinner size="lg" color="sunset-orange" />
             </div>
           )}
-          
+
           {/* Error state with dark theme colors */}
           {error && !loading && (
             <div className="text-center py-lg">
@@ -204,12 +196,10 @@ const SearchPage = () => {
               </Typography>
             </div>
           )}
-          
+
           {/* Empty state */}
-          {!loading && !error && resultsCount === 0 && searchValue && (
-            renderEmptyState()
-          )}
-          
+          {!loading && !error && resultsCount === 0 && searchValue && renderEmptyState()}
+
           {/* Search prompt with dark theme colors */}
           {!loading && !error && !searchValue && (
             <div className="text-center py-xl">
@@ -222,7 +212,7 @@ const SearchPage = () => {
               </Typography>
             </div>
           )}
-          
+
           {/* Results */}
           {!loading && !error && searchValue && resultsCount > 0 && (
             <div className="space-y-xl">
@@ -242,18 +232,14 @@ const SearchPage = () => {
                       />
                     ))}
                     {results.concerts.length > 5 && (
-                      <Button 
-                        variant="secondary" 
-                        fullWidth
-                        className="mt-sm"
-                      >
+                      <Button variant="secondary" fullWidth className="mt-sm">
                         View All {results.concerts.length} Concerts
                       </Button>
                     )}
                   </div>
                 </div>
               )}
-              
+
               {/* Artists section with updated branding */}
               {results.artists && results.artists.length > 0 && (
                 <div>
@@ -262,25 +248,17 @@ const SearchPage = () => {
                   </BrandHeading>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-md">
                     {results.artists.slice(0, 6).map((artist, index) => (
-                      <ArtistCard
-                        key={artist.id}
-                        artist={artist}
-                        featured={index === 0}
-                      />
+                      <ArtistCard key={artist.id} artist={artist} featured={index === 0} />
                     ))}
                   </div>
                   {results.artists.length > 6 && (
-                    <Button 
-                      variant="secondary" 
-                      fullWidth
-                      className="mt-md"
-                    >
+                    <Button variant="secondary" fullWidth className="mt-md">
                       View All {results.artists.length} Artists
                     </Button>
                   )}
                 </div>
               )}
-              
+
               {/* Festivals section with updated branding */}
               {results.festivals && results.festivals.length > 0 && (
                 <div>
@@ -289,19 +267,11 @@ const SearchPage = () => {
                   </BrandHeading>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-md">
                     {results.festivals.slice(0, 4).map((festival, index) => (
-                      <FestivalCard
-                        key={festival.id}
-                        festival={festival}
-                        featured={index === 0}
-                      />
+                      <FestivalCard key={festival.id} festival={festival} featured={index === 0} />
                     ))}
                   </div>
                   {results.festivals.length > 4 && (
-                    <Button 
-                      variant="secondary" 
-                      fullWidth
-                      className="mt-md"
-                    >
+                    <Button variant="secondary" fullWidth className="mt-md">
                       View All {results.festivals.length} Festivals
                     </Button>
                   )}

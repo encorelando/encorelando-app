@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import Spinner from '../atoms/Spinner';
 import Icon from '../atoms/Icon';
@@ -18,46 +18,46 @@ const ImageThumbnail = ({
 }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  
+
   // Base container classes
   const containerBaseClasses = 'relative overflow-hidden bg-light-gray';
-  
+
   // Aspect ratio classes
   const aspectRatioClasses = {
-    'square': 'aspect-w-1 aspect-h-1',
+    square: 'aspect-w-1 aspect-h-1',
     '4:3': 'aspect-w-4 aspect-h-3',
     '16:9': 'aspect-w-16 aspect-h-9',
-    'portrait': 'aspect-w-3 aspect-h-4',
-    'custom': '', // No aspect ratio constraint
+    portrait: 'aspect-w-3 aspect-h-4',
+    custom: '', // No aspect ratio constraint
   };
-  
+
   // Rounded corner classes
   const roundedClasses = {
-    'none': 'rounded-none',
-    'sm': 'rounded-sm',
-    'md': 'rounded',
-    'lg': 'rounded-lg',
-    'full': 'rounded-full',
+    none: 'rounded-none',
+    sm: 'rounded-sm',
+    md: 'rounded',
+    lg: 'rounded-lg',
+    full: 'rounded-full',
   };
-  
+
   // Object fit classes
   const objectFitClasses = {
-    'cover': 'object-cover',
-    'contain': 'object-contain',
-    'fill': 'object-fill',
+    cover: 'object-cover',
+    contain: 'object-contain',
+    fill: 'object-fill',
   };
-  
+
   // Combined container classes
   const containerClasses = `${containerBaseClasses} ${aspectRatioClasses[aspectRatio]} ${roundedClasses[rounded]} ${className}`;
-  
+
   // Image classes
   const imageClasses = `w-full h-full ${objectFitClasses[objectFit]}`;
-  
+
   // Handle image load
   const handleLoad = () => {
     setLoading(false);
   };
-  
+
   // Handle image error
   const handleError = () => {
     setLoading(false);
@@ -72,14 +72,14 @@ const ImageThumbnail = ({
           <Spinner size="md" color="primary" />
         </div>
       )}
-      
+
       {/* Error fallback */}
       {error && (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-medium-gray">
           <Icon name={fallbackIcon} size="lg" />
         </div>
       )}
-      
+
       {/* Image */}
       {!error && (
         <img

@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import Typography from '../atoms/Typography';
 import Icon from '../atoms/Icon';
@@ -7,13 +6,7 @@ import Icon from '../atoms/Icon';
  * CardHeader component for consistent card header styling
  * Mobile-optimized with appropriate spacing
  */
-const CardHeader = ({
-  title,
-  subtitle,
-  icon,
-  action,
-  className = '',
-}) => {
+const CardHeader = ({ title, subtitle, icon, action, className = '' }) => {
   return (
     <div className={`flex items-center p-md ${className}`}>
       {/* Optional icon */}
@@ -22,7 +15,7 @@ const CardHeader = ({
           <Icon name={icon} size="md" color="primary" />
         </div>
       )}
-      
+
       {/* Title and subtitle */}
       <div className="flex-1 min-w-0">
         {title && (
@@ -30,24 +23,16 @@ const CardHeader = ({
             {title}
           </Typography>
         )}
-        
+
         {subtitle && (
-          <Typography 
-            variant="body2" 
-            color="medium-gray" 
-            className="truncate mt-xxs"
-          >
+          <Typography variant="body2" color="medium-gray" className="truncate mt-xxs">
             {subtitle}
           </Typography>
         )}
       </div>
-      
+
       {/* Optional action component (button, link, etc.) */}
-      {action && (
-        <div className="ml-sm">
-          {action}
-        </div>
-      )}
+      {action && <div className="ml-sm">{action}</div>}
     </div>
   );
 };

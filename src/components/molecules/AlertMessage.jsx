@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import Icon from '../atoms/Icon';
 import Typography from '../atoms/Typography';
@@ -19,7 +18,7 @@ const AlertMessage = ({
 }) => {
   // Base classes
   const baseClasses = 'flex items-start p-md rounded';
-  
+
   // Type-specific classes
   const typeClasses = {
     info: 'bg-info bg-opacity-10 border-l-4 border-info',
@@ -27,7 +26,7 @@ const AlertMessage = ({
     warning: 'bg-warning bg-opacity-10 border-l-4 border-warning',
     error: 'bg-error bg-opacity-10 border-l-4 border-error',
   };
-  
+
   // Type-specific icons
   const typeIcons = {
     info: 'info',
@@ -35,7 +34,7 @@ const AlertMessage = ({
     warning: 'alert',
     error: 'alert',
   };
-  
+
   // Type-specific colors
   const typeColors = {
     info: 'info',
@@ -43,13 +42,13 @@ const AlertMessage = ({
     warning: 'warning',
     error: 'error',
   };
-  
+
   // Combined classes
   const combinedClasses = `${baseClasses} ${typeClasses[type]} ${className}`;
-  
+
   // Determine icon
   const iconName = icon || typeIcons[type];
-  
+
   // Determine color
   const color = typeColors[type];
 
@@ -59,26 +58,18 @@ const AlertMessage = ({
       <div className="flex-shrink-0 mr-sm">
         <Icon name={iconName} size="md" color={color} />
       </div>
-      
+
       {/* Content */}
       <div className="flex-1 min-w-0">
         {title && (
-          <Typography 
-            variant="h4" 
-            color={color} 
-            className="mb-xxs"
-          >
+          <Typography variant="h4" color={color} className="mb-xxs">
             {title}
           </Typography>
         )}
-        
-        {message && (
-          <Typography variant="body2">
-            {message}
-          </Typography>
-        )}
+
+        {message && <Typography variant="body2">{message}</Typography>}
       </div>
-      
+
       {/* Dismiss button */}
       {dismissible && onDismiss && (
         <div className="ml-sm mt-xxs">

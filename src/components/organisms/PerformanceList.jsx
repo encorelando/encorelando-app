@@ -1,10 +1,14 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import PerformanceCard from './PerformanceCard';
+import ArtistPerformanceCard from './ArtistPerformanceCard';
 import Spinner from '../atoms/Spinner';
 import Typography from '../atoms/Typography';
 import Icon from '../atoms/Icon';
-import { formatDate, getRelativeDate, groupPerformancesByDate } from '../../utils/dateUtils';
+import {
+  getRelativeDate,
+  groupPerformancesByDate,
+  groupArtistPerformancesByDateAndVenue,
+} from '../../utils/dateUtils';
 
 /**
  * PerformanceList component for displaying a list of performances
@@ -19,6 +23,7 @@ const PerformanceList = ({
   groupByDate = false,
   className = '',
   emptyMessage = 'No performances found',
+  useArtistCard = false,
 }) => {
   // Render loading spinner
   if (loading && !performances.length) {
@@ -36,9 +41,9 @@ const PerformanceList = ({
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-xl text-center">
-        <Icon name="alert" size="lg" color="error" />
-        <Typography variant="body1" color="error" className="mt-md">
-          {error}
+        <Icon name="alert" size="lg" className="text-sunset-orange" />
+        <Typography variant="body1" color="white" className="mt-md">
+          {typeof error === 'string' ? error : 'Error loading performances. Please try again.'}
         </Typography>
       </div>
     );
@@ -48,8 +53,8 @@ const PerformanceList = ({
   if (!performances.length) {
     return (
       <div className="flex flex-col items-center justify-center py-xl text-center">
-        <Icon name="info" size="lg" color="medium-gray" />
-        <Typography variant="body1" color="medium-gray" className="mt-md">
+        <Icon name="info" size="lg" className="text-white text-opacity-50" />
+        <Typography variant="body1" color="white" className="text-opacity-70 mt-md">
           {emptyMessage}
         </Typography>
       </div>
@@ -58,32 +63,39 @@ const PerformanceList = ({
 
   // If grouping by date
   if (groupByDate) {
-    const performancesByDate = groupPerformancesByDate(performances);
+    // Use different grouping logic based on whether we're on an artist page
+    const performancesByDate = useArtistCard
+      ? groupArtistPerformancesByDateAndVenue(performances)
+      : groupPerformancesByDate(performances);
+
     const sortedDates = Object.keys(performancesByDate).sort();
 
     return (
       <div className={className}>
         {sortedDates.map(dateStr => (
           <div key={dateStr} className="mb-lg">
-            {/* Date header */}
-            <div className="sticky top-0 z-10 bg-white border-b border-light-gray py-sm px-md shadow-sm mb-md">
-              <Typography variant="h3">
-                {getRelativeDate(dateStr)}
-              </Typography>
-              <Typography variant="body2" color="medium-gray">
-                {formatDate(dateStr)}
-              </Typography>
+            {/* Date header - show only one version of the date */}
+            <div className="sticky top-0 z-10 bg-background border-b border-deep-orchid border-opacity-30 py-sm px-md shadow-sm mb-md">
+              <Typography variant="h3">{getRelativeDate(dateStr)}</Typography>
             </div>
 
             {/* Performances for this date */}
             <div className="space-y-md">
-              {performancesByDate[dateStr].map(performance => (
-                <PerformanceCard
-                  key={performance.id}
-                  performance={performance}
-                  showDate={false}
-                />
-              ))}
+              {performancesByDate[dateStr].map(performance =>
+                useArtistCard ? (
+                  <ArtistPerformanceCard
+                    key={performance.id}
+                    performance={performance}
+                    showDate={false}
+                  />
+                ) : (
+                  <PerformanceCard
+                    key={performance.id}
+                    performance={performance}
+                    showDate={false}
+                  />
+                )
+              )}
             </div>
           </div>
         ))}
@@ -114,13 +126,13 @@ const PerformanceList = ({
   // Simple list without date grouping
   return (
     <div className={`space-y-md ${className}`}>
-      {performances.map(performance => (
-        <PerformanceCard
-          key={performance.id}
-          performance={performance}
-          showDate={true}
-        />
-      ))}
+      {performances.map(performance =>
+        useArtistCard ? (
+          <ArtistPerformanceCard key={performance.id} performance={performance} showDate={true} />
+        ) : (
+          <PerformanceCard key={performance.id} performance={performance} showDate={true} />
+        )
+      )}
 
       {/* Load more button */}
       {hasMore && (
@@ -148,9 +160,17 @@ const PerformanceList = ({
 // Define shape of performance object
 const performanceShape = PropTypes.shape({
   id: PropTypes.string.isRequired,
-  startTime: PropTypes.string.isRequired,
-  endTime: PropTypes.string,
+  // Support both camelCase and snake_case property names for time fields
+  startTime: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  start_time: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  endTime: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  end_time: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  // Support both camelCase and snake_case for entity fields
   artist: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+  }),
+  artists: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
   }),
@@ -158,7 +178,15 @@ const performanceShape = PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
   }),
+  venues: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+  }),
   festival: PropTypes.shape({
+    id: PropTypes.string,
+    name: PropTypes.string,
+  }),
+  festivals: PropTypes.shape({
     id: PropTypes.string,
     name: PropTypes.string,
   }),
@@ -173,6 +201,7 @@ PerformanceList.propTypes = {
   groupByDate: PropTypes.bool,
   className: PropTypes.string,
   emptyMessage: PropTypes.string,
+  useArtistCard: PropTypes.bool,
 };
 
 export default PerformanceList;

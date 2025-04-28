@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
@@ -26,17 +25,18 @@ const Input = ({
   autoComplete,
 }) => {
   // Base classes for all inputs with proper mobile touch sizing
-  const baseClasses = 'appearance-none min-h-touch px-md py-xs rounded border focus:outline-none focus:ring-2 focus:ring-primary-light transition-colors';
-  
+  const baseClasses =
+    'appearance-none min-h-touch px-md py-xs rounded border focus:outline-none focus:ring-2 focus:ring-primary-light transition-colors';
+
   // Error classes
   const errorClasses = error ? 'border-error' : 'border-light-gray focus:border-primary';
-  
+
   // Disabled classes
   const disabledClasses = disabled ? 'bg-light-gray opacity-50 cursor-not-allowed' : 'bg-white';
-  
+
   // Width classes
   const widthClasses = fullWidth ? 'w-full' : '';
-  
+
   // Combined classes
   const combinedClasses = `${baseClasses} ${errorClasses} ${disabledClasses} ${widthClasses} ${className}`;
 
@@ -65,8 +65,16 @@ const Input = ({
 
 Input.propTypes = {
   type: PropTypes.oneOf([
-    'text', 'email', 'password', 'number', 'tel', 'date', 
-    'time', 'url', 'search', 'datetime-local'
+    'text',
+    'email',
+    'password',
+    'number',
+    'tel',
+    'date',
+    'time',
+    'url',
+    'search',
+    'datetime-local',
   ]),
   id: PropTypes.string,
   name: PropTypes.string,

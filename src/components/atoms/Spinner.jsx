@@ -1,15 +1,10 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
  * Spinner component for loading states
  * Mobile-optimized with appropriate sizes
  */
-const Spinner = ({
-  size = 'md',
-  color = 'primary',
-  className = '',
-}) => {
+const Spinner = ({ size = 'md', color = 'primary', className = '' }) => {
   // Size classes in pixels
   const sizeMapping = {
     xs: 16,
@@ -18,7 +13,7 @@ const Spinner = ({
     lg: 48,
     xl: 64,
   };
-  
+
   // Color classes with new brand colors
   const colorClasses = {
     primary: 'text-primary',
@@ -30,10 +25,10 @@ const Spinner = ({
     'deep-orchid': 'text-deep-orchid',
     'neon-blue': 'text-neon-blue',
   };
-  
+
   // Calculate dimensions
   const dimensions = sizeMapping[size];
-  
+
   // Combined classes
   const combinedClasses = `animate-spin ${colorClasses[color]} ${className}`;
 
@@ -48,14 +43,7 @@ const Spinner = ({
       role="status"
       aria-label="Loading"
     >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path
         className="opacity-75"
         fill="currentColor"
@@ -68,8 +56,14 @@ const Spinner = ({
 Spinner.propTypes = {
   size: PropTypes.oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
   color: PropTypes.oneOf([
-    'primary', 'secondary', 'white', 'gray',
-    'sunset-orange', 'magenta-pink', 'deep-orchid', 'neon-blue'
+    'primary',
+    'secondary',
+    'white',
+    'gray',
+    'sunset-orange',
+    'magenta-pink',
+    'deep-orchid',
+    'neon-blue',
   ]),
   className: PropTypes.string,
 };

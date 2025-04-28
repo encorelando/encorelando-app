@@ -13,24 +13,24 @@ const useFestivals = (initialFilters = {}) => {
   const [pagination, setPagination] = useState({
     total: 0,
     limit: 20,
-    offset: 0
+    offset: 0,
   });
   const [filters, setFilters] = useState(initialFilters);
-  
+
   /**
    * Fetch festivals with current filters
    */
   const fetchFestivals = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const { data, pagination: paginationData } = await festivalService.getFestivals({
         ...filters,
         limit: pagination.limit,
-        offset: pagination.offset
+        offset: pagination.offset,
       });
-      
+
       setFestivals(data);
       setPagination(paginationData);
     } catch (err) {
@@ -40,48 +40,48 @@ const useFestivals = (initialFilters = {}) => {
       setLoading(false);
     }
   }, [filters, pagination.limit, pagination.offset]);
-  
+
   // Fetch festivals on mount and when filters change
   useEffect(() => {
     fetchFestivals();
   }, [fetchFestivals]);
-  
+
   /**
    * Update filters and reset pagination
    * @param {Object} newFilters - New filter values
    */
-  const updateFilters = useCallback((newFilters) => {
+  const updateFilters = useCallback(newFilters => {
     setFilters(prevFilters => ({
       ...prevFilters,
-      ...newFilters
+      ...newFilters,
     }));
-    
+
     // Reset to first page when filters change
     setPagination(prev => ({
       ...prev,
-      offset: 0
+      offset: 0,
     }));
   }, []);
-  
+
   /**
    * Load next page of results
    */
   const loadMore = useCallback(() => {
     if (loading || festivals.length >= pagination.total) return;
-    
+
     setPagination(prev => ({
       ...prev,
-      offset: prev.offset + prev.limit
+      offset: prev.offset + prev.limit,
     }));
-  }, [loading, festivals.length, pagination.total, pagination.limit]);
-  
+  }, [loading, festivals.length, pagination.total]);
+
   /**
    * Refresh festival data
    */
   const refresh = useCallback(() => {
     fetchFestivals();
   }, [fetchFestivals]);
-  
+
   /**
    * Get a single festival by ID
    * @param {string} id - Festival UUID
@@ -91,7 +91,7 @@ const useFestivals = (initialFilters = {}) => {
   const getFestivalById = useCallback(async (id, options = {}) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await festivalService.getFestivalById(id, options);
       return data;
@@ -103,7 +103,7 @@ const useFestivals = (initialFilters = {}) => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Get currently running festivals
    * @param {Object} options - Options
@@ -112,7 +112,7 @@ const useFestivals = (initialFilters = {}) => {
   const getCurrentFestivals = useCallback(async (options = {}) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await festivalService.getCurrentFestivals(options);
       return data;
@@ -124,7 +124,7 @@ const useFestivals = (initialFilters = {}) => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Get upcoming festivals
    * @param {Object} options - Options
@@ -133,7 +133,7 @@ const useFestivals = (initialFilters = {}) => {
   const getUpcomingFestivals = useCallback(async (options = {}) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const data = await festivalService.getUpcomingFestivals(options);
       return data;
@@ -145,16 +145,16 @@ const useFestivals = (initialFilters = {}) => {
       setLoading(false);
     }
   }, []);
-  
+
   /**
    * Search festivals by name
    * @param {string} query - Search term
    * @returns {Promise<Array>} - Festival data
    */
-  const searchFestivals = useCallback(async (query) => {
+  const searchFestivals = useCallback(async query => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const { data } = await festivalService.searchFestivals(query);
       return data;
@@ -166,7 +166,7 @@ const useFestivals = (initialFilters = {}) => {
       setLoading(false);
     }
   }, []);
-  
+
   return {
     festivals,
     loading,
@@ -179,7 +179,7 @@ const useFestivals = (initialFilters = {}) => {
     getFestivalById,
     getCurrentFestivals,
     getUpcomingFestivals,
-    searchFestivals
+    searchFestivals,
   };
 };
 

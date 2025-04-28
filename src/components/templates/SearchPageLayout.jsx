@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import PageLayout from './PageLayout';
 import SearchInput from '../molecules/SearchInput';
@@ -19,19 +19,19 @@ const SearchPageLayout = ({
   className = '',
 }) => {
   const [searchValue, setSearchValue] = useState(initialSearchValue);
-  
+
   // Handle search input changes
-  const handleSearchChange = (e) => {
+  const handleSearchChange = e => {
     setSearchValue(e.target.value);
   };
-  
+
   // Handle search submission
   const handleSearchSubmit = () => {
     if (onSearch) {
       onSearch(searchValue);
     }
   };
-  
+
   // Handle search clear
   const handleClear = () => {
     setSearchValue('');
@@ -56,7 +56,7 @@ const SearchPageLayout = ({
                 darkMode={true}
               />
             </div>
-            
+
             {/* Filter toggle button with updated styling */}
             {onFilterToggle && (
               <div className="ml-sm">
@@ -69,7 +69,7 @@ const SearchPageLayout = ({
               </div>
             )}
           </div>
-          
+
           {/* Results count with updated styling */}
           {resultsCount !== undefined && (
             <div className="mt-xs">
@@ -79,15 +79,13 @@ const SearchPageLayout = ({
             </div>
           )}
         </div>
-        
+
         {/* Gradient line at the bottom of the header */}
         <div className="h-[1px] bg-brand-gradient w-full"></div>
       </div>
-      
+
       {/* Page content with dark theme background */}
-      <div className="p-md bg-background text-white">
-        {children}
-      </div>
+      <div className="p-md bg-background text-white">{children}</div>
     </PageLayout>
   );
 };

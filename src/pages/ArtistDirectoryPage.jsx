@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import PageLayout from '../components/templates/PageLayout';
 import SearchInput from '../components/molecules/SearchInput';
 import ArtistCard from '../components/organisms/ArtistCard';
@@ -23,56 +23,49 @@ const ArtistDirectoryPage = () => {
   const [filters, setFilters] = useState({
     genres: [],
   });
-  
+
   // Fetch artists with search and filters
-  const {
-    artists,
-    loading,
-    error,
-    pagination,
-    updateFilters,
-    loadMore
-  } = useArtists({
+  const { artists, loading, error, pagination, loadMore } = useArtists({
     name: debouncedSearch,
     ...(filters.genres.length > 0 ? { genre: filters.genres } : {}),
   });
-  
+
   // Debounce search input to avoid excessive API calls
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchValue);
     }, 500);
-    
+
     return () => clearTimeout(timer);
   }, [searchValue]);
-  
+
   // Handle search input change
-  const handleSearchChange = (e) => {
+  const handleSearchChange = e => {
     setSearchValue(e.target.value);
   };
-  
+
   // Handle search clear
   const handleSearchClear = () => {
     setSearchValue('');
     setDebouncedSearch('');
   };
-  
+
   // Handle filter changes
   const handleFilterChange = (key, values) => {
     setFilters(prev => ({
       ...prev,
-      [key]: values
+      [key]: values,
     }));
   };
-  
+
   // Toggle filters visibility
   const toggleFilters = () => {
     setShowFilters(prev => !prev);
   };
-  
+
   // Determine if there are more artists to load
   const hasMore = artists.length < pagination.total;
-  
+
   // Sample genre options (in a real app, these would come from the API)
   const genreOptions = [
     { value: 'rock', label: 'Rock', count: 12 },
@@ -94,7 +87,7 @@ const ArtistDirectoryPage = () => {
               Artists
             </BrandHeading>
           </div>
-          
+
           <div className="flex items-center">
             <div className="flex-1">
               <SearchInput
@@ -105,7 +98,7 @@ const ArtistDirectoryPage = () => {
                 darkMode={true}
               />
             </div>
-            
+
             <div className="ml-sm">
               <IconButton
                 icon="filter"
@@ -117,7 +110,7 @@ const ArtistDirectoryPage = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Filters with dark theme (conditionally shown) */}
       {showFilters && (
         <div className="p-md bg-background border-b border-white border-opacity-10">
@@ -126,13 +119,13 @@ const ArtistDirectoryPage = () => {
             icon="music"
             options={genreOptions}
             selectedValues={filters.genres}
-            onChange={(values) => handleFilterChange('genres', values)}
+            onChange={values => handleFilterChange('genres', values)}
             initialExpanded={true}
             darkMode={true}
           />
         </div>
       )}
-      
+
       {/* Artists grid */}
       <div className="p-md bg-background">
         {/* Loading state with updated brand colors */}
@@ -141,7 +134,7 @@ const ArtistDirectoryPage = () => {
             <Spinner size="lg" color="sunset-orange" />
           </div>
         )}
-        
+
         {/* Error state */}
         {error && (
           <div className="text-center py-lg">
@@ -151,7 +144,7 @@ const ArtistDirectoryPage = () => {
             </Typography>
           </div>
         )}
-        
+
         {/* Empty state */}
         {!loading && !error && artists.length === 0 && (
           <div className="text-center py-lg">
@@ -161,27 +154,20 @@ const ArtistDirectoryPage = () => {
             </Typography>
           </div>
         )}
-        
+
         {/* Artists grid - mobile-optimized with proper spacing */}
         {artists.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-md">
             {artists.map(artist => (
-              <ArtistCard
-                key={artist.id}
-                artist={artist}
-              />
+              <ArtistCard key={artist.id} artist={artist} />
             ))}
           </div>
         )}
-        
+
         {/* Load more button with updated branding */}
         {hasMore && (
           <div className="flex justify-center mt-lg mb-md">
-            <Button
-              variant="secondary"
-              onClick={loadMore}
-              disabled={loading}
-            >
+            <Button variant="secondary" onClick={loadMore} disabled={loading}>
               {loading ? (
                 <>
                   <Spinner size="sm" color="white" className="mr-xs" />

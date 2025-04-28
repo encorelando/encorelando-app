@@ -17,7 +17,7 @@ describe('venueService', () => {
       // Mock the Supabase response
       const mockData = [
         { id: 'v1', name: 'Test Venue', parks: { id: 'p1', name: 'Test Park' } },
-        { id: 'v2', name: 'Another Venue', parks: { id: 'p2', name: 'Another Park' } }
+        { id: 'v2', name: 'Another Venue', parks: { id: 'p2', name: 'Another Park' } },
       ];
       const mockResponse = {
         data: mockData,
@@ -299,7 +299,9 @@ describe('venueService', () => {
 
       // Assert that service throws the error
       const parkId = 'p1';
-      await expect(venueService.getVenuesByPark(parkId)).rejects.toThrow('API error for park venues');
+      await expect(venueService.getVenuesByPark(parkId)).rejects.toThrow(
+        'API error for park venues'
+      );
     });
   });
 
@@ -389,7 +391,9 @@ describe('venueService', () => {
 
       // Assert that service throws the error
       const venueId = 'v1';
-      await expect(venueService.getVenueConcerts(venueId)).rejects.toThrow('API error for venue concerts');
+      await expect(venueService.getVenueConcerts(venueId)).rejects.toThrow(
+        'API error for venue concerts'
+      );
     });
   });
 

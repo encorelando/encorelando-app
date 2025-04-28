@@ -1,28 +1,22 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
  * BrandLogo component showcasing the updated EncoreLando branding
  * Supports different logo variants (white, black, gradient)
  */
-const BrandLogo = ({
-  variant = 'white',
-  size = 'md',
-  showTypography = false,
-  className = '',
-}) => {
+const BrandLogo = ({ variant = 'white', size = 'md', showTypography = false, className = '' }) => {
   // Determine logo path based on variant
-  const logoPath = `/logo/encorelando-logo-${variant}${getSizeSuffix(size)}.${variant === 'gradient' ? 'webp' : 'svg'}`;
-  
+  const logoPath = `/logo/encorelando-logo-${variant}${getSizeSuffix(size)}.webp`;
+
   // Determine logo size based on size prop
   const logoSizes = {
-    'xs': 'h-6 w-auto',
-    'sm': 'h-8 w-auto',
-    'md': 'h-10 w-auto',
-    'lg': 'h-12 w-auto',
-    'xl': 'h-16 w-auto',
+    xs: 'h-6 w-auto',
+    sm: 'h-8 w-auto',
+    md: 'h-10 w-auto',
+    lg: 'h-12 w-auto',
+    xl: 'h-16 w-auto',
   };
-  
+
   // Get appropriate size suffix for the logo file
   function getSizeSuffix(size) {
     if (size === 'xs') return '-32px';
@@ -36,12 +30,8 @@ const BrandLogo = ({
   return (
     <div className={`flex flex-col items-center ${className}`}>
       {/* Logo image */}
-      <img 
-        src={logoPath} 
-        alt="EncoreLando" 
-        className={`${logoSizes[size]}`}
-      />
-      
+      <img src={logoPath} alt="EncoreLando" className={`${logoSizes[size]}`} />
+
       {/* Optional typography split brand name */}
       {showTypography && (
         <div className="typography-split text-white mt-xs">

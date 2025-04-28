@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import Icon from '../atoms/Icon';
 
@@ -15,18 +14,17 @@ const FilterChip = ({
   className = '',
 }) => {
   // Base classes with min-height for touch targets
-  const baseClasses = 'inline-flex items-center justify-center rounded-full px-md py-xs min-h-touch transition-colors';
-  
+  const baseClasses =
+    'inline-flex items-center justify-center rounded-full px-md py-xs min-h-touch transition-colors';
+
   // Conditional classes based on state
   const stateClasses = selected
     ? 'bg-primary text-white'
     : 'bg-light-gray text-dark-gray hover:bg-primary-light hover:bg-opacity-20';
-  
+
   // Disabled classes
-  const disabledClasses = disabled 
-    ? 'opacity-50 cursor-not-allowed'
-    : 'cursor-pointer';
-  
+  const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
+
   // Combined classes
   const combinedClasses = `${baseClasses} ${stateClasses} ${disabledClasses} ${className}`;
 
@@ -39,24 +37,20 @@ const FilterChip = ({
       aria-pressed={selected}
     >
       <span className="text-sm font-medium">{label}</span>
-      
+
       {/* Count badge */}
       {count !== undefined && (
-        <span className={`ml-xs text-xs px-xs py-xxs rounded-full flex items-center justify-center ${
-          selected ? 'bg-white bg-opacity-20' : 'bg-medium-gray bg-opacity-20'
-        }`}>
+        <span
+          className={`ml-xs text-xs px-xs py-xxs rounded-full flex items-center justify-center ${
+            selected ? 'bg-white bg-opacity-20' : 'bg-medium-gray bg-opacity-20'
+          }`}
+        >
           {count}
         </span>
       )}
-      
+
       {/* Selected indicator */}
-      {selected && (
-        <Icon 
-          name="check" 
-          size="xs" 
-          className="ml-xs"
-        />
-      )}
+      {selected && <Icon name="check" size="xs" className="ml-xs" />}
     </button>
   );
 };
