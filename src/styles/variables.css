@@ -1,0 +1,78 @@
+/* EncoreLando Brand Variables */
+:root {
+  /* Brand colors - UPDATED for new branding */
+  --color-background: #0D0D0D;
+  --color-sunset-orange: #FF6A00;
+  --color-magenta-pink: #FF3CAC;
+  --color-deep-orchid: #7B2FF7;
+  --color-neon-blue: #00C3FF;
+  --color-white: #FFFFFF;
+  
+  /* Legacy colors maintained for backward compatibility */
+  --color-primary: #7E57C2;
+  --color-primary-dark: #4D2C91;
+  --color-primary-light: #B085F5;
+  --color-secondary: #26A69A;
+  --color-secondary-dark: #00766C;
+  --color-secondary-light: #64D8CB;
+  
+  /* Neutral colors */
+  --color-dark-gray: #333333;
+  --color-medium-gray: #757575;
+  --color-light-gray: #E0E0E0;
+  --color-off-white: #F5F5F5;
+  
+  /* Semantic colors */
+  --color-success: #66BB6A;
+  --color-error: #E53935;
+  --color-warning: #FFA726;
+  --color-info: #29B6F6;
+  
+  /* Typography */
+  --font-family-heading: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-family-body: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  
+  /* Brand gradient */
+  --brand-gradient: linear-gradient(90deg, #FF6A00 0%, #FF3CAC 35%, #7B2FF7 65%, #00C3FF 100%);
+  
+  /* Font sizes */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 28px;
+  --font-size-4xl: 32px;
+  
+  /* Spacing */
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+  
+  /* Borders */
+  --border-radius: 8px;
+  --border-radius-sm: 4px;
+  --border-radius-lg: 12px;
+  
+  /* Component-specific */
+  --touch-target-size: 48px;
+  --transition-duration: 200ms;
+}
+
+/* Media query adjustments for larger screens */
+@media (min-width: 768px) {
+  :root {
+    /* Tablet-specific adjustments if needed */
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    /* Desktop-specific adjustments if needed */
+  }
+}

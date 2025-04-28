@@ -4,17 +4,18 @@ import { Link } from 'react-router-dom';
 import Card from '../atoms/Card';
 import Typography from '../atoms/Typography';
 import ImageThumbnail from '../molecules/ImageThumbnail';
-import Tag from '../atoms/Tag';
+import Badge from '../atoms/Badge';
 import Icon from '../atoms/Icon';
 
 /**
- * ArtistCard component for displaying artist information
- * Mobile-optimized with appropriate sizing and touch targets
+ * ArtistCard component with the new EncoreLando branding
+ * Mobile-optimized with dark theme styling
  */
 const ArtistCard = ({
   artist,
   className = '',
   showUpcomingCount = true,
+  featured = false,
 }) => {
   const {
     id,
@@ -25,9 +26,10 @@ const ArtistCard = ({
   } = artist;
 
   return (
-    <Link to={`/artists/${id}`} className="block focus:outline-none focus:ring-2 focus:ring-primary rounded">
+    <Link to={`/artists/${id}`} className="block focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 rounded">
       <Card 
         variant="interactive" 
+        featured={featured}
         className={`w-full overflow-hidden ${className}`}
       >
         {/* Artist Image */}
@@ -40,19 +42,25 @@ const ArtistCard = ({
         
         {/* Content Area */}
         <div className="p-md">
-          {/* Artist Name */}
-          <Typography variant="h3" className="mb-xs">
+          {/* Artist Name with new brand styling */}
+          <Typography 
+            variant="h3" 
+            color={featured ? 'primary' : 'white'} 
+            gradient={featured}
+            className="mb-xs"
+          >
             {name}
           </Typography>
           
-          {/* Genres */}
+          {/* Genres with updated styling */}
           {genres && genres.length > 0 && (
             <div className="flex flex-wrap gap-xs mb-sm">
-              {genres.slice(0, 3).map((genre) => (
-                <Tag 
+              {genres.slice(0, 3).map((genre, index) => (
+                <Badge 
                   key={genre} 
                   text={genre} 
-                  color="secondary"
+                  variant={index === 0 ? 'primary' : (index === 1 ? 'secondary' : 'outline')}
+                  size="sm"
                 />
               ))}
               {genres.length > 3 && (
@@ -63,19 +71,19 @@ const ArtistCard = ({
             </div>
           )}
           
-          {/* Upcoming Performances Count */}
+          {/* Upcoming Performances Count with updated styling */}
           {showUpcomingCount && typeof upcoming_performances_count !== 'undefined' && (
-            <div className="flex items-center mt-xs text-primary">
-              <Icon name="calendar" size="sm" className="mr-xs" />
-              <Typography variant="body2">
+            <div className="flex items-center mt-xs">
+              <Icon name="calendar" size="sm" className="mr-xs text-sunset-orange" />
+              <Typography variant="body2" color="white">
                 {upcoming_performances_count} upcoming {upcoming_performances_count === 1 ? 'performance' : 'performances'}
               </Typography>
             </div>
           )}
         </div>
         
-        {/* Chevron for navigation */}
-        <div className="absolute right-md top-md text-white bg-primary bg-opacity-70 rounded-full p-xxs">
+        {/* Chevron for navigation - updated styling */}
+        <div className="absolute right-md top-md bg-sunset-orange text-white rounded-full p-xxs shadow-md">
           <Icon name="chevron-right" size="sm" />
         </div>
       </Card>
@@ -96,6 +104,7 @@ ArtistCard.propTypes = {
   artist: artistShape.isRequired,
   className: PropTypes.string,
   showUpcomingCount: PropTypes.bool,
+  featured: PropTypes.bool,
 };
 
 export default ArtistCard;

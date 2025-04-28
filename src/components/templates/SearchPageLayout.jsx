@@ -6,8 +6,8 @@ import IconButton from '../atoms/IconButton';
 import Typography from '../atoms/Typography';
 
 /**
- * SearchPageLayout component for search results pages
- * Mobile-optimized with fixed search header and filter accessibility
+ * SearchPageLayout component with the new EncoreLando branding
+ * Mobile-optimized with dark theme, fixed search header and filter accessibility
  */
 const SearchPageLayout = ({
   initialSearchValue = '',
@@ -42,8 +42,8 @@ const SearchPageLayout = ({
 
   return (
     <PageLayout className={className}>
-      {/* Fixed search header */}
-      <div className="sticky top-0 bg-white z-10 shadow-sm border-b border-light-gray">
+      {/* Fixed search header with dark theme */}
+      <div className="sticky top-0 bg-background z-10 shadow-md border-b border-white border-opacity-10">
         <div className="p-md">
           <div className="flex items-center">
             <div className="flex-1">
@@ -53,10 +53,11 @@ const SearchPageLayout = ({
                 onSubmit={handleSearchSubmit}
                 onClear={handleClear}
                 placeholder="Search concerts, artists, venues..."
+                darkMode={true}
               />
             </div>
             
-            {/* Filter toggle button */}
+            {/* Filter toggle button with updated styling */}
             {onFilterToggle && (
               <div className="ml-sm">
                 <IconButton
@@ -69,7 +70,7 @@ const SearchPageLayout = ({
             )}
           </div>
           
-          {/* Results count */}
+          {/* Results count with updated styling */}
           {resultsCount !== undefined && (
             <div className="mt-xs">
               <Typography variant="body2" color="medium-gray">
@@ -78,10 +79,13 @@ const SearchPageLayout = ({
             </div>
           )}
         </div>
+        
+        {/* Gradient line at the bottom of the header */}
+        <div className="h-[1px] bg-brand-gradient w-full"></div>
       </div>
       
-      {/* Page content */}
-      <div className="p-md">
+      {/* Page content with dark theme background */}
+      <div className="p-md bg-background text-white">
         {children}
       </div>
     </PageLayout>

@@ -1,12 +1,53 @@
+/* Import the updated brand fonts */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Poppins:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Updated default styles to match new branding */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Default to dark background per new branding */
+  background-color: #0D0D0D;
+  color: #FFFFFF;
+}
+
+/* Heading styles with Poppins font */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+}
+
+/* Special styling for the brand name to handle the split typography */
+.brand-name {
+  display: inline-flex;
+  align-items: center;
+}
+
+.brand-name .enc,
+.brand-name .e {
+  font-family: 'Poppins', sans-serif;
+}
+
+.brand-name .or,
+.brand-name .lando {
+  font-family: 'Manrope', sans-serif;
+}
+
+/* Utility classes for brand-specific styling */
+.bg-brand-dark {
+  background-color: #0D0D0D;
+}
+
+.brand-gradient-text {
+  background: linear-gradient(90deg, #FF6A00 0%, #FF3CAC 35%, #7B2FF7 65%, #00C3FF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

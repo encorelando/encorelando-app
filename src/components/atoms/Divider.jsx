@@ -2,13 +2,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
- * Divider component for separating content
- * Mobile-friendly spacing options
+ * Divider component using the new EncoreLando branding
+ * Mobile-friendly with support for brand gradient
  */
 const Divider = ({
   orientation = 'horizontal',
   margin = 'md',
-  color = 'light-gray',
+  color = 'white',
+  gradient = false,
   thickness = 1,
   className = '',
 }) => {
@@ -31,17 +32,21 @@ const Divider = ({
     xl: orientation === 'horizontal' ? 'my-xl' : 'mx-xl',
   };
   
-  // Color classes
+  // Color classes updated for dark theme
   const colorClasses = {
-    'primary': 'bg-primary',
-    'secondary': 'bg-secondary',
-    'light-gray': 'bg-light-gray',
-    'medium-gray': 'bg-medium-gray',
-    'dark-gray': 'bg-dark-gray',
+    'sunset-orange': 'bg-sunset-orange',
+    'magenta-pink': 'bg-magenta-pink',
+    'deep-orchid': 'bg-deep-orchid',
+    'neon-blue': 'bg-neon-blue',
+    'white': 'bg-white bg-opacity-20',
+    'medium-gray': 'bg-white bg-opacity-10',
   };
   
+  // Choose between gradient or solid color
+  const backgroundClass = gradient ? 'bg-brand-gradient' : colorClasses[color];
+  
   // Combined classes
-  const combinedClasses = `${baseClasses} ${orientationClasses[orientation]} ${marginClasses[margin]} ${colorClasses[color]} ${className}`;
+  const combinedClasses = `${baseClasses} ${orientationClasses[orientation]} ${marginClasses[margin]} ${backgroundClass} ${className}`;
   
   // Style based on orientation and thickness
   const style = orientation === 'horizontal' 
@@ -61,7 +66,8 @@ const Divider = ({
 Divider.propTypes = {
   orientation: PropTypes.oneOf(['horizontal', 'vertical']),
   margin: PropTypes.oneOf(['none', 'xs', 'sm', 'md', 'lg', 'xl']),
-  color: PropTypes.oneOf(['primary', 'secondary', 'light-gray', 'medium-gray', 'dark-gray']),
+  color: PropTypes.oneOf(['sunset-orange', 'magenta-pink', 'deep-orchid', 'neon-blue', 'white', 'medium-gray']),
+  gradient: PropTypes.bool,
   thickness: PropTypes.number,
   className: PropTypes.string,
 };

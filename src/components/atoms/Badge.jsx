@@ -2,38 +2,44 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
- * Badge component for displaying status indicators
- * Mobile-optimized for visibility on small screens
+ * Badge component implementing the new EncoreLando branding
+ * Mobile-optimized for visibility against dark backgrounds
  */
 const Badge = ({
   text,
   variant = 'primary',
   size = 'md',
+  gradient = false,
   className = '',
 }) => {
-  // Base classes
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-full';
+  // Base classes - updated to use Poppins font for consistency
+  const baseClasses = 'inline-flex items-center justify-center font-poppins font-medium rounded-full';
   
-  // Variant-specific classes
+  // Variant-specific classes updated for dark theme
   const variantClasses = {
-    primary: 'bg-primary text-white',
-    secondary: 'bg-secondary text-white',
+    primary: 'bg-sunset-orange text-white',
+    secondary: 'bg-magenta-pink text-white',
+    accent: 'bg-deep-orchid text-white',
+    accent2: 'bg-neon-blue text-black',
     success: 'bg-success text-white',
     error: 'bg-error text-white',
-    warning: 'bg-warning text-dark-gray',
+    warning: 'bg-warning text-black',
     info: 'bg-info text-white',
-    outline: 'bg-transparent border border-medium-gray text-dark-gray',
+    outline: 'bg-transparent border border-white text-white',
   };
   
-  // Size classes - making sure badges are visible on mobile screens
+  // Size classes - ensuring proper visibility on mobile screens
   const sizeClasses = {
     sm: 'text-xs px-xs py-xxs',
     md: 'text-sm px-sm py-xxs',
     lg: 'text-base px-md py-xs',
   };
   
+  // Apply gradient background if specified
+  const gradientClass = gradient ? 'bg-brand-gradient' : '';
+  
   // Combined classes
-  const combinedClasses = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+  const combinedClasses = `${baseClasses} ${gradient ? '' : variantClasses[variant]} ${sizeClasses[size]} ${gradientClass} ${className}`;
 
   return (
     <span className={combinedClasses}>
@@ -44,8 +50,9 @@ const Badge = ({
 
 Badge.propTypes = {
   text: PropTypes.string.isRequired,
-  variant: PropTypes.oneOf(['primary', 'secondary', 'success', 'error', 'warning', 'info', 'outline']),
+  variant: PropTypes.oneOf(['primary', 'secondary', 'accent', 'accent2', 'success', 'error', 'warning', 'info', 'outline']),
   size: PropTypes.oneOf(['sm', 'md', 'lg']),
+  gradient: PropTypes.bool,
   className: PropTypes.string,
 };
 

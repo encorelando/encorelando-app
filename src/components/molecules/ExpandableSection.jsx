@@ -4,8 +4,8 @@ import Typography from '../atoms/Typography';
 import Icon from '../atoms/Icon';
 
 /**
- * ExpandableSection component for collapsible content sections
- * Mobile-optimized with touch-friendly headers
+ * ExpandableSection component with the new EncoreLando branding
+ * Mobile-optimized with touch-friendly headers and dark theme support
  */
 const ExpandableSection = ({
   title,
@@ -14,6 +14,7 @@ const ExpandableSection = ({
   className = '',
   titleVariant = 'h4',
   icon,
+  darkMode = false,
 }) => {
   const [expanded, setExpanded] = useState(initialExpanded);
   

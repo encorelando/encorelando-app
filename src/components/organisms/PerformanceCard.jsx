@@ -8,12 +8,13 @@ import Badge from '../atoms/Badge';
 import { formatTime, formatDate } from '../../utils/dateUtils';
 
 /**
- * PerformanceCard component for displaying concert details
- * Mobile-optimized with touch-friendly design
+ * PerformanceCard component with the new EncoreLando branding
+ * Mobile-optimized with touch-friendly design on dark background
  */
 const PerformanceCard = ({ 
   performance,
   showDate = false,
+  featured = false,
   className = '',
 }) => {
   const { 
@@ -29,38 +30,39 @@ const PerformanceCard = ({
   const formattedTime = `${formatTime(startTime)}${endTime ? ` - ${formatTime(endTime)}` : ''}`;
 
   return (
-    <Link to={`/concerts/${id}`} className="block focus:outline-none focus:ring-2 focus:ring-primary rounded">
+    <Link to={`/concerts/${id}`} className="block focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 rounded">
       <Card 
         variant="interactive" 
+        featured={featured}
         className={`w-full p-md ${className}`}
       >
-        {/* Artist name */}
-        <Typography variant="h3" className="mb-xs text-primary">
+        {/* Artist name with new branding colors */}
+        <Typography variant="h3" color="primary" className="mb-xs">
           {artist?.name}
         </Typography>
         
         {/* Date - only shown if requested */}
         {showDate && (
-          <div className="flex items-center mb-xs text-medium-gray">
-            <Icon name="calendar" size="sm" className="mr-xs" />
-            <Typography variant="body2">
+          <div className="flex items-center mb-xs">
+            <Icon name="calendar" size="sm" className="mr-xs text-white text-opacity-70" />
+            <Typography variant="body2" color="medium-gray">
               {formatDate(startTime)}
             </Typography>
           </div>
         )}
         
         {/* Time */}
-        <div className="flex items-center mb-xs text-dark-gray">
-          <Icon name="clock" size="sm" className="mr-xs text-medium-gray" />
-          <Typography variant="body1">
+        <div className="flex items-center mb-xs">
+          <Icon name="clock" size="sm" className="mr-xs text-white text-opacity-70" />
+          <Typography variant="body1" color="white">
             {formattedTime}
           </Typography>
         </div>
         
         {/* Venue */}
-        <div className="flex items-center mb-sm text-dark-gray">
-          <Icon name="map-pin" size="sm" className="mr-xs text-medium-gray" />
-          <Typography variant="body1">
+        <div className="flex items-center mb-sm">
+          <Icon name="map-pin" size="sm" className="mr-xs text-white text-opacity-70" />
+          <Typography variant="body1" color="white">
             {venue?.name}
           </Typography>
         </div>
@@ -70,14 +72,15 @@ const PerformanceCard = ({
           <div className="mt-xs">
             <Badge 
               text={festival.name}
-              variant="primary"
+              variant={featured ? 'gradient' : 'primary'}
+              gradient={featured}
               className="mr-xs"
             />
           </div>
         )}
         
         {/* Chevron for indicating interaction */}
-        <div className="absolute right-md top-1/2 transform -translate-y-1/2 text-medium-gray">
+        <div className="absolute right-md top-1/2 transform -translate-y-1/2 text-white text-opacity-70">
           <Icon name="chevron-right" size="md" />
         </div>
       </Card>
@@ -107,6 +110,7 @@ const performanceShape = PropTypes.shape({
 PerformanceCard.propTypes = {
   performance: performanceShape.isRequired,
   showDate: PropTypes.bool,
+  featured: PropTypes.bool,
   className: PropTypes.string,
 };
 

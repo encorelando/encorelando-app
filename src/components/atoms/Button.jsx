@@ -2,8 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
- * Button component with mobile-first design
- * Follows atomic design principles as a core atom component
+ * Button component fully implementing the new EncoreLando branding
+ * Mobile-optimized with touch-friendly targets and consistent styling
+ * 
+ * This component is the main button component that follows the updated design guidelines.
+ * It supports various variants, sizes, and states to maintain consistency across the application.
  */
 const Button = ({
   children,
@@ -16,16 +19,21 @@ const Button = ({
   onClick,
   className = '',
 }) => {
-  // Base classes that ensure proper touch target size for mobile
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors min-h-touch';
+  // Base classes that ensure proper touch target size for mobile users
+  const baseClasses = 'inline-flex items-center justify-center font-poppins font-medium rounded focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-all min-h-touch';
   
-  // Variant-specific classes
+  // Variant-specific classes implementing new brand colors
   const variantClasses = {
-    primary: 'bg-primary text-white hover:bg-primary-dark focus:ring-primary-light',
-    secondary: 'bg-secondary text-white hover:bg-secondary-dark focus:ring-secondary-light',
-    outline: 'border border-primary text-primary hover:bg-primary hover:text-white focus:ring-primary-light',
-    ghost: 'text-primary hover:bg-primary-light hover:bg-opacity-10 focus:ring-primary-light',
-    danger: 'bg-error text-white hover:opacity-90 focus:ring-error',
+    // Primary uses Sunset Orange with hover to Magenta Pink
+    primary: 'bg-sunset-orange text-white hover:bg-magenta-pink',
+    // Secondary is transparent with white border for dark backgrounds
+    secondary: 'bg-transparent border border-white text-white hover:bg-white hover:bg-opacity-15',
+    // Gradient button for special emphasis using the brand gradient
+    gradient: 'bg-brand-gradient text-white hover:brightness-110',
+    // Ghost button for less emphasis, white text on transparent background
+    ghost: 'text-white hover:bg-white hover:bg-opacity-10',
+    // Danger button for destructive actions
+    danger: 'bg-error text-white hover:opacity-90',
   };
   
   // Size classes - ensuring at least 44px height/width for touch targets on mobile
@@ -59,7 +67,7 @@ const Button = ({
 
 Button.propTypes = {
   children: PropTypes.node.isRequired,
-  variant: PropTypes.oneOf(['primary', 'secondary', 'outline', 'ghost', 'danger']),
+  variant: PropTypes.oneOf(['primary', 'secondary', 'outline', 'ghost', 'danger', 'gradient']),
   size: PropTypes.oneOf(['sm', 'md', 'lg']),
   fullWidth: PropTypes.bool,
   disabled: PropTypes.bool,

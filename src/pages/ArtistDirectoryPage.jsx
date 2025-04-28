@@ -3,6 +3,7 @@ import PageLayout from '../components/templates/PageLayout';
 import SearchInput from '../components/molecules/SearchInput';
 import ArtistCard from '../components/organisms/ArtistCard';
 import Typography from '../components/atoms/Typography';
+import BrandHeading from '../components/atoms/BrandHeading';
 import Button from '../components/atoms/Button';
 import Spinner from '../components/atoms/Spinner';
 import Icon from '../components/atoms/Icon';
@@ -85,13 +86,13 @@ const ArtistDirectoryPage = () => {
 
   return (
     <PageLayout>
-      {/* Search header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-light-gray shadow-sm">
+      {/* Search header with dark theme */}
+      <div className="sticky top-0 z-10 bg-background border-b border-white border-opacity-10 shadow-sm">
         <div className="p-md">
           <div className="flex items-center">
-            <Typography variant="h2" className="mb-md">
+            <BrandHeading level={2} className="mb-md" gradient>
               Artists
-            </Typography>
+            </BrandHeading>
           </div>
           
           <div className="flex items-center">
@@ -101,6 +102,7 @@ const ArtistDirectoryPage = () => {
                 onChange={handleSearchChange}
                 onClear={handleSearchClear}
                 placeholder="Search artists..."
+                darkMode={true}
               />
             </div>
             
@@ -116,9 +118,9 @@ const ArtistDirectoryPage = () => {
         </div>
       </div>
       
-      {/* Filters (conditionally shown) */}
+      {/* Filters with dark theme (conditionally shown) */}
       {showFilters && (
-        <div className="p-md bg-white border-b border-light-gray">
+        <div className="p-md bg-background border-b border-white border-opacity-10">
           <FilterAccordion
             title="Genres"
             icon="music"
@@ -126,16 +128,17 @@ const ArtistDirectoryPage = () => {
             selectedValues={filters.genres}
             onChange={(values) => handleFilterChange('genres', values)}
             initialExpanded={true}
+            darkMode={true}
           />
         </div>
       )}
       
       {/* Artists grid */}
-      <div className="p-md">
-        {/* Loading state */}
+      <div className="p-md bg-background">
+        {/* Loading state with updated brand colors */}
         {loading && !artists.length && (
           <div className="flex justify-center items-center py-xl">
-            <Spinner size="lg" color="primary" />
+            <Spinner size="lg" color="sunset-orange" />
           </div>
         )}
         
@@ -152,7 +155,7 @@ const ArtistDirectoryPage = () => {
         {/* Empty state */}
         {!loading && !error && artists.length === 0 && (
           <div className="text-center py-lg">
-            <Icon name="info" size="lg" color="medium-gray" className="mb-md" />
+            <Icon name="info" size="lg" color="white" className="text-opacity-70 mb-md" />
             <Typography variant="body1" color="medium-gray">
               No artists found
             </Typography>
@@ -171,17 +174,17 @@ const ArtistDirectoryPage = () => {
           </div>
         )}
         
-        {/* Load more button */}
+        {/* Load more button with updated branding */}
         {hasMore && (
           <div className="flex justify-center mt-lg mb-md">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={loadMore}
               disabled={loading}
             >
               {loading ? (
                 <>
-                  <Spinner size="sm" color="primary" className="mr-xs" />
+                  <Spinner size="sm" color="white" className="mr-xs" />
                   Loading...
                 </>
               ) : (

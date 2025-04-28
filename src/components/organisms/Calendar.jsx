@@ -119,16 +119,18 @@ const Calendar = ({
         <IconButton 
           icon="chevron-left" 
           ariaLabel="Previous month"
+          variant="ghost"
           onClick={goToPreviousMonth}
         />
         
-        <Typography variant="h3">
+        <Typography variant="h3" color="white">
           {monthYearTitle}
         </Typography>
         
         <IconButton 
           icon="chevron-right" 
           ariaLabel="Next month"
+          variant="ghost"
           onClick={goToNextMonth}
         />
       </div>
@@ -136,8 +138,8 @@ const Calendar = ({
       {/* Day names row */}
       <div className="grid grid-cols-7 mb-sm">
         {weekDays.map(day => (
-          <div key={day} className="text-center">
-            <Typography variant="caption" color="medium-gray">
+          <div key={day} className="text-center p-xxs">
+            <Typography variant="caption" color="white" className="text-opacity-70">
               {day}
             </Typography>
           </div>
@@ -155,22 +157,24 @@ const Calendar = ({
           const isDateSelected = isSelected(date);
           
           // Determine day styling based on state
-          let dayClasses = "aspect-square flex flex-col items-center justify-center relative";
+          let dayClasses = "aspect-square flex flex-col items-center justify-center relative p-xxs";
           
-          // Base styling for the day
+          // Base styling for the day with dark theme colors
           if (!isCurrentMonth) {
-            dayClasses += " text-light-gray";
+            dayClasses += " text-white text-opacity-30";
           } else if (isPast) {
-            dayClasses += " text-medium-gray";
+            dayClasses += " text-white text-opacity-50";
+          } else {
+            dayClasses += " text-white";
           }
           
           // Selected day styling
           if (isDateSelected) {
-            dayClasses += " bg-primary text-white rounded-full";
+            dayClasses += " bg-sunset-orange text-white rounded-full";
           } 
           // Today styling (if not selected)
           else if (isToday) {
-            dayClasses += " border border-primary rounded-full";
+            dayClasses += " border border-sunset-orange rounded-full";
           }
           
           return (
@@ -185,13 +189,14 @@ const Calendar = ({
               <Typography 
                 variant="body2"
                 color={isDateSelected ? 'white' : undefined}
+                className="text-center w-full"
               >
                 {day}
               </Typography>
               
               {/* Event indicator dot */}
               {hasEvent && !isDateSelected && (
-                <div className="absolute bottom-1 w-1 h-1 rounded-full bg-primary" />
+                <div className="absolute bottom-1 w-1 h-1 rounded-full bg-magenta-pink" />
               )}
             </button>
           );

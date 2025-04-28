@@ -20,6 +20,9 @@ const FestivalDetailPage = lazy(() => import('./pages/FestivalDetailPage'));
 const VenueDetailPage = lazy(() => import('./pages/VenueDetailPage'));
 const ParkDetailPage = lazy(() => import('./pages/ParkDetailPage'));
 
+// Branding showcase page
+const BrandExamplePage = lazy(() => import('./pages/BrandExamplePage'));
+
 // Error and not found pages
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
@@ -46,6 +49,9 @@ const AppRoutes = () => {
         <Route path="/festivals/:id" element={<FestivalDetailPage />} />
         <Route path="/venues/:id" element={<VenueDetailPage />} />
         <Route path="/parks/:id" element={<ParkDetailPage />} />
+        
+        {/* Branding showcase */}
+        <Route path="/brand" element={<BrandExamplePage />} />
         
         {/* Redirect legacy routes */}
         <Route path="/events" element={<Navigate to="/calendar" replace />} />

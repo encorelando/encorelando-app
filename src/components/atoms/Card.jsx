@@ -2,30 +2,44 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
- * Card component for displaying content in a contained area
- * Mobile-first responsive design
+ * Card component implementing the new EncoreLando dark theme branding
+ * Mobile-optimized with appropriate styling for dark backgrounds
+ * 
+ * This component has been updated to match the BrandCard styling while
+ * maintaining all the previous functionality and variants.
  */
 const Card = ({
   children,
   variant = 'default',
   onClick,
+  featured = false,
   className = '',
 }) => {
-  // Base classes
-  const baseClasses = 'rounded shadow-card bg-white overflow-hidden';
+  // Base classes for all cards
+  const baseClasses = 'rounded overflow-hidden relative';
   
-  // Variant-specific classes
+  // Variant-specific classes using the new dark theme branding
   const variantClasses = {
-    default: '',
-    interactive: 'cursor-pointer transition-transform hover:shadow-lg',
-    outlined: 'border border-light-gray shadow-none',
-    elevated: 'shadow-lg',
+    // Standard card with semi-transparent white background
+    default: 'bg-white bg-opacity-10',
+    // Interactive card with hover effects
+    interactive: 'bg-white bg-opacity-10 cursor-pointer transition-all hover:bg-opacity-15 active:bg-opacity-20',
+    // Elevated card with slightly higher opacity
+    elevated: 'bg-white bg-opacity-15',
+    // Outlined card for subdued content
+    outlined: 'border border-white border-opacity-20 bg-background',
   };
   
-  // Combined classes
-  const combinedClasses = `${baseClasses} ${variantClasses[variant]} ${className}`;
+  // Featured cards get a gradient border using the brand gradient
+  const featuredClasses = featured ? 'p-[1px] bg-brand-gradient' : '';
   
-  // Interactive props
+  // Content wrapper classes
+  const contentClasses = 'p-md' + (featured ? ' bg-background rounded' : '');
+  
+  // Combined classes
+  const combinedClasses = `${baseClasses} ${variantClasses[variant]} ${featuredClasses} ${className}`;
+  
+  // Interactive props for clickable cards
   const interactiveProps = variant === 'interactive' ? {
     onClick,
     role: 'button',
@@ -43,7 +57,9 @@ const Card = ({
       className={combinedClasses}
       {...interactiveProps}
     >
-      {children}
+      <div className={contentClasses}>
+        {children}
+      </div>
     </div>
   );
 };
@@ -52,6 +68,7 @@ Card.propTypes = {
   children: PropTypes.node.isRequired,
   variant: PropTypes.oneOf(['default', 'interactive', 'outlined', 'elevated']),
   onClick: PropTypes.func,
+  featured: PropTypes.bool,
   className: PropTypes.string,
 };
 

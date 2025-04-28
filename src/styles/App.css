@@ -1,5 +1,68 @@
+/* Import variables */
+@import './variables.css';
+
 .App {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--color-background);
+  color: var(--color-white);
+}
+
+/* Brand typography classes */
+.typography-split .enc,
+.typography-split .e {
+  font-family: var(--font-family-heading);
+}
+
+.typography-split .or,
+.typography-split .lando {
+  font-family: var(--font-family-body);
+}
+
+/* Brand gradient elements */
+.brand-gradient-bg {
+  background: var(--brand-gradient);
+}
+
+.brand-gradient-text {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Brand-specific components - examples */
+.brand-card {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius);
+  padding: var(--space-md);
+  color: var(--color-white);
+}
+
+.brand-button {
+  background-color: var(--color-sunset-orange);
+  color: var(--color-white);
+  border-radius: var(--border-radius);
+  padding: var(--space-xs) var(--space-md);
+  font-family: var(--font-family-heading);
+  font-weight: 500;
+  min-height: var(--touch-target-size);
+  transition: background-color var(--transition-duration) ease;
+}
+
+.brand-button:hover {
+  background-color: var(--color-magenta-pink);
+}
+
+/* Utility classes */
+.bg-brand-dark {
+  background-color: var(--color-background);
+}
+
+.text-gradient {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

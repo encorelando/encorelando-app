@@ -2,22 +2,25 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import PageLayout from '../components/templates/PageLayout';
 import Typography from '../components/atoms/Typography';
+import BrandHeading from '../components/atoms/BrandHeading';
 import Button from '../components/atoms/Button';
 import Icon from '../components/atoms/Icon';
 
 /**
- * NotFoundPage component for 404 errors
- * Mobile-optimized with helpful navigation
+ * NotFoundPage component with the new EncoreLando branding
+ * Mobile-optimized with dark theme and helpful navigation
  */
 const NotFoundPage = () => {
   return (
-    <PageLayout showNavigation={false}>
-      <div className="flex flex-col items-center justify-center min-h-screen text-center px-md py-xl">
-        <Icon name="info" size="xl" color="primary" className="mb-md" />
+    <PageLayout showNavigation={false} className="bg-background">
+      <div className="flex flex-col items-center justify-center min-h-screen text-center px-md py-xl text-white">
+        {/* Updated icon with brand colors */}
+        <Icon name="info" size="xl" color="sunset-orange" className="mb-md" />
         
-        <Typography variant="h1" className="mb-sm">
+        {/* Updated typography to match branding */}
+        <BrandHeading level={1} gradient className="mb-sm">
           Page Not Found
-        </Typography>
+        </BrandHeading>
         
         <Typography variant="body1" color="medium-gray" className="mb-lg max-w-md mx-auto">
           We couldn't find the page you're looking for. It might have been removed, 
@@ -26,19 +29,19 @@ const NotFoundPage = () => {
         
         <div className="space-y-md w-full max-w-md">
           <Link to="/">
-            <Button variant="primary" fullWidth>
+            <Button variant="gradient" fullWidth>
               Go to Home Page
             </Button>
           </Link>
           
           <Link to="/calendar">
-            <Button variant="outline" fullWidth>
+            <Button variant="secondary" fullWidth>
               View Concert Calendar
             </Button>
           </Link>
           
           <Link to="/search">
-            <Button variant="outline" fullWidth>
+            <Button variant="secondary" fullWidth>
               Search for Concerts
             </Button>
           </Link>

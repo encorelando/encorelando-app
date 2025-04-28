@@ -19,12 +19,16 @@ const Spinner = ({
     xl: 64,
   };
   
-  // Color classes
+  // Color classes with new brand colors
   const colorClasses = {
     primary: 'text-primary',
     secondary: 'text-secondary',
     white: 'text-white',
     gray: 'text-medium-gray',
+    'sunset-orange': 'text-sunset-orange',
+    'magenta-pink': 'text-magenta-pink',
+    'deep-orchid': 'text-deep-orchid',
+    'neon-blue': 'text-neon-blue',
   };
   
   // Calculate dimensions
@@ -63,7 +67,10 @@ const Spinner = ({
 
 Spinner.propTypes = {
   size: PropTypes.oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
-  color: PropTypes.oneOf(['primary', 'secondary', 'white', 'gray']),
+  color: PropTypes.oneOf([
+    'primary', 'secondary', 'white', 'gray',
+    'sunset-orange', 'magenta-pink', 'deep-orchid', 'neon-blue'
+  ]),
   className: PropTypes.string,
 };
 

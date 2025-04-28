@@ -5,8 +5,8 @@ import FilterChip from '../molecules/FilterChip';
 import Typography from '../atoms/Typography';
 
 /**
- * FilterAccordion component for expandable filter sections
- * Mobile-optimized with touch-friendly targets
+ * FilterAccordion component with the new EncoreLando branding
+ * Mobile-optimized with touch-friendly targets and dark theme support
  */
 const FilterAccordion = ({
   title,
@@ -18,6 +18,7 @@ const FilterAccordion = ({
   initialExpanded = false,
   className = '',
   multiSelect = true,
+  darkMode = false,
 }) => {
   // Handle chip selection
   const handleChipClick = (value) => {
@@ -39,6 +40,7 @@ const FilterAccordion = ({
       icon={icon}
       initialExpanded={initialExpanded}
       className={className}
+      darkMode={darkMode}
     >
       {options.length === 0 ? (
         <Typography variant="body2" color="medium-gray">
@@ -54,6 +56,7 @@ const FilterAccordion = ({
               selected={selectedValues.includes(option.value)}
               onClick={() => handleChipClick(option.value)}
               disabled={option.disabled}
+              darkMode={darkMode}
             />
           ))}
         </div>
@@ -80,6 +83,7 @@ FilterAccordion.propTypes = {
   initialExpanded: PropTypes.bool,
   className: PropTypes.string,
   multiSelect: PropTypes.bool,
+  darkMode: PropTypes.bool,
 };
 
 export default FilterAccordion;

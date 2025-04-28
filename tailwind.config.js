@@ -6,12 +6,17 @@ module.exports = {
   ],
   theme: {
     colors: {
-      // Primary colors
+      // Brand colors - UPDATED for new branding
+      'background': '#0D0D0D', // New dark background
+      'sunset-orange': '#FF6A00', // New primary accent
+      'magenta-pink': '#FF3CAC', // New secondary accent
+      'deep-orchid': '#7B2FF7', // New accent
+      'neon-blue': '#00C3FF', // New accent
+      
+      // Legacy colors maintained for backward compatibility
       'primary': '#7E57C2',
       'primary-dark': '#4D2C91',
       'primary-light': '#B085F5',
-      
-      // Secondary colors
       'secondary': '#26A69A',
       'secondary-dark': '#00766C',
       'secondary-light': '#64D8CB',
@@ -34,7 +39,11 @@ module.exports = {
       'transparent': 'transparent',
     },
     fontFamily: {
-      sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+      // UPDATED font families
+      'poppins': ['Poppins', 'system-ui', 'sans-serif'],
+      'manrope': ['Manrope', 'system-ui', 'sans-serif'],
+      'sans': ['Manrope', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+      'heading': ['Poppins', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
     },
     fontSize: {
       'xs': '12px',    // caption
@@ -77,6 +86,10 @@ module.exports = {
         'mobile': 'repeat(4, minmax(0, 1fr))',
         'tablet': 'repeat(8, minmax(0, 1fr))',
         'desktop': 'repeat(12, minmax(0, 1fr))',
+      },
+      // Add gradient backgrounds
+      backgroundImage: {
+        'brand-gradient': 'linear-gradient(90deg, #FF6A00 0%, #FF3CAC 35%, #7B2FF7 65%, #00C3FF 100%)',
       },
     },
   },

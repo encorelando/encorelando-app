@@ -9,11 +9,12 @@ import Badge from '../atoms/Badge';
 import { formatDateRange } from '../../utils/dateUtils';
 
 /**
- * FestivalCard component for displaying festival information
- * Mobile-optimized with appropriate sizing and touch targets
+ * FestivalCard component with the new EncoreLando branding
+ * Mobile-optimized with dark theme styling
  */
 const FestivalCard = ({
   festival,
+  featured = false,
   className = '',
 }) => {
   const {
@@ -30,25 +31,26 @@ const FestivalCard = ({
   // Format date range for display
   const dateRange = formatDateRange(start_date, end_date);
   
-  // Determine status badge
+  // Determine status badge with updated styling
   const getStatusBadge = () => {
     const now = new Date();
     const startDate = new Date(start_date);
     const endDate = new Date(end_date);
     
     if (now >= startDate && now <= endDate) {
-      return <Badge text="Now On" variant="success" />;
+      return <Badge text="Now On" variant="accent" gradient={featured} />;
     } else if (now < startDate) {
-      return <Badge text="Upcoming" variant="info" />;
+      return <Badge text="Upcoming" variant="secondary" gradient={featured} />;
     } else {
       return <Badge text="Completed" variant="outline" />;
     }
   };
 
   return (
-    <Link to={`/festivals/${id}`} className="block focus:outline-none focus:ring-2 focus:ring-primary rounded">
+    <Link to={`/festivals/${id}`} className="block focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 rounded">
       <Card 
         variant="interactive" 
+        featured={featured}
         className={`w-full overflow-hidden ${className}`}
       >
         {/* Festival Image */}
@@ -68,34 +70,39 @@ const FestivalCard = ({
         
         {/* Content */}
         <div className="p-md">
-          {/* Festival Name */}
-          <Typography variant="h3" className="mb-xs">
+          {/* Festival Name with updated styling */}
+          <Typography 
+            variant="h3" 
+            color={featured ? 'primary' : 'white'} 
+            gradient={featured}
+            className="mb-xs"
+          >
             {name}
           </Typography>
           
-          {/* Date Range */}
-          <div className="flex items-center mb-xs text-dark-gray">
-            <Icon name="calendar" size="sm" className="mr-xs text-medium-gray" />
-            <Typography variant="body2">
+          {/* Date Range with updated styling for dark theme */}
+          <div className="flex items-center mb-xs">
+            <Icon name="calendar" size="sm" className="mr-xs text-white text-opacity-70" />
+            <Typography variant="body2" color="white">
               {dateRange}
             </Typography>
           </div>
           
-          {/* Park/Location */}
+          {/* Park/Location with updated styling for dark theme */}
           {park && (
-            <div className="flex items-center mb-sm text-dark-gray">
-              <Icon name="map-pin" size="sm" className="mr-xs text-medium-gray" />
-              <Typography variant="body2">
+            <div className="flex items-center mb-sm">
+              <Icon name="map-pin" size="sm" className="mr-xs text-white text-opacity-70" />
+              <Typography variant="body2" color="white">
                 {park.name}
               </Typography>
             </div>
           )}
           
-          {/* Performances Count */}
+          {/* Performances Count with updated styling for dark theme */}
           {typeof performances_count !== 'undefined' && (
-            <div className="flex items-center mt-xs text-primary">
-              <Icon name="music" size="sm" className="mr-xs" />
-              <Typography variant="body2">
+            <div className="flex items-center mt-xs">
+              <Icon name="music" size="sm" className="mr-xs text-sunset-orange" />
+              <Typography variant="body2" color="white">
                 {performances_count} {performances_count === 1 ? 'performance' : 'performances'}
               </Typography>
             </div>
@@ -123,6 +130,7 @@ const festivalShape = PropTypes.shape({
 
 FestivalCard.propTypes = {
   festival: festivalShape.isRequired,
+  featured: PropTypes.bool,
   className: PropTypes.string,
 };
 

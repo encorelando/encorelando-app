@@ -4,8 +4,8 @@ import Icon from '../atoms/Icon';
 import IconButton from '../atoms/IconButton';
 
 /**
- * Search input component for global search functionality
- * Mobile-optimized with proper touch targets
+ * Search input component with the new EncoreLando branding
+ * Mobile-optimized with proper touch targets and dark mode support
  */
 const SearchInput = ({
   value,
@@ -14,6 +14,7 @@ const SearchInput = ({
   onClear,
   placeholder = 'Search concerts, artists, venues...',
   disabled = false,
+  darkMode = false,
   className = '',
 }) => {
   // Handle form submission
@@ -33,23 +34,34 @@ const SearchInput = ({
       onSubmit={handleSubmit} 
       className={`relative w-full ${className}`}
     >
-      {/* Search icon */}
-      <div className="absolute inset-y-0 left-0 flex items-center pl-sm pointer-events-none">
-        <Icon name="search" size="md" color="medium-gray" />
+      {/* Search icon with dark mode support */}
+      <div className="absolute inset-y-0 left-0 flex items-center pl-md pointer-events-none">
+        <Icon 
+          name="search" 
+          size="md" 
+          color={darkMode ? "white" : "medium-gray"} 
+          className={darkMode ? "text-opacity-70" : ""}
+        />
       </div>
       
-      {/* Search input */}
+      {/* Search input with dark mode styling and increased padding */}
       <input
         type="search"
         value={value}
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
-        className="w-full min-h-touch bg-white rounded-lg border border-light-gray pl-xl pr-xl py-xs focus:outline-none focus:ring-2 focus:ring-primary-light focus:border-primary-light"
+        className={`
+          w-full min-h-touch rounded pl-2xl pr-xl py-xs focus:outline-none focus:ring-2 
+          ${darkMode 
+            ? 'bg-white bg-opacity-5 border border-white border-opacity-20 text-white placeholder-white placeholder-opacity-50 focus:ring-white focus:ring-opacity-30 focus:border-white' 
+            : 'bg-white border border-light-gray text-dark-gray focus:ring-sunset-orange focus:border-sunset-orange'
+          }
+        `}
         aria-label="Search"
       />
       
-      {/* Clear button - only shown when there's a value */}
+      {/* Clear button with dark mode support - only shown when there's a value */}
       {value && (
         <div className="absolute inset-y-0 right-0 flex items-center pr-xs">
           <IconButton
@@ -58,6 +70,7 @@ const SearchInput = ({
             variant="ghost"
             size="sm"
             onClick={handleClear}
+            className={darkMode ? "text-white text-opacity-70 hover:bg-white hover:bg-opacity-10" : ""}
           />
         </div>
       )}
@@ -72,6 +85,7 @@ SearchInput.propTypes = {
   onClear: PropTypes.func,
   placeholder: PropTypes.string,
   disabled: PropTypes.bool,
+  darkMode: PropTypes.bool,
   className: PropTypes.string,
 };
 

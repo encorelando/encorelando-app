@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import SearchPageLayout from '../components/templates/SearchPageLayout';
 import SearchFilters from '../components/organisms/SearchFilters';
 import Typography from '../components/atoms/Typography';
+import BrandHeading from '../components/atoms/BrandHeading';
 import PerformanceCard from '../components/organisms/PerformanceCard';
 import ArtistCard from '../components/organisms/ArtistCard';
 import FestivalCard from '../components/organisms/FestivalCard';
@@ -12,8 +13,8 @@ import Button from '../components/atoms/Button';
 import useSearch from '../hooks/useSearch';
 
 /**
- * SearchPage component for global search functionality
- * Mobile-optimized with comprehensive filtering
+ * SearchPage component with the new EncoreLando branding
+ * Mobile-optimized with dark theme and comprehensive filtering
  */
 const SearchPage = () => {
   // Get search query from URL
@@ -129,10 +130,10 @@ const SearchPage = () => {
     (results.festivals?.length || 0) + 
     (results.venues?.length || 0);
     
-  // Display empty state
+  // Display empty state with dark theme styling
   const renderEmptyState = () => (
     <div className="text-center py-xl">
-      <Icon name="search" size="lg" color="medium-gray" className="mb-md" />
+      <Icon name="search" size="lg" color="white" className="mb-md text-opacity-50" />
       <Typography variant="h4" color="medium-gray">
         No results found
       </Typography>
@@ -140,7 +141,7 @@ const SearchPage = () => {
         Try adjusting your search or filters
       </Typography>
       {Object.keys(selectedFilters).some(key => selectedFilters[key].length > 0) && (
-        <Button variant="ghost" className="mt-md" onClick={resetFilters}>
+        <Button variant="secondary" className="mt-md" onClick={resetFilters}>
           Clear All Filters
         </Button>
       )}
@@ -148,10 +149,10 @@ const SearchPage = () => {
   );
 
   return (
-    <div className="flex h-screen">
-      {/* Filters sidebar - conditionally shown */}
+    <div className="flex h-screen bg-background">
+      {/* Filters sidebar with dark theme - conditionally shown */}
       {showFilters && (
-        <div className="fixed inset-0 z-40 bg-white">
+        <div className="fixed inset-0 z-40 bg-background">
           <div className="h-full flex flex-col">
             <div className="flex-1 overflow-y-auto">
               <SearchFilters
@@ -159,11 +160,12 @@ const SearchPage = () => {
                 selectedFilters={selectedFilters}
                 onFilterChange={handleFilterChange}
                 onReset={resetFilters}
+                darkMode={true}
               />
             </div>
-            <div className="p-md border-t border-light-gray">
+            <div className="p-md border-t border-white border-opacity-10">
               <Button
-                variant="primary"
+                variant="gradient"
                 fullWidth
                 onClick={toggleFilters}
               >
@@ -183,18 +185,21 @@ const SearchPage = () => {
           showFilters={showFilters}
           resultsCount={loading ? undefined : resultsCount}
         >
-          {/* Loading state */}
+          {/* Loading state with dark theme colors */}
           {loading && (
             <div className="flex justify-center items-center py-xl">
-              <Spinner size="lg" color="primary" />
+              <Spinner size="lg" color="sunset-orange" />
             </div>
           )}
           
-          {/* Error state */}
+          {/* Error state with dark theme colors */}
           {error && !loading && (
             <div className="text-center py-lg">
               <Icon name="alert" size="lg" color="error" className="mb-md" />
-              <Typography variant="body1" color="error">
+              <Typography variant="h4" color="error">
+                Something went wrong
+              </Typography>
+              <Typography variant="body1" color="medium-gray" className="mt-xs">
                 {error}
               </Typography>
             </div>
@@ -205,10 +210,11 @@ const SearchPage = () => {
             renderEmptyState()
           )}
           
-          {/* Search prompt */}
+          {/* Search prompt with dark theme colors */}
           {!loading && !error && !searchValue && (
             <div className="text-center py-xl">
-              <Typography variant="h4" color="medium-gray">
+              <Icon name="search" size="lg" color="deep-orchid" className="mb-md" />
+              <Typography variant="h4" color="white">
                 Search for concerts, artists, venues, and more
               </Typography>
               <Typography variant="body1" color="medium-gray" className="mt-xs">
@@ -220,23 +226,24 @@ const SearchPage = () => {
           {/* Results */}
           {!loading && !error && searchValue && resultsCount > 0 && (
             <div className="space-y-xl">
-              {/* Concerts section */}
+              {/* Concerts section with updated branding */}
               {results.concerts && results.concerts.length > 0 && (
                 <div>
-                  <Typography variant="h3" className="mb-md">
+                  <BrandHeading level={3} gradient className="mb-md">
                     Concerts
-                  </Typography>
+                  </BrandHeading>
                   <div className="space-y-md">
-                    {results.concerts.slice(0, 5).map(concert => (
+                    {results.concerts.slice(0, 5).map((concert, index) => (
                       <PerformanceCard
                         key={concert.id}
                         performance={concert}
                         showDate={true}
+                        featured={index === 0}
                       />
                     ))}
                     {results.concerts.length > 5 && (
                       <Button 
-                        variant="ghost" 
+                        variant="secondary" 
                         fullWidth
                         className="mt-sm"
                       >
@@ -247,23 +254,24 @@ const SearchPage = () => {
                 </div>
               )}
               
-              {/* Artists section */}
+              {/* Artists section with updated branding */}
               {results.artists && results.artists.length > 0 && (
                 <div>
-                  <Typography variant="h3" className="mb-md">
+                  <BrandHeading level={3} gradient className="mb-md">
                     Artists
-                  </Typography>
+                  </BrandHeading>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-md">
-                    {results.artists.slice(0, 6).map(artist => (
+                    {results.artists.slice(0, 6).map((artist, index) => (
                       <ArtistCard
                         key={artist.id}
                         artist={artist}
+                        featured={index === 0}
                       />
                     ))}
                   </div>
                   {results.artists.length > 6 && (
                     <Button 
-                      variant="ghost" 
+                      variant="secondary" 
                       fullWidth
                       className="mt-md"
                     >
@@ -273,23 +281,24 @@ const SearchPage = () => {
                 </div>
               )}
               
-              {/* Festivals section */}
+              {/* Festivals section with updated branding */}
               {results.festivals && results.festivals.length > 0 && (
                 <div>
-                  <Typography variant="h3" className="mb-md">
+                  <BrandHeading level={3} gradient className="mb-md">
                     Festivals
-                  </Typography>
+                  </BrandHeading>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-md">
-                    {results.festivals.slice(0, 4).map(festival => (
+                    {results.festivals.slice(0, 4).map((festival, index) => (
                       <FestivalCard
                         key={festival.id}
                         festival={festival}
+                        featured={index === 0}
                       />
                     ))}
                   </div>
                   {results.festivals.length > 4 && (
                     <Button 
-                      variant="ghost" 
+                      variant="secondary" 
                       fullWidth
                       className="mt-md"
                     >

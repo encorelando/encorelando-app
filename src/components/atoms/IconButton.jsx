@@ -18,11 +18,12 @@ const IconButton = ({
   // Base classes ensuring minimum touch target size (44x44px)
   const baseClasses = 'inline-flex items-center justify-center rounded-full min-h-touch min-w-touch focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors';
   
-  // Variant-specific classes
+  // Variant-specific classes updated for dark theme
   const variantClasses = {
-    primary: 'bg-primary text-white hover:bg-primary-dark focus:ring-primary-light',
-    secondary: 'bg-secondary text-white hover:bg-secondary-dark focus:ring-secondary-light',
-    ghost: 'text-primary hover:bg-light-gray focus:ring-primary-light',
+    primary: 'bg-sunset-orange text-white hover:bg-magenta-pink focus:ring-white',
+    secondary: 'bg-transparent border border-white text-white hover:bg-white hover:bg-opacity-15 focus:ring-white',
+    ghost: 'text-white hover:bg-white hover:bg-opacity-10 focus:ring-white',
+    gradient: 'bg-brand-gradient text-white hover:brightness-110 focus:ring-white',
     danger: 'text-error hover:bg-error hover:text-white focus:ring-error',
   };
   
@@ -62,7 +63,7 @@ const IconButton = ({
 IconButton.propTypes = {
   icon: PropTypes.string.isRequired,
   ariaLabel: PropTypes.string.isRequired,
-  variant: PropTypes.oneOf(['primary', 'secondary', 'ghost', 'danger']),
+  variant: PropTypes.oneOf(['primary', 'secondary', 'ghost', 'gradient', 'danger']),
   size: PropTypes.oneOf(['sm', 'md', 'lg']),
   disabled: PropTypes.bool,
   onClick: PropTypes.func,
