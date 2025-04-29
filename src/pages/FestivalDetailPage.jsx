@@ -23,7 +23,7 @@ const FestivalDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeDate, setActiveDate] = useState(null);
-  const [activeTab, setActiveTab] = useState('daily');
+  const [activeTab, setActiveTab] = useState('all');
   const [allConcerts, setAllConcerts] = useState([]);
   const [filteredConcerts, setFilteredConcerts] = useState([]);
   const [venueFilter, setVenueFilter] = useState('all');
@@ -35,8 +35,8 @@ const FestivalDetailPage = () => {
 
   // Define tabs for mobile interface
   const tabs = [
-    { id: 'daily', label: 'Day by Day', icon: 'calendar' },
-    { id: 'all', label: 'All Performances', icon: 'list' },
+    //{ id: 'daily', label: 'Day by Day', icon: 'calendar' },
+    { id: 'all', label: 'Performances', icon: 'list' },
     { id: 'info', label: 'Festival Info', icon: 'info' },
   ];
 

@@ -66,28 +66,25 @@ const DetailPageLayout = ({
             </div>
           </div>
         )}
-
         {/* Regular title if not artist image */}
         {!isArtistImage && title && (
-          <div className="absolute bottom-md left-md z-10">
+          <div className="absolute bottom-md left-md z-10 flex flex-col space-y-1">
             <div className="inline-block bg-black bg-opacity-30 backdrop-blur-sm px-3 py-1 rounded-md">
               <Typography variant="h1" color="white" className="drop-shadow-md">
                 {title}
               </Typography>
             </div>
-          </div>
-        )}
 
-        {/* Subtitle */}
-        {subtitle && (
-          <div className="absolute bottom-md left-md mt-xs z-10">
-            <Typography variant="h4" color="white" className="drop-shadow-md">
-              {subtitle}
-            </Typography>
+            {subtitle && (
+              <div className="inline-block bg-black bg-opacity-30 backdrop-blur-sm px-3 py-1 rounded-md">
+                <Typography variant="h4" color="white" className="drop-shadow-md">
+                  {subtitle}
+                </Typography>
+              </div>
+            )}
           </div>
         )}
       </div>
-
       {/* Content area */}
       <div className="px-md py-lg">{children}</div>
     </PageLayout>

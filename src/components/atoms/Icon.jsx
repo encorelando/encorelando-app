@@ -36,6 +36,7 @@ import {
   FiEdit,
   FiTrash2,
   FiSave,
+  FiLogIn,
 } from 'react-icons/fi';
 
 /**
@@ -80,6 +81,7 @@ const Icon = ({ name, size = 'md', color = 'currentColor', className = '' }) => 
     edit: FiEdit,
     trash: FiTrash2,
     save: FiSave,
+    'log-in': FiLogIn,
   };
 
   // Icon sizes in pixels - ensuring visibility on mobile

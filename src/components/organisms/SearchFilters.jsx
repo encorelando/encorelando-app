@@ -7,9 +7,16 @@ import Divider from '../atoms/Divider';
 
 /**
  * SearchFilters component for combining multiple filter accordions
- * Mobile-optimized with collapsible sections
+ * Mobile-optimized with collapsible sections and dark theme support
  */
-const SearchFilters = ({ filters, selectedFilters, onFilterChange, onReset, className = '' }) => {
+const SearchFilters = ({
+  filters,
+  selectedFilters,
+  onFilterChange,
+  onReset,
+  darkMode = false,
+  className = '',
+}) => {
   // Check if any filters are selected
   const hasActiveFilters = Object.values(selectedFilters).some(
     values => Array.isArray(values) && values.length > 0
@@ -24,19 +31,25 @@ const SearchFilters = ({ filters, selectedFilters, onFilterChange, onReset, clas
   };
 
   return (
-    <div className={`bg-white rounded shadow-card ${className}`}>
+    <div
+      className={`${darkMode ? 'bg-background text-white' : 'bg-white'} rounded ${
+        darkMode ? 'shadow-lg' : 'shadow-card'
+      } ${className}`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-md">
-        <Typography variant="h3">Filters</Typography>
+        <Typography variant="h3" color={darkMode ? 'white' : 'dark-gray'}>
+          Filters
+        </Typography>
 
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={onReset}>
+          <Button variant={darkMode ? 'ghost-light' : 'ghost'} size="sm" onClick={onReset}>
             Reset All
           </Button>
         )}
       </div>
 
-      <Divider margin="none" />
+      <Divider margin="none" color={darkMode ? 'white-15' : 'light-gray'} />
 
       {/* Filter sections */}
       {filters.map((filterGroup, index) => (
@@ -50,17 +63,24 @@ const SearchFilters = ({ filters, selectedFilters, onFilterChange, onReset, clas
             showCounts={filterGroup.showCounts !== false}
             initialExpanded={index === 0} // First filter expanded by default
             multiSelect={filterGroup.multiSelect !== false}
+            darkMode={darkMode}
           />
 
           {/* No divider after last item */}
-          {index < filters.length - 1 && <Divider margin="none" />}
+          {index < filters.length - 1 && (
+            <Divider margin="none" color={darkMode ? 'white-15' : 'light-gray'} />
+          )}
         </React.Fragment>
       ))}
 
       {/* Apply filters button - mobile friendly footer */}
-      <div className="sticky bottom-0 p-md bg-white border-t border-light-gray shadow-lg">
+      <div
+        className={`sticky bottom-0 p-md ${
+          darkMode ? 'bg-background border-white border-opacity-10' : 'bg-white border-light-gray'
+        } border-t shadow-lg`}
+      >
         <Button
-          variant="primary"
+          variant={darkMode ? 'gradient' : 'primary'}
           fullWidth
           onClick={() => {}} // No-op as filters apply automatically
         >
@@ -93,6 +113,7 @@ SearchFilters.propTypes = {
   selectedFilters: PropTypes.object.isRequired,
   onFilterChange: PropTypes.func.isRequired,
   onReset: PropTypes.func.isRequired,
+  darkMode: PropTypes.bool,
   className: PropTypes.string,
 };
 

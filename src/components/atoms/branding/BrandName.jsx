@@ -12,7 +12,7 @@ const BrandName = ({ variant = 'default', size = 'md', className = '' }) => {
     md: 'text-lg',
     lg: 'text-xl',
     xl: 'text-2xl',
-    '2xl': 'text-3xl',
+    '2xl': 'text-4xl',
   };
 
   // Variant styling

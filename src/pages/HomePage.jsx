@@ -167,16 +167,15 @@ const HomePage = () => {
               </Typography>
             </div>
           ) : (
-            <HorizontalScroller itemWidth={250}>
-              {artists.map((artist, index) => (
-                <div key={artist.id} className="w-[250px]">
-                  <ArtistCard
-                    artist={artist}
-                    featured={index === 0} // Feature the first item
-                  />
-                </div>
-              ))}
-            </HorizontalScroller>
+            <div className="px-md">
+              <HorizontalScroller itemWidth={250}>
+                {artists.map((artist, index) => (
+                  <div key={artist.id} className="w-[250px]">
+                    <ArtistCard artist={artist} featured={index === 0} />
+                  </div>
+                ))}
+              </HorizontalScroller>
+            </div>
           )}
         </div>
       ),
@@ -209,16 +208,18 @@ const HomePage = () => {
                     <Spinner color="deep-orchid" />
                   </div>
                 ) : (
-                  <HorizontalScroller itemWidth={300}>
-                    {festivals.map((festival, index) => (
-                      <div key={festival.id} className="w-[300px]">
-                        <FestivalCard
-                          festival={festival}
-                          featured={index === 0} // Feature the first item
-                        />
-                      </div>
-                    ))}
-                  </HorizontalScroller>
+                  <div className="px-md">
+                    <HorizontalScroller itemWidth={300}>
+                      {festivals.map((festival, index) => (
+                        <div key={festival.id} className="w-[300px]">
+                          <FestivalCard
+                            festival={festival}
+                            featured={index === 0} // Feature the first item
+                          />
+                        </div>
+                      ))}
+                    </HorizontalScroller>
+                  </div>
                 )}
               </div>
             ),

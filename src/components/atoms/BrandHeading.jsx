@@ -19,6 +19,7 @@ const BrandHeading = ({
 
   // Size classes based on heading level
   const sizeClasses = {
+    0: 'text-4xl sm:text-5xl lg:text-6xl',
     1: 'text-2xl sm:text-3xl lg:text-4xl',
     2: 'text-xl sm:text-2xl lg:text-3xl',
     3: 'text-lg sm:text-xl lg:text-2xl',
