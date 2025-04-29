@@ -31,6 +31,11 @@ import {
   FiCompass,
   FiNavigation,
   FiAlertTriangle,
+  FiMenu,
+  FiLogOut,
+  FiEdit,
+  FiTrash2,
+  FiSave,
 } from 'react-icons/fi';
 
 /**
@@ -70,6 +75,11 @@ const Icon = ({ name, size = 'md', color = 'currentColor', className = '' }) => 
     compass: FiCompass,
     navigation: FiNavigation,
     'alert-triangle': FiAlertTriangle,
+    menu: FiMenu,
+    logout: FiLogOut,
+    edit: FiEdit,
+    trash: FiTrash2,
+    save: FiSave,
   };
 
   // Icon sizes in pixels - ensuring visibility on mobile

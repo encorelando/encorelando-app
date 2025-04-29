@@ -187,3 +187,63 @@ FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 CREATE TRIGGER update_concerts_modtime
 BEFORE UPDATE ON concerts
 FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+
+-- artists: store the JSON “Social” object
+ALTER TABLE artists
+  ADD COLUMN social JSONB;
+
+-- concerts: flag if a ticket is required
+ALTER TABLE concerts
+  ADD COLUMN ticket_required BOOLEAN DEFAULT FALSE;
+
+-- festivals: indicate if this is a recurring event
+ALTER TABLE festivals
+  ADD COLUMN recurring BOOLEAN DEFAULT FALSE;
+
+-- parks: geo-coordinates for mapping
+ALTER TABLE parks
+  ADD COLUMN latitude DOUBLE PRECISION,
+  ADD COLUMN longitude DOUBLE PRECISION;
+
+-- venues: seating or crowd capacity
+ALTER TABLE venues
+  ADD COLUMN capacity INTEGER,
+  ADD COLUMN latitude DOUBLE PRECISION,
+  ADD COLUMN longitude DOUBLE PRECISION;
+
+-- Create a function to check if a user is an admin
+CREATE OR REPLACE FUNCTION is_admin(user_id uuid)
+RETURNS BOOLEAN AS $$
+DECLARE
+  is_admin BOOLEAN;
+BEGIN
+  -- This is a placeholder. In a real implementation, you would check against a list of admin users
+  -- For example, you might have an admin_users table to check against
+  -- For now, we'll use a hardcoded check for the first admin user
+  SELECT EXISTS (
+    SELECT 1 FROM auth.users WHERE id = user_id AND email = 'encorelandoapp@gmail.com'
+  ) INTO is_admin;
+  
+  RETURN is_admin;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create a function to add the admin role to JWT
+CREATE OR REPLACE FUNCTION auth.jwt()
+RETURNS jsonb
+LANGUAGE sql STABLE
+AS $$
+  SELECT
+    coalesce(
+      nullif(current_setting('request.jwt.claim', true), ''),
+      '{}'
+    )::jsonb || 
+    jsonb_build_object(
+      'role',
+      CASE
+        WHEN is_admin(auth.uid()) THEN 'admin'
+        ELSE 'user'
+      END
+    )
+$$;

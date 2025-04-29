@@ -31,14 +31,19 @@ const Input = ({
   // Error classes
   const errorClasses = error ? 'border-error' : 'border-light-gray focus:border-primary';
 
-  // Disabled classes
+  // Disabled classes - We'll use bg-white for standard inputs to ensure visibility
   const disabledClasses = disabled ? 'bg-light-gray opacity-50 cursor-not-allowed' : 'bg-white';
 
   // Width classes
   const widthClasses = fullWidth ? 'w-full' : '';
 
+  // Text color class - explicitly set for admin pages with dark backgrounds
+  const textColorClass = className.includes('bg-neutral-700')
+    ? 'text-white placeholder-gray-400'
+    : 'text-black';
+
   // Combined classes
-  const combinedClasses = `${baseClasses} ${errorClasses} ${disabledClasses} ${widthClasses} ${className}`;
+  const combinedClasses = `${baseClasses} ${errorClasses} ${disabledClasses} ${widthClasses} ${textColorClass} ${className}`;
 
   return (
     <input
