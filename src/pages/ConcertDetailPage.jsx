@@ -65,7 +65,13 @@ const ConcertDetailPage = () => {
   }
 
   // Check if required nested objects exist
-  if (!concert.artist || !concert.venue) {
+  // First look for the singular fields (artist, venue) that should be provided
+  // by the updated API, but fall back to the plural fields (artists, venues) if needed
+  const artistData = concert.artist || concert.artists;
+  const venueData = concert.venue || concert.venues;
+
+  if (!artistData || !venueData) {
+    console.error('Missing data in concert:', concert);
     return (
       <DetailPageLayout title="Concert Data Error" imageUrl="/images/placeholder-concert.jpg">
         <Typography variant="body1" color="error">
@@ -78,8 +84,13 @@ const ConcertDetailPage = () => {
     );
   }
 
-  // Get artist and venue from concert data
-  const { artist, venue, festival, start_time, end_time, notes } = concert;
+  // Assign the data to constants for use in the component
+  const artist = artistData;
+  const venue = venueData;
+  const festival = concert.festival || concert.festivals;
+
+  // Get remaining data from concert
+  const { start_time, end_time, notes } = concert;
 
   // Format date and time
   const formattedDate = formatDate(start_time);

@@ -1,0 +1,162 @@
+/* Static Map Component Styling */
+
+/* Map container styling */
+.map-container {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure images scale properly to fill container */
+.map-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px 8px 0 0;
+}
+
+/* Directions button styling to match the design */
+.directions-button {
+  width: 100%;
+  background-color: #FF6A00 !important; /* sunset-orange */
+  color: white !important;
+  padding: 0.75rem 0;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 0 8px 8px;
+  transition: background-color 0.2s;
+}
+
+.directions-button:hover {
+  background-color: #E05F00 !important;
+}
+
+.directions-button svg {
+  margin-right: 0.5rem;
+}
+
+/* Zoom control styling */
+.map-zoom-controls {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.map-zoom-button {
+  display: block;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: white;
+  cursor: pointer;
+}
+
+.map-zoom-button:first-child {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.map-zoom-button:hover {
+  background-color: #f5f5f5;
+}
+
+/* Custom marker styling */
+.map-marker-pin {
+  width: 30px;
+  height: 30px;
+  position: relative;
+}
+
+.map-marker-pin:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  background-color: #4285F4;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+.map-marker-pin:after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 20px;
+  background-color: #4285F4;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.map-marker-dot {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  background-color: #4285F4;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+/* Add a pulsing effect to make the marker more noticeable */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+.map-marker-pin:before {
+  animation: pulse 2s infinite;
+}
+
+/* Attribution styling */
+.map-attribution {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  font-size: 10px;
+  color: #757575;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+/* Media queries to ensure proper responsive behavior */
+@media (max-width: 640px) {
+  .map-container {
+    max-width: 100vw;
+  }
+}

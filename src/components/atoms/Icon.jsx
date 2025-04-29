@@ -27,6 +27,10 @@ import {
   FiAlertCircle,
   FiCheckCircle,
   FiImage,
+  FiMap,
+  FiCompass,
+  FiNavigation,
+  FiAlertTriangle,
 } from 'react-icons/fi';
 
 /**
@@ -61,6 +65,11 @@ const Icon = ({ name, size = 'md', color = 'currentColor', className = '' }) => 
     alert: FiAlertCircle,
     check: FiCheckCircle,
     image: FiImage,
+    map: FiMap,
+    'map-off': FiMap,
+    compass: FiCompass,
+    navigation: FiNavigation,
+    'alert-triangle': FiAlertTriangle,
   };
 
   // Icon sizes in pixels - ensuring visibility on mobile

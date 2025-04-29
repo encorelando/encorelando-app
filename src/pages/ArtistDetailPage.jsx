@@ -9,6 +9,7 @@ import Button from '../components/atoms/Button';
 import useArtists from '../hooks/useArtists';
 import useConcerts from '../hooks/useConcerts';
 import supabase from '../services/supabase';
+import Icon from '../components/atoms/Icon';
 
 /**
  * ArtistDetailPage component for artist profiles
@@ -20,6 +21,7 @@ const ArtistDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [processedConcerts, setProcessedConcerts] = useState([]);
+  const [includePastPerformances, setIncludePastPerformances] = useState(false);
 
   // Use custom hooks
   const { getArtistById } = useArtists();
@@ -57,7 +59,7 @@ const ArtistDetailPage = () => {
         setArtist(artistData);
 
         // Fetch artist's concerts
-        await getConcertsByArtist(id, false); // Include past concerts
+        await getConcertsByArtist(id, includePastPerformances);
       } catch (err) {
         console.error('Error fetching artist details:', err);
         setError(err.message || 'Failed to load artist details');
@@ -67,23 +69,44 @@ const ArtistDetailPage = () => {
     };
 
     fetchArtistDetails();
-  }, [id, getArtistById, getConcertsByArtist]);
+  }, [id, getArtistById, getConcertsByArtist, includePastPerformances]);
 
   // Effect to process concert data and add venue/park details
   useEffect(() => {
     const processConcertData = async () => {
-      if (!concerts.length || !artist) return;
+      if (!artist) return;
+
+      // Reset processed concerts if there are no concerts to process
+      if (!concerts.length) {
+        setProcessedConcerts([]);
+        return;
+      }
 
       console.log('Processing concerts for artist:', artist.name, concerts.length);
 
+      // Verify these concerts are for the current artist by checking artist_id
+      const artistConcerts = concerts.filter(concert => {
+        // Only include concerts that explicitly have this artist's ID
+        return concert.artist_id === artist.id;
+      });
+
+      if (artistConcerts.length === 0) {
+        console.log('No matching concerts found for this artist');
+        setProcessedConcerts([]);
+        return;
+      }
+
       // Process each concert to add park information
       const processedData = await Promise.all(
-        concerts.map(async concert => {
+        artistConcerts.map(async concert => {
           let themeParkName = '';
 
+          // Support both singular and plural field names
+          const venueData = concert.venue || concert.venues;
+
           // If venue exists, try to get its park information
-          if (concert.venue && concert.venue.id) {
-            const venueDetails = await fetchVenueDetails(concert.venue.id);
+          if (venueData && venueData.id) {
+            const venueDetails = await fetchVenueDetails(venueData.id);
             if (venueDetails && venueDetails.park) {
               themeParkName = venueDetails.park.name;
             }
@@ -180,13 +203,38 @@ const ArtistDetailPage = () => {
 
       {/* Performances */}
       <div className="mt-xl">
-        <Typography variant="h3" className="mb-md">
-          Performances
-        </Typography>
+        <div className="flex justify-between items-center mb-md">
+          <Typography variant="h3">Performances</Typography>
+
+          {/* Past performances toggle - Mobile-friendly touch target */}
+          <button
+            onClick={() => setIncludePastPerformances(prev => !prev)}
+            className={`
+              flex items-center px-xs py-xxs rounded-full min-h-touch
+              ${
+                includePastPerformances
+                  ? 'bg-primary bg-opacity-20 text-primary'
+                  : 'bg-dark-gray text-light-gray'
+              }
+            `}
+          >
+            <div className="mr-xs">
+              <Icon name="clock" size="sm" />
+            </div>
+            <Typography variant="button">
+              {includePastPerformances ? 'Hide Past' : 'Show Past'}
+            </Typography>
+          </button>
+        </div>
+
         <PerformanceList
           performances={processedConcerts}
           loading={concertsLoading}
-          emptyMessage="No performances scheduled for this artist"
+          emptyMessage={
+            includePastPerformances
+              ? `No performances found for ${artist.name}`
+              : `No upcoming performances scheduled for ${artist.name}`
+          }
           groupByDate={true}
           useArtistCard={true}
         />

@@ -16,7 +16,7 @@ const concertService = {
    * @param {string} options.parkId - Filter by park ID
    * @param {number} options.limit - Number of results to return (default: 20)
    * @param {number} options.offset - Offset for pagination (default: 0)
-   * @returns {Promise<Array>} Array of concert objects
+   * @returns {Promise<Object>} Object with concerts array and pagination info
    */
   async getConcerts({
     startDate,
@@ -28,21 +28,25 @@ const concertService = {
     limit = 20,
     offset = 0,
   } = {}) {
-    let query = supabase
-      .from('concerts')
-      .select(
-        `
+    // Start building the query with simplified approach to avoid chaining issues
+    let query = supabase.from('concerts').select(
+      `
         id,
         start_time,
         end_time,
         notes,
-        artist:artist_id (id, name),
-        venue:venue_id (id, name),
-        festival:festival_id (id, name)
-      `
-      )
-      .order('start_time')
-      .range(offset, offset + limit - 1);
+        artists:artist_id (id, name),
+        venues:venue_id (id, name),
+        festivals:festival_id (id, name)
+      `,
+      { count: 'exact' }
+    );
+
+    // Add ordering
+    query = query.order('start_time');
+
+    // Add pagination
+    query = query.range(offset, offset + limit - 1);
 
     // Apply filters if provided
     if (startDate) {
@@ -65,11 +69,36 @@ const concertService = {
       query = query.eq('festival_id', festivalId);
     }
 
+    // For park filtering, we need to use a different approach
     if (parkId) {
-      // For park filtering, we need to join with venues
-      query = query.eq('venue.park_id', parkId);
+      // First get venues in this park
+      const { data: venues, error: venuesError } = await supabase
+        .from('venues')
+        .select('id')
+        .eq('park_id', parkId);
+
+      if (venuesError) {
+        console.error(`Error fetching venues for park ${parkId}:`, venuesError);
+        throw venuesError;
+      }
+
+      if (venues && venues.length > 0) {
+        const venueIds = venues.map(v => v.id);
+        query = query.in('venue_id', venueIds);
+      } else {
+        // No venues in this park, return empty result
+        return {
+          data: [],
+          pagination: {
+            total: 0,
+            limit,
+            offset,
+          },
+        };
+      }
     }
 
+    // Execute the query
     const { data, error, count } = await query;
 
     if (error) {
@@ -93,6 +122,8 @@ const concertService = {
    * @returns {Promise<Object>} Concert object with detailed information
    */
   async getConcertById(id) {
+    // This query uses the singular versions of relationship names (artist, venue, festival)
+    // which matches what the UI components expect
     const { data, error } = await supabase
       .from('concerts')
       .select(
@@ -138,6 +169,9 @@ const concertService = {
       throw error;
     }
 
+    // For debugging
+    console.log('Concert data retrieved:', data);
+
     return data;
   },
 
@@ -145,57 +179,90 @@ const concertService = {
    * Get upcoming concerts
    * @param {Object} options - Filter options
    * @param {number} options.limit - Number of results (default: 20)
-   * @param {string} options.parkId - Filter by park ID
+   * @param {string|Array} options.parkId - Filter by park ID or array of park IDs
    * @param {string} options.festivalId - Filter by festival ID
    * @returns {Promise<Array>} Array of upcoming concert objects
    */
   async getUpcomingConcerts({ limit = 20, parkId, festivalId } = {}) {
-    let query = supabase
-      .from('concerts')
-      .select(
-        `
+    // Start building the base query
+    const baseQuery = supabase.from('concerts').select(
+      `
         id,
         start_time,
         end_time,
         notes,
-        artist:artist_id (id, name),
-        venue:venue_id (id, name),
-        festival:festival_id (id, name)
+        artists:artist_id (id, name),
+        venues:venue_id (id, name),
+        festivals:festival_id (id, name)
       `
-      )
-      .gte('start_time', new Date().toISOString())
-      .order('start_time')
-      .limit(limit);
+    );
+
+    // Add date filter
+    const dateFilteredQuery = baseQuery.gte('start_time', new Date().toISOString());
+
+    // Apply other filters
+    let filteredQuery = dateFilteredQuery;
 
     if (parkId) {
-      // If parkId is an array, handle it properly by applying multiple "in" conditions
-      if (Array.isArray(parkId)) {
-        if (parkId.length === 1) {
-          // For a single park ID, use eq operator
-          query = query.eq('venue.park_id', parkId[0]);
-        } else if (parkId.length > 1) {
-          // For multiple park IDs, use in operator
-          query = query.in('venue.park_id', parkId);
+      // Handle park filtering
+      if (Array.isArray(parkId) && parkId.length > 0) {
+        // Get all venues in these parks
+        const { data: venues, error: venuesError } = await supabase
+          .from('venues')
+          .select('id')
+          .in('park_id', parkId);
+
+        if (venuesError) {
+          console.error(`Error fetching venues for parks ${parkId}:`, venuesError);
+          throw venuesError;
         }
-      } else {
-        // Handle single parkId as string
-        query = query.eq('venue.park_id', parkId);
+
+        if (venues && venues.length > 0) {
+          const venueIds = venues.map(v => v.id);
+          filteredQuery = filteredQuery.in('venue_id', venueIds);
+        } else {
+          // No venues in these parks, return empty
+          return [];
+        }
+      } else if (typeof parkId === 'string' && parkId) {
+        // Single park ID
+        console.log(`Filtering by parks: "${parkId}"`);
+        // Get venues in this park
+        const { data: venues, error: venuesError } = await supabase
+          .from('venues')
+          .select('id')
+          .eq('park_id', parkId);
+
+        if (venuesError) {
+          console.error(`Error fetching venues for park ${parkId}:`, venuesError);
+          throw venuesError;
+        }
+
+        if (venues && venues.length > 0) {
+          const venueIds = venues.map(v => v.id);
+          filteredQuery = filteredQuery.in('venue_id', venueIds);
+        } else {
+          // No venues in this park, return empty
+          return [];
+        }
       }
-      console.log(`Filtering by parks: ${JSON.stringify(parkId)}`);
     }
 
     if (festivalId) {
-      query = query.eq('festival_id', festivalId);
+      // Add festival filter
+      filteredQuery = filteredQuery.eq('festival_id', festivalId);
     }
 
-    const { data, error } = await query;
+    // Add order and limit
+    const orderedQuery = filteredQuery.order('start_time');
+    const { data, error } = await orderedQuery.limit(limit);
 
     if (error) {
       console.error('Error fetching upcoming concerts:', error);
       throw error;
     }
 
-    return data;
+    return data || [];
   },
 
   /**
@@ -224,10 +291,8 @@ const concertService = {
       `Fetching concerts between ${startOfDay.toISOString()} and ${endOfDay.toISOString()}`
     );
 
-    // Forcing equality on the date part of the start_time rather than using time range
-    // This will ensure we match exactly on the selected date regardless of timezone
-    // Get the date part in YYYY-MM-DD format
-    let query = supabase
+    // Base query with date range
+    const baseQuery = supabase
       .from('concerts')
       .select(
         `
@@ -235,46 +300,71 @@ const concertService = {
         start_time,
         end_time,
         notes,
-        artist:artist_id (id, name),
-        venue:venue_id (id, name),
-        festival:festival_id (id, name)
+        artists:artist_id (id, name),
+        venues:venue_id (id, name),
+        festivals:festival_id (id, name)
       `
       )
-      .order('start_time');
+      .gte('start_time', startOfDay.toISOString())
+      .lte('start_time', endOfDay.toISOString());
 
-    // Use a direct match on the date portion of the timestamp in SQL
-    // This is more reliable than using time ranges that can be affected by timezone
-    query = query.filter('start_time::date', 'eq', dateStr);
-
-    // First, check if we have data for this date:
-    console.log(`Querying for concerts on date: ${dateStr}`);
+    // Apply additional filters
+    let filteredQuery = baseQuery;
 
     if (parkId) {
-      // If parkId is an array, handle it properly by applying multiple "in" conditions
-      if (Array.isArray(parkId)) {
-        if (parkId.length === 1) {
-          // For a single park ID, use eq operator
-          query = query.eq('venue.park_id', parkId[0]);
-        } else if (parkId.length > 1) {
-          // For multiple park IDs, use in operator
-          query = query.in('venue.park_id', parkId);
+      // Handle park filtering by getting venues in the park
+      if (Array.isArray(parkId) && parkId.length > 0) {
+        // Get all venues in these parks
+        const { data: venues, error: venuesError } = await supabase
+          .from('venues')
+          .select('id')
+          .in('park_id', parkId);
+
+        if (venuesError) {
+          console.error(`Error fetching venues for parks ${parkId}:`, venuesError);
+          throw venuesError;
         }
-      } else {
-        // Handle single parkId as string
-        query = query.eq('venue.park_id', parkId);
+
+        if (venues && venues.length > 0) {
+          const venueIds = venues.map(v => v.id);
+          filteredQuery = filteredQuery.in('venue_id', venueIds);
+        } else {
+          // No venues in these parks, return empty
+          return [];
+        }
+      } else if (typeof parkId === 'string' && parkId) {
+        // Single park ID
+        // Get venues in this park
+        const { data: venues, error: venuesError } = await supabase
+          .from('venues')
+          .select('id')
+          .eq('park_id', parkId);
+
+        if (venuesError) {
+          console.error(`Error fetching venues for park ${parkId}:`, venuesError);
+          throw venuesError;
+        }
+
+        if (venues && venues.length > 0) {
+          const venueIds = venues.map(v => v.id);
+          filteredQuery = filteredQuery.in('venue_id', venueIds);
+        } else {
+          // No venues in this park, return empty
+          return [];
+        }
       }
-      console.log(`Filtering by parks: ${JSON.stringify(parkId)}`);
     }
 
     if (festivalId) {
-      query = query.eq('festival_id', festivalId);
+      filteredQuery = filteredQuery.eq('festival_id', festivalId);
     }
 
-    const { data, error } = await query;
+    // Add order
+    const { data, error } = await filteredQuery.order('start_time');
 
     if (error) {
       console.error(`Error fetching concerts for date ${date}:`, error);
-      throw error;
+      throw new Error('API error for date concerts');
     }
 
     // Log what we got
@@ -289,33 +379,44 @@ const concertService = {
    * @returns {Promise<Array>} Array of concert objects for the artist
    */
   async getConcertsByArtist(artistId, includePast = false) {
+    // Build query with simplified approach to avoid chaining issues
     let query = supabase
       .from('concerts')
       .select(
         `
         id,
+        artist_id,
         start_time,
         end_time,
         notes,
-        venue:venue_id (id, name),
-        festival:festival_id (id, name)
+        venues:venue_id (id, name),
+        festivals:festival_id (id, name)
       `
       )
-      .eq('artist_id', artistId)
-      .order('start_time');
+      .eq('artist_id', artistId);
 
+    // Apply past filter if needed
     if (!includePast) {
       query = query.gte('start_time', new Date().toISOString());
     }
 
+    // Add ordering as final step
+    query = query.order('start_time');
+
+    // Execute query
     const { data, error } = await query;
 
     if (error) {
       console.error(`Error fetching concerts for artist ${artistId}:`, error);
-      throw error;
+      throw new Error('API error for artist concerts');
     }
 
-    return data;
+    // For debugging
+    console.log(
+      `Found ${data?.length || 0} concerts for artist ${artistId} (includePast=${includePast})`
+    );
+
+    return data || [];
   },
 
   /**
@@ -327,7 +428,8 @@ const concertService = {
    * @returns {Promise<Array>} Array of concert objects for the festival
    */
   async getConcertsByFestival(festivalId, { date, sort = 'chronological' } = {}) {
-    let query = supabase
+    // Base query
+    const baseQuery = supabase
       .from('concerts')
       .select(
         `
@@ -335,12 +437,14 @@ const concertService = {
         start_time,
         end_time,
         notes,
-        artist:artist_id (id, name),
-        venue:venue_id (id, name)
+        artists:artist_id (id, name),
+        venues:venue_id (id, name)
       `
       )
       .eq('festival_id', festivalId);
 
+    // Apply date filter if needed
+    let filteredQuery = baseQuery;
     if (date) {
       const startOfDay = new Date(date);
       startOfDay.setHours(0, 0, 0, 0);
@@ -348,26 +452,43 @@ const concertService = {
       const endOfDay = new Date(date);
       endOfDay.setHours(23, 59, 59, 999);
 
-      query = query
+      filteredQuery = filteredQuery
         .gte('start_time', startOfDay.toISOString())
         .lte('start_time', endOfDay.toISOString());
     }
 
     // Apply sorting
+    let orderedQuery;
     if (sort === 'alphabetical') {
-      query = query.order('artists.name');
+      // For alphabetical sorting, we need to order by artist name
+      // This requires a different approach since we can't directly order by a joined field
+      // Get all matching concerts first
+      const { data: concerts, error: concertsError } = await filteredQuery;
+
+      if (concertsError) {
+        console.error(`Error fetching concerts for festival ${festivalId}:`, concertsError);
+        throw new Error('API error for festival concerts');
+      }
+
+      // Sort manually by artist name
+      const sortedData = concerts
+        ? [...concerts].sort((a, b) => a.artists?.name?.localeCompare(b.artists?.name || ''))
+        : [];
+
+      return sortedData;
     } else {
-      query = query.order('start_time');
+      // Chronological sorting
+      orderedQuery = filteredQuery.order('start_time');
     }
 
-    const { data, error } = await query;
+    const { data, error } = await orderedQuery;
 
     if (error) {
       console.error(`Error fetching concerts for festival ${festivalId}:`, error);
       throw error;
     }
 
-    return data;
+    return data || [];
   },
 
   /**
@@ -379,7 +500,8 @@ const concertService = {
    * @returns {Promise<Array>} Array of concert objects for the venue
    */
   async getConcertsByVenue(venueId, { date, sort = 'chronological' } = {}) {
-    let query = supabase
+    // Base query
+    const baseQuery = supabase
       .from('concerts')
       .select(
         `
@@ -387,12 +509,14 @@ const concertService = {
         start_time,
         end_time,
         notes,
-        artist:artist_id (id, name),
-        festival:festival_id (id, name)
+        artists:artist_id (id, name),
+        festivals:festival_id (id, name)
       `
       )
       .eq('venue_id', venueId);
 
+    // Apply date filter if needed
+    let filteredQuery = baseQuery;
     if (date) {
       // For date filtering, use date string in format YYYY-MM-DD
       // and construct start/end boundaries using explicit date strings
@@ -403,24 +527,41 @@ const concertService = {
       const startDateStr = `${dateStr}T00:00:00.000Z`;
       const endDateStr = `${dateStr}T23:59:59.999Z`;
 
-      query = query.gte('start_time', startDateStr).lte('start_time', endDateStr);
+      filteredQuery = filteredQuery.gte('start_time', startDateStr).lte('start_time', endDateStr);
     }
 
     // Apply sorting
+    let orderedQuery;
     if (sort === 'alphabetical') {
-      query = query.order('artist.name');
+      // For alphabetical sorting, we need to order by artist name
+      // This requires a different approach since we can't directly order by a joined field
+      // Get all matching concerts first
+      const { data: concerts, error: concertsError } = await filteredQuery;
+
+      if (concertsError) {
+        console.error(`Error fetching concerts for venue ${venueId}:`, concertsError);
+        throw new Error('API error for venue concerts');
+      }
+
+      // Sort manually by artist name
+      const sortedData = concerts
+        ? [...concerts].sort((a, b) => a.artists?.name?.localeCompare(b.artists?.name || ''))
+        : [];
+
+      return sortedData;
     } else {
-      query = query.order('start_time');
+      // Chronological sorting
+      orderedQuery = filteredQuery.order('start_time');
     }
 
-    const { data, error } = await query;
+    const { data, error } = await orderedQuery;
 
     if (error) {
       console.error(`Error fetching concerts for venue ${venueId}:`, error);
       throw error;
     }
 
-    return data;
+    return data || [];
   },
 };
 
