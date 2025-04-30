@@ -3,15 +3,21 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoritesContext';
 import Spinner from '../components/atoms/Spinner';
+import BrandButton from '../components/atoms/BrandButton';
+import BrandHeading from '../components/atoms/BrandHeading';
+import BrandCard from '../components/atoms/BrandCard';
+import PageLayout from '../components/templates/PageLayout';
 
 /**
  * ProfilePage Component
  *
  * User profile page that displays user information and favorites.
  * Mobile-first design with touch-friendly elements and optimized layout.
+ * Updated to match the EncoreLando branding guidelines.
+ * Uses standard PageLayout for consistent header and navigation.
  */
 const ProfilePage = () => {
-  const { user, userProfile, logout, updateProfile } = useAuth();
+  const { user, userProfile, updateProfile } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -100,34 +106,19 @@ const ProfilePage = () => {
     }
   };
 
-  // Handle logout
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/', { replace: true });
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
-
   // If no user is logged in, redirect to login
   if (!user) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <h2 className="text-2xl font-bold text-center mb-6">Please log in to view your profile</h2>
-        <Link
-          to="/login"
-          className="bg-blue-600 text-white py-3 px-8 rounded-lg font-medium hover:bg-blue-700"
-          style={{
-            minHeight: '48px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          Log in
-        </Link>
-      </div>
+      <PageLayout>
+        <div className="flex flex-col items-center justify-center p-md">
+          <BrandHeading level={2} className="mb-lg" align="center">
+            Please log in to view your profile
+          </BrandHeading>
+          <BrandButton variant="primary" onClick={() => navigate('/login')}>
+            Log in
+          </BrandButton>
+        </div>
+      </PageLayout>
     );
   }
 
@@ -137,33 +128,32 @@ const ProfilePage = () => {
 
     if (favoritesLoading) {
       return (
-        <div className="flex justify-center py-8">
-          <Spinner size="lg" color="primary" />
+        <div className="flex justify-center py-lg">
+          <Spinner size="lg" color="sunset-orange" />
         </div>
       );
     }
 
     if (!currentFavorites?.length) {
       return (
-        <div className="py-8 text-center">
-          <p className="text-gray-500">No favorite {activeTab} yet.</p>
-          <Link
-            to={`/${activeTab}`}
-            className="inline-block mt-4 bg-blue-600 text-white py-2 px-4 rounded-lg"
-          >
+        <div className="py-lg text-center">
+          <p className="font-manrope text-white text-opacity-70 mb-md">
+            No favorite {activeTab} yet.
+          </p>
+          <BrandButton variant="secondary" onClick={() => navigate(`/${activeTab}`)}>
             Browse {activeTab}
-          </Link>
+          </BrandButton>
         </div>
       );
     }
 
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md mt-md">
         {currentFavorites.map(item => (
-          <Link key={item.id} to={`/${activeTab.slice(0, -1)}s/${item.id}`} className="block">
-            <div className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+          <Link key={item.id} to={`/${activeTab.slice(0, -1)}/${item.id}`} className="block">
+            <BrandCard variant="interactive">
               {item.image_url && (
-                <div className="h-40 bg-gray-200 overflow-hidden">
+                <div className="h-40 bg-white bg-opacity-5 overflow-hidden rounded">
                   <img
                     src={item.image_url}
                     alt={item.name}
@@ -171,21 +161,23 @@ const ProfilePage = () => {
                   />
                 </div>
               )}
-              <div className="p-4">
-                <h3 className="font-semibold text-lg truncate">{item.name}</h3>
+              <div className="p-md">
+                <h3 className="font-poppins font-semibold text-lg truncate text-white">
+                  {item.name}
+                </h3>
                 {activeTab === 'concerts' && item.start_time && (
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm font-manrope text-white text-opacity-70 mt-xs">
                     {new Date(item.start_time).toLocaleDateString()}
                   </p>
                 )}
                 {activeTab === 'festivals' && item.start_date && (
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm font-manrope text-white text-opacity-70 mt-xs">
                     {new Date(item.start_date).toLocaleDateString()} -{' '}
                     {new Date(item.end_date).toLocaleDateString()}
                   </p>
                 )}
               </div>
-            </div>
+            </BrandCard>
           </Link>
         ))}
       </div>
@@ -193,49 +185,27 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm py-4 px-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">My Profile</h1>
-          <button
-            onClick={handleLogout}
-            className="text-gray-600 hover:text-gray-900 h-11 w-11 flex items-center justify-center rounded-full hover:bg-gray-100"
-            aria-label="Log out"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
-          </button>
-        </div>
+    <PageLayout>
+      {/* Profile header with logout */}
+      <div className="flex items-center justify-between px-md py-md">
+        <BrandHeading level={3}>My Profile</BrandHeading>
       </div>
 
       {/* Profile section */}
-      <div className="p-4">
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+      <div className="p-md">
+        <BrandCard className="mb-lg">
           {editMode ? (
             <form onSubmit={handleProfileUpdate}>
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                <div className="mb-md p-sm bg-error bg-opacity-10 border border-error border-opacity-20 text-error rounded">
                   {error}
                 </div>
               )}
 
-              <div className="mb-4">
+              <div className="mb-md">
                 <label
                   htmlFor="displayName"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block font-manrope text-sm font-medium text-white mb-xxs"
                 >
                   Display Name
                 </label>
@@ -244,40 +214,35 @@ const ProfilePage = () => {
                   type="text"
                   value={displayName}
                   onChange={e => setDisplayName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  style={{ minHeight: '44px' }}
+                  className="w-full px-md py-xs bg-white bg-opacity-10 border border-white border-opacity-10 rounded focus:ring-2 focus:ring-sunset-orange focus:border-sunset-orange min-h-touch text-white font-manrope"
+                  placeholder="Your name"
                 />
               </div>
 
-              <div className="flex space-x-3">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg disabled:opacity-70"
-                  style={{ minHeight: '44px' }}
-                >
+              <div className="flex space-x-sm">
+                <BrandButton type="submit" variant="primary" disabled={loading} className="flex-1">
                   {loading ? 'Saving...' : 'Save Changes'}
-                </button>
-                <button
+                </BrandButton>
+                <BrandButton
                   type="button"
+                  variant="secondary"
                   onClick={() => {
                     setDisplayName(userProfile?.display_name || '');
                     setEditMode(false);
                   }}
-                  className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg"
-                  style={{ minHeight: '44px' }}
+                  className="flex-1"
                 >
                   Cancel
-                </button>
+                </BrandButton>
               </div>
             </form>
           ) : (
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-semibold">{userProfile?.display_name || 'User'}</h2>
+              <div className="flex items-center justify-between mb-xs">
+                <BrandHeading level={4}>{userProfile?.display_name || 'User'}</BrandHeading>
                 <button
                   onClick={() => setEditMode(true)}
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium h-10 w-10 flex items-center justify-center rounded-full hover:bg-gray-100"
+                  className="text-sunset-orange hover:text-magenta-pink text-sm font-medium h-10 w-10 flex items-center justify-center rounded-full hover:bg-white hover:bg-opacity-10"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -295,29 +260,30 @@ const ProfilePage = () => {
                   </svg>
                 </button>
               </div>
-              <p className="text-gray-600">{user.email}</p>
+              <p className="font-manrope text-white text-opacity-70">{user.email}</p>
             </div>
           )}
-        </div>
+        </BrandCard>
 
         {/* Favorites section */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="px-4 pt-4">
-            <h2 className="text-lg font-semibold mb-4">My Favorites</h2>
+        <BrandCard className="overflow-hidden">
+          <div className="px-md pt-md">
+            <BrandHeading level={4} className="mb-md">
+              My Favorites
+            </BrandHeading>
           </div>
 
           {/* Tab navigation */}
-          <div className="flex border-b">
+          <div className="flex border-b border-white border-opacity-10">
             {['artists', 'concerts', 'venues', 'festivals'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-3 px-1 font-medium text-sm text-center focus:outline-none ${
+                className={`flex-1 py-sm px-xxs font-medium text-sm text-center focus:outline-none min-h-touch font-manrope ${
                   activeTab === tab
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'text-sunset-orange border-b-2 border-sunset-orange'
+                    : 'text-white text-opacity-70 hover:text-white'
                 }`}
-                style={{ minHeight: '44px' }}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
@@ -325,10 +291,10 @@ const ProfilePage = () => {
           </div>
 
           {/* Tab content */}
-          <div className="p-4">{renderTabContent()}</div>
-        </div>
+          <div className="p-md">{renderTabContent()}</div>
+        </BrandCard>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

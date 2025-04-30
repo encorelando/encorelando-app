@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import BrandButton from '../../components/atoms/BrandButton';
+import BrandHeading from '../../components/atoms/BrandHeading';
+import BrandLogo from '../../components/atoms/BrandLogo';
+import BrandCard from '../../components/atoms/BrandCard';
 
 /**
  * LoginPage Component
  *
  * Provides a user-friendly mobile-optimized login form.
+ * Updated to follow EncoreLando branding guidelines.
  *
  * Mobile-first design features:
  * - Touch-friendly input fields (minimum 44px height)
@@ -58,137 +63,16 @@ const LoginPage = () => {
     }
   };
 
-  // Use explicit styles to prevent color inheritance issues
-  const styles = {
-    container: {
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: '#f9fafb',
-    },
-    header: {
-      backgroundColor: 'white',
-      boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-      padding: '1rem 1rem',
-      color: '#111827',
-    },
-    headerInner: {
-      display: 'flex',
-      alignItems: 'center',
-    },
-    backButton: {
-      marginRight: '1rem',
-      height: '2.75rem',
-      width: '2.75rem',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: '9999px',
-      color: '#4b5563',
-      backgroundColor: 'transparent',
-      border: 'none',
-      cursor: 'pointer',
-    },
-    headerTitle: {
-      fontSize: '1.25rem',
-      fontWeight: '600',
-      color: '#111827',
-    },
-    main: {
-      flex: '1',
-      display: 'flex',
-      flexDirection: 'column',
-      padding: '1rem',
-      maxWidth: '28rem',
-      margin: '0 auto',
-      width: '100%',
-      backgroundColor: 'white',
-      color: '#111827',
-    },
-    headingContainer: {
-      marginBottom: '1.5rem',
-      textAlign: 'center',
-    },
-    heading: {
-      fontSize: '1.5rem',
-      fontWeight: '700',
-      color: '#111827',
-    },
-    subheading: {
-      marginTop: '0.5rem',
-      color: '#4b5563',
-    },
-    error: {
-      marginBottom: '1rem',
-      padding: '0.75rem',
-      backgroundColor: '#fee2e2',
-      border: '1px solid #fecaca',
-      color: '#b91c1c',
-      borderRadius: '0.375rem',
-    },
-    form: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '1rem',
-    },
-    label: {
-      display: 'block',
-      fontSize: '0.875rem',
-      fontWeight: '500',
-      marginBottom: '0.25rem',
-      color: '#374151',
-    },
-    required: {
-      color: '#ef4444',
-    },
-    input: {
-      width: '100%',
-      padding: '0.75rem 1rem',
-      border: '1px solid #d1d5db',
-      borderRadius: '0.375rem',
-      minHeight: '44px',
-      fontSize: '1rem',
-      color: '#111827',
-      backgroundColor: 'white',
-    },
-    button: {
-      width: '100%',
-      backgroundColor: '#2563eb',
-      color: 'white',
-      padding: '0.75rem 1rem',
-      borderRadius: '0.375rem',
-      fontWeight: '500',
-      minHeight: '48px',
-      border: 'none',
-      cursor: 'pointer',
-    },
-    buttonDisabled: {
-      opacity: '0.7',
-      cursor: 'not-allowed',
-    },
-    buttonHover: {
-      backgroundColor: '#1d4ed8',
-    },
-    signupContainer: {
-      marginTop: '1rem',
-      textAlign: 'center',
-    },
-    signupText: {
-      color: '#4b5563',
-    },
-    signupLink: {
-      color: '#2563eb',
-      fontWeight: '500',
-      textDecoration: 'none',
-    },
-  };
-
   return (
-    <div style={styles.container}>
+    <div className="bg-background min-h-screen flex flex-col">
       {/* Header with back button for mobile */}
-      <div style={styles.header}>
-        <div style={styles.headerInner}>
-          <button onClick={() => navigate(-1)} style={styles.backButton} aria-label="Go back">
+      <div className="bg-background border-b border-white border-opacity-10 p-md">
+        <div className="flex items-center">
+          <button
+            onClick={() => navigate(-1)}
+            className="mr-md h-11 w-11 flex items-center justify-center rounded-full text-white hover:bg-white hover:bg-opacity-10"
+            aria-label="Go back"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -203,76 +87,87 @@ const LoginPage = () => {
               />
             </svg>
           </button>
-          <h1 style={styles.headerTitle}>Log In</h1>
+          <BrandHeading level={3}>Log In</BrandHeading>
         </div>
       </div>
 
       {/* Main content */}
-      <div style={styles.main}>
-        <div style={styles.headingContainer}>
-          <h2 style={styles.heading}>Welcome back</h2>
-          <p style={styles.subheading}>Log in to access your saved concerts and favorites</p>
+      <div className="flex-1 flex flex-col p-md max-w-md mx-auto w-full">
+        <div className="mb-xl text-center">
+          <BrandLogo variant="white" size="md" className="mb-md" />
+
+          <BrandHeading level={2} className="mb-xs">
+            Welcome back
+          </BrandHeading>
+          <p className="font-manrope text-white text-opacity-90">
+            Log in to access your saved concerts and favorites
+          </p>
         </div>
 
         {/* Error display */}
-        {error && <div style={styles.error}>{error}</div>}
+        {error && (
+          <div className="mb-md p-sm bg-error bg-opacity-10 border border-error border-opacity-20 text-error rounded">
+            {error}
+          </div>
+        )}
 
         {/* Login form */}
-        <form onSubmit={handleSubmit} style={styles.form}>
-          {/* Email field */}
-          <div>
-            <label htmlFor="email" style={styles.label}>
-              Email <span style={styles.required}>*</span>
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              style={styles.input}
-              placeholder="your.email@example.com"
-            />
-          </div>
+        <BrandCard className="mb-lg">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-md">
+            {/* Email field */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block font-manrope text-sm font-medium text-white mb-xxs"
+              >
+                Email <span className="text-error">*</span>
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="w-full px-md py-xs bg-white bg-opacity-10 border border-white border-opacity-10 rounded focus:ring-2 focus:ring-sunset-orange focus:border-sunset-orange min-h-touch text-white font-manrope"
+                placeholder="your.email@example.com"
+              />
+            </div>
 
-          {/* Password field */}
-          <div>
-            <label htmlFor="password" style={styles.label}>
-              Password <span style={styles.required}>*</span>
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              style={styles.input}
-              placeholder="Your password"
-            />
-          </div>
+            {/* Password field */}
+            <div>
+              <label
+                htmlFor="password"
+                className="block font-manrope text-sm font-medium text-white mb-xxs"
+              >
+                Password <span className="text-error">*</span>
+              </label>
+              <input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="w-full px-md py-xs bg-white bg-opacity-10 border border-white border-opacity-10 rounded focus:ring-2 focus:ring-sunset-orange focus:border-sunset-orange min-h-touch text-white font-manrope"
+                placeholder="Your password"
+              />
+            </div>
 
-          {/* Submit button */}
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              ...styles.button,
-              ...(loading ? styles.buttonDisabled : {}),
-            }}
-          >
-            {loading ? 'Logging in...' : 'Log in'}
-          </button>
+            {/* Submit button */}
+            <BrandButton type="submit" variant="primary" fullWidth disabled={loading}>
+              {loading ? 'Logging in...' : 'Log in'}
+            </BrandButton>
+          </form>
+        </BrandCard>
 
-          {/* Signup link */}
-          <div style={styles.signupContainer}>
-            <p style={styles.signupText}>
-              Don&apos;t have an account?{' '}
-              <Link to="/signup" style={styles.signupLink}>
-                Sign up
-              </Link>
-            </p>
-          </div>
-        </form>
+        {/* Signup link */}
+        <div className="text-center">
+          <p className="font-manrope text-white text-opacity-70">
+            Don&apos;t have an account?{' '}
+            <Link to="/signup" className="text-sunset-orange hover:text-magenta-pink font-medium">
+              Sign up
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

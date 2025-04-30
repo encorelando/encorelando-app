@@ -97,7 +97,7 @@ const PerformanceCard = ({ performance, showDate = false, featured = false, clas
       className="block focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 rounded"
     >
       <Card variant="interactive" featured={featured} className={`w-full ${className}`}>
-        <div className="flex items-center p-sm">
+        <div className="flex items-center">
           {/* Artist image */}
           {artist?.image_url && (
             <div className="mr-sm flex-shrink-0 self-center">
