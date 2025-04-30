@@ -15,13 +15,20 @@
   },
   "tailwindCSS.emmetCompletions": true,
   "cSpell.words": [
+    "addevent",
     "ampm",
+    "CALSCALE",
     "couldn",
     "deeplink",
     "desaturation",
+    "DTEND",
+    "DTSTAMP",
+    "DTSTART",
     "encorelando",
+    "enddt",
     "Geoapify",
     "Harambe",
+    "ical",
     "ilike",
     "Lando",
     "lonlat",
@@ -31,10 +38,14 @@
     "ossp",
     "Perfs",
     "plpgsql",
+    "PRODID",
     "rgba",
     "Scrollability",
     "Segoe",
+    "startdt",
     "supabase",
-    "Toon"
+    "Toon",
+    "VCALENDAR",
+    "VEVENT"
   ]
 }

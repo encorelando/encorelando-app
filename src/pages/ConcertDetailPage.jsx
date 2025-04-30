@@ -7,7 +7,9 @@ import Icon from '../components/atoms/Icon';
 import Button from '../components/atoms/Button';
 import Card from '../components/atoms/Card';
 import Badge from '../components/atoms/Badge';
+import CalendarModal from '../components/molecules/CalendarModal';
 import { formatDate, formatTime } from '../utils/dateUtils';
+import { generateEventFromConcert } from '../utils/calendarUtils';
 import useConcerts from '../hooks/useConcerts';
 
 /**
@@ -19,6 +21,8 @@ const ConcertDetailPage = () => {
   const [concert, setConcert] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [calendarEvent, setCalendarEvent] = useState(null);
 
   // Use custom hook
   const { getConcertById } = useConcerts();
@@ -30,6 +34,11 @@ const ConcertDetailPage = () => {
         setLoading(true);
         const concertData = await getConcertById(id);
         setConcert(concertData);
+
+        // Generate calendar event data
+        const concertUrl = `https://encorelando.com/concerts/${id}`;
+        const eventData = generateEventFromConcert(concertData, concertUrl);
+        setCalendarEvent(eventData);
       } catch (err) {
         console.error('Error fetching concert details:', err);
         setError(err.message || 'Failed to load concert details');
@@ -40,6 +49,16 @@ const ConcertDetailPage = () => {
 
     fetchConcertDetails();
   }, [id, getConcertById]);
+
+  // Handle calendar button click
+  const handleAddToCalendar = () => {
+    setShowCalendarModal(true);
+  };
+
+  // Handle calendar modal close
+  const handleCloseCalendarModal = () => {
+    setShowCalendarModal(false);
+  };
 
   // Show loading state
   if (loading) {
@@ -208,9 +227,15 @@ const ConcertDetailPage = () => {
 
       {/* Add to calendar button (if upcoming) */}
       {!isPast && (
-        <Button variant="primary" fullWidth className="mt-lg">
+        <Button variant="primary" fullWidth className="mt-lg" onClick={handleAddToCalendar}>
+          <Icon name="calendar" size="sm" className="mr-xs" />
           Add to Calendar
         </Button>
+      )}
+
+      {/* Calendar Modal */}
+      {showCalendarModal && calendarEvent && (
+        <CalendarModal event={calendarEvent} onClose={handleCloseCalendarModal} />
       )}
     </DetailPageLayout>
   );
