@@ -344,9 +344,12 @@ export const groupArtistPerformancesByDateAndVenue = performances => {
             .filter(Boolean);
 
           if (timeSlots.length) {
+            // Use the ID of the earliest performance (base.id) for the consolidated card
+            // This ensures the link to the concert detail page will work correctly
+            // Previously this used "${base.id}-consolidated" which caused errors as that ID didn't exist
             consolidated.push({
               ...base,
-              id: `${base.id}-consolidated`,
+              id: base.id,
               performanceTimes: timeSlots,
             });
           }
