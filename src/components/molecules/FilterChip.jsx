@@ -12,14 +12,17 @@ const FilterChip = ({
   count,
   disabled = false,
   className = '',
+  darkMode = false,
 }) => {
   // Base classes with min-height for touch targets
   const baseClasses =
     'inline-flex items-center justify-center rounded-full px-md py-xs min-h-touch transition-colors';
 
-  // Conditional classes based on state
+  // Conditional classes based on state and theme
   const stateClasses = selected
     ? 'bg-primary text-white'
+    : darkMode
+    ? 'bg-white bg-opacity-10 text-white hover:bg-white hover:bg-opacity-20'
     : 'bg-light-gray text-dark-gray hover:bg-primary-light hover:bg-opacity-20';
 
   // Disabled classes
@@ -62,6 +65,7 @@ FilterChip.propTypes = {
   count: PropTypes.number,
   disabled: PropTypes.bool,
   className: PropTypes.string,
+  darkMode: PropTypes.bool,
 };
 
 export default FilterChip;

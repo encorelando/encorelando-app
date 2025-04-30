@@ -13,11 +13,57 @@ import { formatTime, formatDate } from '../../utils/dateUtils';
  * Now includes artist image similar to VenuePerformanceCard
  */
 const PerformanceCard = ({ performance, showDate = false, featured = false, className = '' }) => {
+  // Log received performance data for debugging
+  console.log('[PerformanceCard] Received performance data:', performance);
+
+  if (!performance) {
+    console.log('[PerformanceCard] No performance data provided');
+    return null;
+  }
+
   // Handle both camelCase and snake_case property names for compatibility
   const id = performance.id;
-  const artist = performance.artist || performance.artists;
-  const venue = performance.venue || performance.venues;
-  const festival = performance.festival || performance.festivals;
+
+  // The data might come in different structures or have null values that we need to handle
+  // We'll do deep inspection of the data structure to ensure we extract what we need
+
+  // Extract artist data from either artist or artists fields, handling null values
+  let artist = {};
+  if (performance.artist && typeof performance.artist === 'object') {
+    artist = performance.artist;
+  } else if (performance.artists && typeof performance.artists === 'object') {
+    artist = performance.artists;
+  } else if (performance.artist_id) {
+    // If we only have an artist ID, create a minimal artist object
+    artist = { id: performance.artist_id };
+  }
+
+  // Extract venue data from either venue or venues fields, handling null values
+  let venue = {};
+  if (performance.venue && typeof performance.venue === 'object') {
+    venue = performance.venue;
+  } else if (performance.venues && typeof performance.venues === 'object') {
+    venue = performance.venues;
+  } else if (performance.venue_id) {
+    // If we only have a venue ID, create a minimal venue object
+    venue = { id: performance.venue_id };
+  }
+
+  // Extract festival data from either festival or festivals fields, handling null values
+  let festival = {};
+  if (performance.festival && typeof performance.festival === 'object') {
+    festival = performance.festival;
+  } else if (performance.festivals && typeof performance.festivals === 'object') {
+    festival = performance.festivals;
+  } else if (performance.festival_id) {
+    // If we only have a festival ID, create a minimal festival object
+    festival = { id: performance.festival_id };
+  }
+
+  console.log('[PerformanceCard] Normalized data:');
+  console.log('- artist:', artist ? JSON.stringify(artist) : 'null');
+  console.log('- venue:', venue ? JSON.stringify(venue) : 'null');
+  console.log('- festival:', festival ? JSON.stringify(festival) : 'null');
 
   // Handle both naming conventions for time fields
   const startTime = performance.startTime || performance.start_time;
@@ -29,7 +75,21 @@ const PerformanceCard = ({ performance, showDate = false, featured = false, clas
     : 'TBA';
 
   // Format the date of the performance
-  const formattedDate = formatDate(startTime);
+  const formattedDate = startTime ? formatDate(startTime) : 'Date TBD';
+
+  // Check if we have a valid artist name
+  const artistName = artist?.name || 'TBA';
+
+  // Check if we have a valid venue name
+  const venueName = venue?.name || 'Location TBD';
+
+  // Check if we have a park name from any of the possible paths
+  const parkName =
+    venue?.parks?.name ||
+    venue?.park?.name ||
+    performance.themePark ||
+    performance.theme_park ||
+    '';
 
   return (
     <Link
@@ -43,7 +103,7 @@ const PerformanceCard = ({ performance, showDate = false, featured = false, clas
             <div className="mr-sm flex-shrink-0 self-center">
               <ImageThumbnail
                 src={artist.image_url}
-                alt={artist?.name || 'Artist image'}
+                alt={artistName}
                 aspectRatio="square"
                 rounded="lg"
                 className="w-16 h-16"
@@ -59,7 +119,7 @@ const PerformanceCard = ({ performance, showDate = false, featured = false, clas
               gradient={featured}
               className="mb-xs truncate"
             >
-              {artist?.name || 'TBA'}
+              {artistName}
             </Typography>
 
             {/* Date - only shown if requested */}
@@ -104,22 +164,22 @@ const PerformanceCard = ({ performance, showDate = false, featured = false, clas
             <div className="flex items-center mb-xs">
               <Icon name="map-pin" size="sm" className="mr-xs text-sunset-orange flex-shrink-0" />
               <Typography variant="body1" color="white" className="truncate">
-                {venue?.name || 'Location TBD'}
+                {venueName}
               </Typography>
             </div>
 
-            {/* Theme Park - if available */}
-            {(performance.themePark || performance.theme_park) && (
+            {/* Theme Park - if available from venues.parks */}
+            {parkName && (
               <div className="flex items-center mb-sm">
                 <Icon name="map" size="sm" className="mr-xs text-sunset-orange flex-shrink-0" />
                 <Typography variant="body1" color="white" className="truncate">
-                  {performance.themePark || performance.theme_park}
+                  {parkName}
                 </Typography>
               </div>
             )}
 
             {/* Festival badge - if part of a festival */}
-            {festival && (
+            {festival && festival.name && (
               <div className="mt-xs">
                 <Badge
                   text={festival.name}
@@ -149,24 +209,44 @@ const performanceShape = PropTypes.shape({
   start_time: PropTypes.string,
   endTime: PropTypes.string,
   end_time: PropTypes.string,
+  // Direct IDs
+  artist_id: PropTypes.string,
+  venue_id: PropTypes.string,
+  festival_id: PropTypes.string,
   // Support both camelCase and snake_case for entity fields
   artist: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
+    id: PropTypes.string,
+    name: PropTypes.string,
     image_url: PropTypes.string,
   }),
   artists: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
+    id: PropTypes.string,
+    name: PropTypes.string,
     image_url: PropTypes.string,
   }),
   venue: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
+    id: PropTypes.string,
+    name: PropTypes.string,
+    park: PropTypes.shape({
+      id: PropTypes.string,
+      name: PropTypes.string,
+    }),
+    parks: PropTypes.shape({
+      id: PropTypes.string,
+      name: PropTypes.string,
+    }),
   }),
   venues: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
+    id: PropTypes.string,
+    name: PropTypes.string,
+    park: PropTypes.shape({
+      id: PropTypes.string,
+      name: PropTypes.string,
+    }),
+    parks: PropTypes.shape({
+      id: PropTypes.string,
+      name: PropTypes.string,
+    }),
   }),
   festival: PropTypes.shape({
     id: PropTypes.string,

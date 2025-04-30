@@ -4,7 +4,6 @@ import SearchPageLayout from '../components/templates/SearchPageLayout';
 import SearchFilters from '../components/organisms/SearchFilters';
 import Typography from '../components/atoms/Typography';
 import BrandHeading from '../components/atoms/BrandHeading';
-import PerformanceCard from '../components/organisms/PerformanceCard';
 import ArtistCard from '../components/organisms/ArtistCard';
 import FestivalCard from '../components/organisms/FestivalCard';
 import Spinner from '../components/atoms/Spinner';
@@ -35,41 +34,70 @@ const SearchPage = () => {
   // Fetch search results
   const { results, loading, error, globalSearch } = useSearch();
 
-  // Update URL when search changes
+  // Update URL when search changes and perform search
   useEffect(() => {
+    console.log('[SearchPage] Search triggered with value:', searchValue);
+    console.log('[SearchPage] Selected filters:', JSON.stringify(selectedFilters, null, 2));
+
     if (searchValue) {
       queryParams.set('q', searchValue);
       navigate({ search: queryParams.toString() }, { replace: true });
 
+      // Determine search types to use - TEMPORARY FIX: Remove 'concerts' from search types
+      const searchTypes =
+        selectedFilters.entityTypes.length > 0
+          ? selectedFilters.entityTypes.filter(type => type !== 'concerts')
+          : ['artists', 'festivals', 'venues', 'parks'];
+
+      console.log('[SearchPage] Searching with types:', searchTypes);
+
       // Perform search with filters
-      globalSearch(searchValue, {
-        entityTypes:
-          selectedFilters.entityTypes.length > 0
-            ? selectedFilters.entityTypes
-            : ['concerts', 'artists', 'festivals', 'venues'],
+      const searchOptions = {
+        types: searchTypes,
         parkIds: selectedFilters.parkIds,
         dates: selectedFilters.dates,
-      });
+      };
+
+      console.log('[SearchPage] Search options:', JSON.stringify(searchOptions, null, 2));
+      globalSearch(searchValue, searchOptions);
+    } else {
+      // Clear search results when search value is empty
+      console.log('[SearchPage] Clearing search (empty query)');
+      queryParams.delete('q');
+      navigate({ search: queryParams.toString() }, { replace: true });
     }
   }, [globalSearch, navigate, queryParams, searchValue, selectedFilters]);
 
   // Handle search submission
   const handleSearch = value => {
+    console.log('[SearchPage] handleSearch called with:', value);
     setSearchValue(value);
   };
 
   // Toggle filters visibility
   const toggleFilters = () => {
+    console.log('[SearchPage] toggleFilters called, current state:', showFilters);
     setShowFilters(prev => !prev);
   };
 
   // Handle filter changes
   const handleFilterChange = newFilters => {
-    setSelectedFilters(newFilters);
+    console.log('[SearchPage] handleFilterChange called with:', newFilters);
+
+    // TEMPORARY FIX: Remove concerts from entity types
+    const filteredTypes = newFilters.entityTypes
+      ? newFilters.entityTypes.filter(type => type !== 'concerts')
+      : [];
+
+    setSelectedFilters({
+      ...newFilters,
+      entityTypes: filteredTypes,
+    });
   };
 
   // Reset all filters
   const resetFilters = () => {
+    console.log('[SearchPage] resetFilters called');
     setSelectedFilters({
       entityTypes: [],
       parkIds: [],
@@ -77,14 +105,14 @@ const SearchPage = () => {
     });
   };
 
-  // Filter configurations
+  // Filter configurations - TEMPORARY FIX: Remove concerts from filter options
   const filterGroups = [
     {
       key: 'entityTypes',
       title: 'Result Type',
       icon: 'filter',
       options: [
-        { value: 'concerts', label: 'Concerts', count: results.concerts?.length || 0 },
+        // Concert option removed temporarily
         { value: 'artists', label: 'Artists', count: results.artists?.length || 0 },
         { value: 'festivals', label: 'Festivals', count: results.festivals?.length || 0 },
         { value: 'venues', label: 'Venues', count: results.venues?.length || 0 },
@@ -119,12 +147,13 @@ const SearchPage = () => {
     },
   ];
 
-  // Calculate total results count
+  // Calculate total results count (excluding concerts completely)
   const resultsCount =
-    (results.concerts?.length || 0) +
     (results.artists?.length || 0) +
     (results.festivals?.length || 0) +
     (results.venues?.length || 0);
+
+  console.log('[SearchPage] Total results count:', resultsCount);
 
   // Display empty state with dark theme styling
   const renderEmptyState = () => (
@@ -205,7 +234,7 @@ const SearchPage = () => {
             <div className="text-center py-xl">
               <Icon name="search" size="lg" color="deep-orchid" className="mb-md" />
               <Typography variant="h4" color="white">
-                Search for concerts, artists, venues, and more
+                Search for artists, venues, and more
               </Typography>
               <Typography variant="body1" color="medium-gray" className="mt-xs">
                 Enter keywords in the search box above
@@ -216,30 +245,6 @@ const SearchPage = () => {
           {/* Results */}
           {!loading && !error && searchValue && resultsCount > 0 && (
             <div className="space-y-xl">
-              {/* Concerts section with updated branding */}
-              {results.concerts && results.concerts.length > 0 && (
-                <div>
-                  <BrandHeading level={3} gradient className="mb-md">
-                    Concerts
-                  </BrandHeading>
-                  <div className="space-y-md">
-                    {results.concerts.slice(0, 5).map((concert, index) => (
-                      <PerformanceCard
-                        key={concert.id}
-                        performance={concert}
-                        showDate={true}
-                        featured={index === 0}
-                      />
-                    ))}
-                    {results.concerts.length > 5 && (
-                      <Button variant="secondary" fullWidth className="mt-sm">
-                        View All {results.concerts.length} Concerts
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )}
-
               {/* Artists section with updated branding */}
               {results.artists && results.artists.length > 0 && (
                 <div>
@@ -247,12 +252,39 @@ const SearchPage = () => {
                     Artists
                   </BrandHeading>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-md">
-                    {results.artists.slice(0, 6).map((artist, index) => (
-                      <ArtistCard key={artist.id} artist={artist} featured={index === 0} />
-                    ))}
+                    {results.artists.slice(0, 6).map((artist, index) => {
+                      // Ensure artist data is properly formatted
+                      console.log('[SearchPage] Processing artist for display:', artist);
+
+                      const formattedArtist = {
+                        id: artist.id,
+                        name: artist.name,
+                        image_url: artist.image_url,
+                        genres: artist.genres || [],
+                      };
+
+                      console.log('[SearchPage] Formatted artist:', formattedArtist);
+
+                      return (
+                        <ArtistCard
+                          key={artist.id}
+                          artist={formattedArtist}
+                          featured={index === 0}
+                        />
+                      );
+                    })}
                   </div>
                   {results.artists.length > 6 && (
-                    <Button variant="secondary" fullWidth className="mt-md">
+                    <Button
+                      variant="secondary"
+                      fullWidth
+                      className="mt-md"
+                      onClick={() =>
+                        navigate('/artists', {
+                          state: { searchResults: results.artists, searchTerm: searchValue },
+                        })
+                      }
+                    >
                       View All {results.artists.length} Artists
                     </Button>
                   )}
@@ -266,13 +298,91 @@ const SearchPage = () => {
                     Festivals
                   </BrandHeading>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-md">
-                    {results.festivals.slice(0, 4).map((festival, index) => (
-                      <FestivalCard key={festival.id} festival={festival} featured={index === 0} />
-                    ))}
+                    {results.festivals.slice(0, 4).map((festival, index) => {
+                      // Ensure festival data is properly formatted
+                      console.log('[SearchPage] Processing festival for display:', festival);
+
+                      const formattedFestival = {
+                        id: festival.id,
+                        name: festival.name,
+                        start_date: festival.start_date,
+                        end_date: festival.end_date,
+                        image_url: festival.image_url,
+                        park: festival.park || festival.parks || {},
+                      };
+
+                      console.log('[SearchPage] Formatted festival:', formattedFestival);
+
+                      return (
+                        <FestivalCard
+                          key={festival.id}
+                          festival={formattedFestival}
+                          featured={index === 0}
+                        />
+                      );
+                    })}
                   </div>
                   {results.festivals.length > 4 && (
-                    <Button variant="secondary" fullWidth className="mt-md">
+                    <Button
+                      variant="secondary"
+                      fullWidth
+                      className="mt-md"
+                      onClick={() =>
+                        navigate('/festivals', {
+                          state: { searchResults: results.festivals, searchTerm: searchValue },
+                        })
+                      }
+                    >
                       View All {results.festivals.length} Festivals
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {/* Venues section with updated branding */}
+              {results.venues && results.venues.length > 0 && (
+                <div>
+                  <BrandHeading level={3} gradient className="mb-md">
+                    Venues
+                  </BrandHeading>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-md">
+                    {/* eslint-disable-next-line no-unused-vars */}
+                    {results.venues.slice(0, 6).map((venue, index) => {
+                      console.log('[SearchPage] Processing venue for display:', venue);
+                      return (
+                        <div key={venue.id} className="bg-card p-md rounded-lg">
+                          <Typography variant="h4" color="white" className="mb-xs">
+                            {venue.name}
+                          </Typography>
+                          {venue.parks && (
+                            <Typography variant="body2" color="medium-gray">
+                              {venue.parks.name}
+                            </Typography>
+                          )}
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="mt-sm"
+                            onClick={() => navigate(`/venues/${venue.id}`)}
+                          >
+                            View Details
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {results.venues.length > 6 && (
+                    <Button
+                      variant="secondary"
+                      fullWidth
+                      className="mt-md"
+                      onClick={() =>
+                        navigate('/venues', {
+                          state: { searchResults: results.venues, searchTerm: searchValue },
+                        })
+                      }
+                    >
+                      View All {results.venues.length} Venues
                     </Button>
                   )}
                 </div>

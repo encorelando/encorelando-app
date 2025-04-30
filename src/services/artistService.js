@@ -42,12 +42,25 @@ const artistService = {
 
     // Apply filters if provided
     if (name) {
-      query = query.ilike('name', `%${name}%`);
+      // Trim whitespace and make sure we have a valid search term
+      const trimmedName = name.trim();
+      if (trimmedName) {
+        query = query.ilike('name', `%${trimmedName}%`);
+        console.log(`Searching for artists with name containing "${trimmedName}"`);
+      }
     }
 
     if (genre) {
-      // Filter by array containing the genre
-      query = query.contains('genres', [genre]);
+      // Check if genre is an array or string
+      if (Array.isArray(genre)) {
+        // If it's an array with values, use overlaps to search for any of the genres
+        if (genre.length > 0) {
+          query = query.overlaps('genres', genre);
+        }
+      } else {
+        // If it's a string, use contains as before
+        query = query.contains('genres', [genre]);
+      }
     }
 
     // For festival filtering, we need to use a different approach

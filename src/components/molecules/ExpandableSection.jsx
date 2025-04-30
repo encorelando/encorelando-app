@@ -14,6 +14,7 @@ const ExpandableSection = ({
   className = '',
   titleVariant = 'h4',
   icon,
+  darkMode = false,
 }) => {
   const [expanded, setExpanded] = useState(initialExpanded);
 
@@ -27,11 +28,17 @@ const ExpandableSection = ({
   const contentId = `content-${title?.replace(/\s+/g, '-').toLowerCase()}`;
 
   return (
-    <div className={`border-b border-light-gray ${className}`}>
+    <div
+      className={`border-b ${
+        darkMode ? 'border-white border-opacity-10' : 'border-light-gray'
+      } ${className}`}
+    >
       {/* Header - made touch-friendly with min-height */}
       <button
         type="button"
-        className="flex items-center justify-between w-full py-md px-md min-h-touch text-left focus:outline-none focus:bg-light-gray"
+        className={`flex items-center justify-between w-full py-md px-md min-h-touch text-left focus:outline-none ${
+          darkMode ? 'focus:bg-white focus:bg-opacity-10' : 'focus:bg-light-gray'
+        }`}
         onClick={toggleExpanded}
         aria-expanded={expanded}
         aria-controls={contentId}
@@ -72,6 +79,7 @@ ExpandableSection.propTypes = {
   className: PropTypes.string,
   titleVariant: PropTypes.oneOf(['h1', 'h2', 'h3', 'h4', 'body1', 'body2']),
   icon: PropTypes.string,
+  darkMode: PropTypes.bool,
 };
 
 export default ExpandableSection;

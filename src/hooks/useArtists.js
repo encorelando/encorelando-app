@@ -31,7 +31,14 @@ const useArtists = (initialFilters = {}) => {
         offset: pagination.offset,
       });
 
-      setArtists(data);
+      // If we're on the first page (offset = 0), replace all artists
+      // Otherwise append to existing list for infinite scrolling
+      if (pagination.offset === 0) {
+        setArtists(data);
+      } else {
+        setArtists(prevArtists => [...prevArtists, ...data]);
+      }
+
       setPagination(paginationData);
     } catch (err) {
       setError(err.message || 'Failed to fetch artists');
@@ -43,37 +50,73 @@ const useArtists = (initialFilters = {}) => {
 
   // Fetch artists on mount and when filters change
   useEffect(() => {
+    // Reset artists array when filter changes
+    if (pagination.offset === 0) {
+      setArtists([]);
+    }
     fetchArtists();
-  }, [fetchArtists]);
+  }, [fetchArtists, pagination.offset]);
 
   /**
    * Update filters and reset pagination
    * @param {Object} newFilters - New filter values
    */
   const updateFilters = useCallback(newFilters => {
-    setFilters(prevFilters => ({
-      ...prevFilters,
-      ...newFilters,
-    }));
+    // Log to help with debugging
+    console.log('Filters being applied:', newFilters);
 
-    // Reset to first page when filters change
+    // Update filters state
+    setFilters(newFilters);
+
+    // Reset to first page when filters change and clear artists array
+    // to prevent showing old results briefly during loading
     setPagination(prev => ({
       ...prev,
       offset: 0,
     }));
+
+    // Clear artists when filters change to prevent UI flicker
+    setArtists([]);
   }, []);
 
   /**
    * Load next page of results
    */
-  const loadMore = useCallback(() => {
+  const loadMore = useCallback(async () => {
     if (loading || artists.length >= pagination.total) return;
+
+    const newOffset = pagination.offset + pagination.limit;
 
     setPagination(prev => ({
       ...prev,
-      offset: prev.offset + prev.limit,
+      offset: newOffset,
     }));
-  }, [loading, artists.length, pagination.total]);
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, pagination: paginationData } = await artistService.getArtists({
+        ...filters,
+        limit: pagination.limit,
+        offset: newOffset,
+      });
+
+      // Append new results to existing ones
+      setArtists(prevArtists => [...prevArtists, ...data]);
+      // Update pagination data but keep our offset
+      // eslint-disable-next-line no-unused-vars
+      setPagination(prev => ({
+        ...paginationData,
+        offset: newOffset,
+      }));
+    } catch (err) {
+      setError(err.message || 'Failed to load more artists');
+      console.error('Error loading more artists:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, artists.length, pagination.total, pagination.limit, pagination.offset, filters]);
 
   /**
    * Refresh artist data

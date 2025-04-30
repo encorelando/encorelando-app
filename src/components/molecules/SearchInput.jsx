@@ -42,9 +42,21 @@ const SearchInput = ({
 
       {/* Search input with dark mode styling and increased padding */}
       <input
-        type="search"
+        type="text"
         value={value}
         onChange={onChange}
+        onKeyUp={e => {
+          // Handle Enter key
+          if (e.key === 'Enter' && onSubmit) {
+            e.preventDefault();
+            onSubmit(value);
+          }
+          // Handle Escape key
+          if (e.key === 'Escape' && onClear) {
+            e.preventDefault();
+            onClear();
+          }
+        }}
         placeholder={placeholder}
         disabled={disabled}
         className={`
@@ -56,6 +68,7 @@ const SearchInput = ({
           }
         `}
         aria-label="Search"
+        autoComplete="off"
       />
 
       {/* Clear button with dark mode support - only shown when there's a value */}

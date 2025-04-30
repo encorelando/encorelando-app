@@ -17,7 +17,15 @@ const searchService = {
     query,
     { types = ['concerts', 'artists', 'venues', 'festivals', 'parks'], limit = 5 } = {}
   ) {
-    if (!query || query.trim() === '') {
+    console.log('[searchService] globalSearch called with query:', query);
+    console.log('[searchService] types:', types);
+    console.log('[searchService] limit:', limit);
+
+    // Ensure query is trimmed and valid
+    const trimmedQuery = query ? query.trim() : '';
+
+    if (!trimmedQuery) {
+      console.log('[searchService] Empty query, returning empty results');
       return {
         artists: [],
         concerts: [],
@@ -26,6 +34,12 @@ const searchService = {
         parks: [],
       };
     }
+
+    // Ensure types is always an array
+    const searchTypes = Array.isArray(types)
+      ? types
+      : ['concerts', 'artists', 'venues', 'festivals', 'parks'];
+    console.log('[searchService] Normalized search types:', searchTypes);
 
     // Create an object to store our results
     const results = {
@@ -39,57 +53,150 @@ const searchService = {
     // Build queries in parallel for better mobile performance
     const promises = [];
 
-    // Search artists if requested
-    if (types.includes('artists')) {
-      const artistPromise = supabase
+    // First, find any artists that match the search term
+    // This will be used to properly find concerts by the correct artist
+    let artistsResult = { data: [] };
+    if (searchTypes.includes('artists') || searchTypes.includes('concerts')) {
+      artistsResult = await supabase
         .from('artists')
-        .select(
-          `
-          id,
-          name,
-          image_url
-        `
-        )
-        .ilike('name', `%${query}%`)
-        .order('name')
-        .limit(limit)
-        .then(({ data, error }) => {
-          if (error) {
-            console.error('Error searching artists:', error);
-            return [];
-          }
-          return data;
-        });
+        .select('id, name, image_url')
+        .ilike('name', `%${trimmedQuery}%`)
+        .order('name');
+    }
 
-      promises.push(
-        artistPromise.then(data => {
-          results.artists = data;
-        })
-      );
+    const matchingArtistIds = artistsResult.data?.map(artist => artist.id) || [];
+    console.log('[searchService] Found matching artist IDs:', matchingArtistIds);
+
+    // Search artists if requested
+    if (searchTypes.includes('artists')) {
+      console.log('[searchService] Searching artists');
+
+      // We already have the artists data from above
+      if (!artistsResult.error && artistsResult.data) {
+        console.log('[searchService] Found artists:', artistsResult.data?.length || 0);
+        results.artists = artistsResult.data.slice(0, limit);
+      } else {
+        console.error('[searchService] Error searching artists:', artistsResult.error);
+      }
     }
 
     // Search concerts if requested
-    if (types.includes('concerts')) {
-      // Try a different approach without using .or()
-      const concertPromise = Promise.all([
-        // Search by artist name
-        supabase
-          .from('concerts')
-          .select(
-            `
-            id,
-            start_time,
-            end_time,
-            artists:artist_id (id, name, image_url),
-            venues:venue_id (id, name),
-            festivals:festival_id (id, name)
-          `
-          )
-          .ilike('artists.name', `%${query}%`)
-          .gte('start_time', new Date().toISOString())
-          .order('start_time')
-          .limit(limit),
+    if (searchTypes.includes('concerts')) {
+      console.log('[searchService] Searching concerts');
 
+      const concertPromises = [];
+
+      // If we found any matching artists, search by artist_id first (exact match)
+      if (matchingArtistIds.length > 0) {
+        console.log(
+          '[searchService] Searching concerts by matching artist IDs:',
+          matchingArtistIds
+        );
+
+        // Try a direct approach by querying each artist ID separately
+        // This avoids any issues with the 'in' operator
+        let artistConcerts = [];
+        let artistConcertsError = null;
+
+        // Loop through each matching artist ID and get their concerts
+        for (const artistId of matchingArtistIds) {
+          console.log('[searchService] Querying concerts for artist ID:', artistId);
+
+          const { data, error } = await supabase
+            .from('concerts')
+            .select(
+              `
+              id,
+              start_time,
+              end_time,
+              artist_id,
+              artists:artist_id (id, name, image_url),
+              venues:venue_id (id, name),
+              festivals:festival_id (id, name)
+              `
+            )
+            .eq('artist_id', artistId) // Use exact match with a single ID
+            .gte('start_time', new Date().toISOString())
+            .order('start_time')
+            .limit(limit);
+
+          if (error) {
+            artistConcertsError = error;
+            console.error(
+              '[searchService] Error fetching concerts for artist ID',
+              artistId,
+              ':',
+              error
+            );
+          } else if (data && data.length > 0) {
+            console.log('[searchService] Found', data.length, 'concerts for artist ID', artistId);
+            // Add these concerts to our results
+            artistConcerts = [...artistConcerts, ...data];
+          }
+        }
+
+        // Process the artist concerts we found
+        if (artistConcertsError) {
+          console.error('[searchService] Error searching by artist ID:', artistConcertsError);
+        } else {
+          console.log(
+            '[searchService] All artist ID searches found:',
+            artistConcerts?.length || 0,
+            'concerts'
+          );
+
+          // If we found concerts, add them to the results and skip other searches
+          if (artistConcerts && artistConcerts.length > 0) {
+            console.log(
+              '[searchService] Sample artist concert:',
+              JSON.stringify(artistConcerts[0], null, 2)
+            );
+
+            // Skip venue/festival searches and just use these results
+            // This ensures we only get concerts by the actual artist
+            concertPromises.push(Promise.resolve({ data: artistConcerts }));
+
+            // Return early with just these results
+            const concertSearchPromise = Promise.all(concertPromises).then(searchResults => {
+              const allConcerts = [];
+
+              searchResults.forEach(result => {
+                const data = result.error ? [] : result.data || [];
+
+                // Add all concerts without duplicates
+                data.forEach(concert => {
+                  if (!allConcerts.some(existing => existing.id === concert.id)) {
+                    allConcerts.push(concert);
+                  }
+                });
+              });
+
+              console.log(
+                '[searchService] Found',
+                allConcerts.length,
+                'valid concerts for artist(s)'
+              );
+              return allConcerts.slice(0, limit);
+            });
+
+            promises.push(
+              concertSearchPromise.then(data => {
+                results.concerts = data;
+              })
+            );
+
+            // Skip the rest of the concert search
+            return;
+          } else {
+            console.log(
+              '[searchService] No concerts found for artist IDs, using fallback searches'
+            );
+          }
+        }
+      }
+
+      // Add additional search methods
+      concertPromises.push(
         // Search by venue name
         supabase
           .from('concerts')
@@ -103,61 +210,110 @@ const searchService = {
             festivals:festival_id (id, name)
           `
           )
-          .ilike('venues.name', `%${query}%`)
+          .ilike('venues.name', `%${trimmedQuery}%`)
           .gte('start_time', new Date().toISOString())
           .order('start_time')
-          .limit(limit),
-      ])
-        .then(([artistResults, venueResults]) => {
-          const artistData = artistResults.error ? [] : artistResults.data || [];
-          const venueData = venueResults.error ? [] : venueResults.data || [];
+          .limit(limit)
+      );
 
-          // Combine and deduplicate results
-          const combinedResults = [...artistData];
-          venueData.forEach(venueResult => {
-            if (!combinedResults.some(item => item.id === venueResult.id)) {
-              combinedResults.push(venueResult);
+      concertPromises.push(
+        // Search by festival name
+        supabase
+          .from('concerts')
+          .select(
+            `
+            id,
+            start_time,
+            end_time,
+            artists:artist_id (id, name, image_url),
+            venues:venue_id (id, name),
+            festivals:festival_id (id, name)
+          `
+          )
+          .ilike('festivals.name', `%${trimmedQuery}%`)
+          .gte('start_time', new Date().toISOString())
+          .order('start_time')
+          .limit(limit)
+      );
+
+      const concertSearchPromise = Promise.all(concertPromises)
+        .then(searchResults => {
+          // Process results from all concert searches
+          const allConcerts = [];
+
+          // Log the results from each search method
+          searchResults.forEach((result, index) => {
+            const data = result.error ? [] : result.data || [];
+            const searchType =
+              index === 0 && matchingArtistIds.length > 0
+                ? 'By artist ID'
+                : index === (matchingArtistIds.length > 0 ? 1 : 0)
+                ? 'By venue name'
+                : 'By festival name';
+
+            console.log(`[searchService] Concert search results ${searchType}:`, data.length);
+
+            // Log a sample of each result type if available
+            if (data.length > 0) {
+              console.log(
+                `[searchService] ${searchType} concert sample:`,
+                JSON.stringify(data[0], null, 2)
+              );
             }
+
+            // Add all concerts to our collection, avoiding duplicates
+            data.forEach(concert => {
+              if (!allConcerts.some(existing => existing.id === concert.id)) {
+                allConcerts.push(concert);
+              }
+            });
           });
 
           // Sort by start_time
-          combinedResults.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+          allConcerts.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
 
           // Limit to the specified number
-          return combinedResults.slice(0, limit);
+          const limitedResults = allConcerts.slice(0, limit);
+          console.log('[searchService] Combined concert results:', limitedResults.length);
+          return limitedResults;
         })
         .catch(error => {
-          console.error('Error searching concerts:', error);
+          console.error('[searchService] Error searching concerts:', error);
           return [];
         });
 
       promises.push(
-        concertPromise.then(data => {
+        concertSearchPromise.then(data => {
           results.concerts = data;
         })
       );
     }
 
     // Search venues if requested
-    if (types.includes('venues')) {
+    if (searchTypes.includes('venues')) {
+      console.log('[searchService] Searching venues');
       const venuePromise = supabase
         .from('venues')
         .select(
           `
           id,
           name,
-          parks:park_id (name)
+          parks:park_id (id, name)
         `
         )
-        .ilike('name', `%${query}%`)
+        .ilike('name', `%${trimmedQuery}%`)
         .order('name')
         .limit(limit)
         .then(({ data, error }) => {
           if (error) {
-            console.error('Error searching venues:', error);
+            console.error('[searchService] Error searching venues:', error);
             return [];
           }
-          return data;
+          console.log('[searchService] Found venues:', data?.length || 0);
+          if (data?.length > 0) {
+            console.log('[searchService] Venue sample:', JSON.stringify(data[0], null, 2));
+          }
+          return data || [];
         });
 
       promises.push(
@@ -168,7 +324,8 @@ const searchService = {
     }
 
     // Search festivals if requested
-    if (types.includes('festivals')) {
+    if (searchTypes.includes('festivals')) {
+      console.log('[searchService] Searching festivals');
       const festivalPromise = supabase
         .from('festivals')
         .select(
@@ -176,18 +333,24 @@ const searchService = {
           id,
           name,
           start_date,
-          end_date
+          end_date,
+          image_url,
+          parks:park_id (id, name)
         `
         )
-        .ilike('name', `%${query}%`)
+        .ilike('name', `%${trimmedQuery}%`)
         .order('start_date')
         .limit(limit)
         .then(({ data, error }) => {
           if (error) {
-            console.error('Error searching festivals:', error);
+            console.error('[searchService] Error searching festivals:', error);
             return [];
           }
-          return data;
+          console.log('[searchService] Found festivals:', data?.length || 0);
+          if (data?.length > 0) {
+            console.log('[searchService] Festival sample:', JSON.stringify(data[0], null, 2));
+          }
+          return data || [];
         });
 
       promises.push(
@@ -198,7 +361,8 @@ const searchService = {
     }
 
     // Search parks if requested
-    if (types.includes('parks')) {
+    if (searchTypes.includes('parks')) {
+      console.log('[searchService] Searching parks');
       const parkPromise = supabase
         .from('parks')
         .select(
@@ -207,15 +371,16 @@ const searchService = {
           name
         `
         )
-        .ilike('name', `%${query}%`)
+        .ilike('name', `%${trimmedQuery}%`)
         .order('name')
         .limit(limit)
         .then(({ data, error }) => {
           if (error) {
-            console.error('Error searching parks:', error);
+            console.error('[searchService] Error searching parks:', error);
             return [];
           }
-          return data;
+          console.log('[searchService] Found parks:', data?.length || 0);
+          return data || [];
         });
 
       promises.push(
@@ -226,9 +391,21 @@ const searchService = {
     }
 
     // Wait for all search queries to complete
-    await Promise.all(promises);
-
-    return results;
+    try {
+      await Promise.all(promises);
+      console.log('[searchService] All search promises completed');
+      console.log(
+        '[searchService] Final result counts:',
+        Object.keys(results)
+          .map(key => `${key}: ${results[key]?.length || 0}`)
+          .join(', ')
+      );
+      return results;
+    } catch (error) {
+      console.error('[searchService] Error during global search:', error);
+      // Return whatever results we have so far rather than nothing
+      return results;
+    }
   },
 
   /**
@@ -239,30 +416,52 @@ const searchService = {
    * @returns {Promise<Array>} - Concerts matching search
    */
   async searchConcerts(query, { limit = 20 } = {}) {
+    console.log('[searchService] searchConcerts called with query:', query);
+
     if (!query || query.trim() === '') {
+      console.log('[searchService] Empty query, returning empty results');
       return [];
     }
 
-    try {
-      // Use multiple separate queries instead of .or() to avoid the syntax error
-      const [artistResults, venueResults, festivalResults] = await Promise.all([
-        // Search by artist name
-        supabase
-          .from('concerts')
-          .select(
-            `
-            id,
-            start_time,
-            end_time,
-            artists:artist_id (id, name),
-            venues:venue_id (id, name),
-            festivals:festival_id (id, name)
-          `
-          )
-          .ilike('artists.name', `%${query}%`)
-          .order('start_time')
-          .limit(limit),
+    const trimmedQuery = query.trim();
+    console.log('[searchService] Trimmed query:', trimmedQuery);
 
+    try {
+      // First, find any artists that match the search term
+      const { data: matchingArtists } = await supabase
+        .from('artists')
+        .select('id')
+        .ilike('name', `%${trimmedQuery}%`);
+
+      const matchingArtistIds = matchingArtists?.map(artist => artist.id) || [];
+      console.log('[searchService] Found matching artist IDs:', matchingArtistIds);
+
+      // Use multiple separate queries
+      const concertPromises = [];
+
+      // If we found matching artists, search by artist_id
+      if (matchingArtistIds.length > 0) {
+        concertPromises.push(
+          supabase
+            .from('concerts')
+            .select(
+              `
+              id,
+              start_time,
+              end_time,
+              artists:artist_id (id, name),
+              venues:venue_id (id, name),
+              festivals:festival_id (id, name)
+            `
+            )
+            .in('artist_id', matchingArtistIds)
+            .order('start_time')
+            .limit(limit)
+        );
+      }
+
+      // Also search by venue and festival names
+      concertPromises.push(
         // Search by venue name
         supabase
           .from('concerts')
@@ -276,7 +475,7 @@ const searchService = {
             festivals:festival_id (id, name)
           `
           )
-          .ilike('venues.name', `%${query}%`)
+          .ilike('venues.name', `%${trimmedQuery}%`)
           .order('start_time')
           .limit(limit),
 
@@ -293,36 +492,54 @@ const searchService = {
             festivals:festival_id (id, name)
           `
           )
-          .ilike('festivals.name', `%${query}%`)
+          .ilike('festivals.name', `%${trimmedQuery}%`)
           .order('start_time')
-          .limit(limit),
-      ]);
+          .limit(limit)
+      );
 
-      const artistData = artistResults.error ? [] : artistResults.data || [];
-      const venueData = venueResults.error ? [] : venueResults.data || [];
-      const festivalData = festivalResults.error ? [] : festivalResults.data || [];
+      // Execute all search promises
+      const searchResults = await Promise.all(concertPromises);
 
-      // Combine and deduplicate results
-      const combinedResults = [...artistData];
+      // Process all results
+      const allConcerts = [];
 
-      venueData.forEach(venueResult => {
-        if (!combinedResults.some(item => item.id === venueResult.id)) {
-          combinedResults.push(venueResult);
+      // Handle results from each search method
+      searchResults.flat().forEach(result => {
+        if (result.error) {
+          console.error('[searchService] Error in concert search:', result.error);
+          return;
         }
+
+        const data = result.data || [];
+
+        // Add results without duplicates
+        data.forEach(concert => {
+          if (!allConcerts.some(existing => existing.id === concert.id)) {
+            allConcerts.push(concert);
+          }
+        });
       });
 
-      festivalData.forEach(festivalResult => {
-        if (!combinedResults.some(item => item.id === festivalResult.id)) {
-          combinedResults.push(festivalResult);
-        }
-      });
+      console.log('[searchService] Concert search found total results:', allConcerts.length);
 
       // Sort by start_time and limit to requested amount
-      return combinedResults
+      const result = allConcerts
         .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
         .slice(0, limit);
+
+      console.log('[searchService] Final concert search results:', result.length);
+
+      // Log a sample if available
+      if (result.length > 0) {
+        console.log('[searchService] Sample concert result:', JSON.stringify(result[0], null, 2));
+      }
+
+      return result;
     } catch (error) {
-      console.error(`Error searching concerts with query "${query}":`, error);
+      console.error(
+        `[searchService] Error searching concerts with query "${trimmedQuery}":`,
+        error
+      );
       throw error;
     }
   },
@@ -336,12 +553,21 @@ const searchService = {
    * @returns {Promise<Array>} - Concerts matching search
    */
   async searchByDateAndTerm(date, query = '', { limit = 20 } = {}) {
+    console.log('[searchService] searchByDateAndTerm called with date:', date, 'query:', query);
+
     // Create start and end of day timestamps
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
 
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
+
+    console.log(
+      '[searchService] Date range:',
+      startOfDay.toISOString(),
+      'to',
+      endOfDay.toISOString()
+    );
 
     let dbQuery = supabase
       .from('concerts')
@@ -362,41 +588,61 @@ const searchService = {
 
     // If no text query, just execute the date filter query
     if (!query || query.trim() === '') {
+      console.log('[searchService] Date-only search (no text query)');
       const { data, error } = await dbQuery;
 
       if (error) {
-        console.error(`Error searching events for date ${date}:`, error);
+        console.error(`[searchService] Error searching events for date ${date}:`, error);
         throw error;
       }
 
-      return data;
+      console.log('[searchService] Date-only search results:', data?.length || 0);
+      return data || [];
     }
 
-    // If there's a text query, we need to use separate queries and combine results
+    const trimmedQuery = query.trim();
+    console.log('[searchService] Date + text search for:', trimmedQuery);
+
     try {
-      const [dateOnlyResults, artistResults, venueResults, festivalResults] = await Promise.all([
-        // Just date filter
-        dbQuery,
+      // First, find any artists that match the search term
+      const { data: matchingArtists } = await supabase
+        .from('artists')
+        .select('id')
+        .ilike('name', `%${trimmedQuery}%`);
 
-        // Date + artist name filter
-        supabase
-          .from('concerts')
-          .select(
+      const matchingArtistIds = matchingArtists?.map(artist => artist.id) || [];
+      console.log('[searchService] Found matching artist IDs:', matchingArtistIds);
+
+      const datePromises = [];
+
+      // Start with date-only query
+      datePromises.push(dbQuery);
+
+      // If we found matching artists, add artist ID search
+      if (matchingArtistIds.length > 0) {
+        datePromises.push(
+          supabase
+            .from('concerts')
+            .select(
+              `
+              id,
+              start_time,
+              end_time,
+              artists:artist_id (id, name),
+              venues:venue_id (id, name),
+              festivals:festival_id (id, name)
             `
-            id,
-            start_time,
-            end_time,
-            artists:artist_id (id, name),
-            venues:venue_id (id, name),
-            festivals:festival_id (id, name)
-          `
-          )
-          .ilike('artists.name', `%${query}%`)
-          .gte('start_time', startOfDay.toISOString())
-          .lte('start_time', endOfDay.toISOString())
-          .order('start_time')
-          .limit(limit),
+            )
+            .in('artist_id', matchingArtistIds)
+            .gte('start_time', startOfDay.toISOString())
+            .lte('start_time', endOfDay.toISOString())
+            .order('start_time')
+            .limit(limit)
+        );
+      }
 
+      // Add queries for venue and festival names
+      datePromises.push(
         // Date + venue name filter
         supabase
           .from('concerts')
@@ -410,7 +656,7 @@ const searchService = {
             festivals:festival_id (id, name)
           `
           )
-          .ilike('venues.name', `%${query}%`)
+          .ilike('venues.name', `%${trimmedQuery}%`)
           .gte('start_time', startOfDay.toISOString())
           .lte('start_time', endOfDay.toISOString())
           .order('start_time')
@@ -429,51 +675,71 @@ const searchService = {
             festivals:festival_id (id, name)
           `
           )
-          .ilike('festivals.name', `%${query}%`)
+          .ilike('festivals.name', `%${trimmedQuery}%`)
           .gte('start_time', startOfDay.toISOString())
           .lte('start_time', endOfDay.toISOString())
           .order('start_time')
-          .limit(limit),
-      ]);
+          .limit(limit)
+      );
 
-      // Extract data or empty arrays if there were errors
-      const dateData = dateOnlyResults.error ? [] : dateOnlyResults.data || [];
-      const artistData = artistResults.error ? [] : artistResults.data || [];
-      const venueData = venueResults.error ? [] : venueResults.data || [];
-      const festivalData = festivalResults.error ? [] : festivalResults.data || [];
+      // Execute all search promises
+      const searchResults = await Promise.all(datePromises);
 
-      // Start with the date-only results if they match any text criteria
-      const combinedResults = dateData.filter(concert => {
+      // Extract data and process results
+      const combinedResults = [];
+
+      // Add date-only results that match the text search
+      const dateOnlyResult = searchResults[0];
+      const dateData = dateOnlyResult.error ? [] : dateOnlyResult.data || [];
+      const filteredDateData = dateData.filter(concert => {
         const artistName = concert.artists?.name || '';
         const venueName = concert.venues?.name || '';
         const festivalName = concert.festivals?.name || '';
 
         return (
-          artistName.toLowerCase().includes(query.toLowerCase()) ||
-          venueName.toLowerCase().includes(query.toLowerCase()) ||
-          festivalName.toLowerCase().includes(query.toLowerCase())
+          artistName.toLowerCase().includes(trimmedQuery.toLowerCase()) ||
+          venueName.toLowerCase().includes(trimmedQuery.toLowerCase()) ||
+          festivalName.toLowerCase().includes(trimmedQuery.toLowerCase())
         );
       });
 
-      // Add results from specific queries if not already included
-      const addUniqueResults = resultsArray => {
-        resultsArray.forEach(result => {
-          if (!combinedResults.some(item => item.id === result.id)) {
-            combinedResults.push(result);
+      console.log('[searchService] Filtered date-only results:', filteredDateData.length);
+
+      // Add filtered date results to combined results
+      filteredDateData.forEach(concert => {
+        combinedResults.push(concert);
+      });
+
+      // Process remaining results (artist ID, venue, festival)
+      for (let i = 1; i < searchResults.length; i++) {
+        const result = searchResults[i];
+        const data = result.error ? [] : result.data || [];
+
+        data.forEach(concert => {
+          if (!combinedResults.some(existing => existing.id === concert.id)) {
+            combinedResults.push(concert);
           }
         });
-      };
-
-      addUniqueResults(artistData);
-      addUniqueResults(venueData);
-      addUniqueResults(festivalData);
+      }
 
       // Sort by start_time and limit to requested amount
-      return combinedResults
+      const result = combinedResults
         .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
         .slice(0, limit);
+
+      console.log('[searchService] Final date + text search results:', result.length);
+
+      // Log a sample if available
+      if (result.length > 0) {
+        console.log(
+          '[searchService] Sample date search result:',
+          JSON.stringify(result[0], null, 2)
+        );
+      }
+
+      return result;
     } catch (error) {
-      console.error(`Error searching events for date ${date}:`, error);
+      console.error(`[searchService] Error searching events for date ${date}:`, error);
       throw error;
     }
   },
@@ -492,6 +758,11 @@ const searchService = {
    * @returns {Promise<Array>} - Concerts matching search
    */
   async searchWithFilters(filters = {}, { limit = 20 } = {}) {
+    console.log(
+      '[searchService] searchWithFilters called with filters:',
+      JSON.stringify(filters, null, 2)
+    );
+
     const { query, parkId, artistId, venueId, festivalId, startDate, endDate } = filters;
 
     let dbQuery = supabase
@@ -501,7 +772,7 @@ const searchService = {
         id,
         start_time,
         end_time,
-        artists:artist_id (id, name),
+        artists:artist_id (id, name, image_url),
         venues:venue_id (id, name, parks:park_id (id, name)),
         festivals:festival_id (id, name)
       `
@@ -511,52 +782,129 @@ const searchService = {
 
     // We'll handle text search separately if provided
     const hasTextQuery = query && query.trim() !== '';
+    const trimmedQuery = hasTextQuery ? query.trim() : '';
+    console.log('[searchService] Has text query:', hasTextQuery, trimmedQuery);
 
     // Apply date filters
     if (startDate) {
+      console.log('[searchService] Applying start date filter:', startDate.toISOString());
       dbQuery = dbQuery.gte('start_time', startDate.toISOString());
     } else {
       // Default to upcoming only if no start date specified
+      console.log(
+        '[searchService] No start date specified, defaulting to now:',
+        new Date().toISOString()
+      );
       dbQuery = dbQuery.gte('start_time', new Date().toISOString());
     }
 
     if (endDate) {
+      console.log('[searchService] Applying end date filter:', endDate.toISOString());
       dbQuery = dbQuery.lte('start_time', endDate.toISOString());
     }
 
     // Apply entity filters
     if (artistId) {
+      console.log('[searchService] Filtering by artist ID:', artistId);
       dbQuery = dbQuery.eq('artist_id', artistId);
     }
 
     if (venueId) {
+      console.log('[searchService] Filtering by venue ID:', venueId);
       dbQuery = dbQuery.eq('venue_id', venueId);
     }
 
     if (festivalId) {
+      console.log('[searchService] Filtering by festival ID:', festivalId);
       dbQuery = dbQuery.eq('festival_id', festivalId);
     }
 
     if (parkId) {
+      console.log('[searchService] Filtering by park ID:', parkId);
       dbQuery = dbQuery.eq('venues.park_id', parkId);
     }
 
     try {
       // If no text search is needed, just use the filters we've built
       if (!hasTextQuery) {
+        console.log('[searchService] Executing filter-only query');
         const { data, error } = await dbQuery;
 
         if (error) {
-          console.error('Error searching with filters:', error);
+          console.error('[searchService] Error searching with filters:', error);
           throw error;
         }
 
-        return data;
+        console.log('[searchService] Filter-only search returned:', data?.length || 0, 'results');
+        if (data?.length > 0) {
+          console.log('[searchService] Filter search sample:', JSON.stringify(data[0], null, 2));
+        }
+
+        return data || [];
       }
 
-      // If we need text search, use separate queries for each text condition
-      // Create query builders with all the filters except for text search
-      const createFilteredQuery = () => {
+      // If we have a text query, find matching artist IDs first
+      let matchingArtistIds = [];
+      if (hasTextQuery) {
+        const { data: matchingArtists } = await supabase
+          .from('artists')
+          .select('id')
+          .ilike('name', `%${trimmedQuery}%`);
+
+        matchingArtistIds = matchingArtists?.map(artist => artist.id) || [];
+        console.log('[searchService] Found matching artist IDs:', matchingArtistIds);
+      }
+
+      // Perform multiple searches with the text query
+      const filterPromises = [];
+
+      // If we found matching artists, search by artist ID
+      if (matchingArtistIds.length > 0) {
+        // Create a copy of the base filter query
+        let artistQuery = supabase
+          .from('concerts')
+          .select(
+            `
+            id,
+            start_time,
+            end_time,
+            artists:artist_id (id, name, image_url),
+            venues:venue_id (id, name, parks:park_id (id, name)),
+            festivals:festival_id (id, name)
+          `
+          )
+          .order('start_time')
+          .limit(limit);
+
+        // Apply the same filters as the base query
+        if (startDate) {
+          artistQuery = artistQuery.gte('start_time', startDate.toISOString());
+        } else {
+          artistQuery = artistQuery.gte('start_time', new Date().toISOString());
+        }
+
+        if (endDate) {
+          artistQuery = artistQuery.lte('start_time', endDate.toISOString());
+        }
+
+        if (venueId) {
+          artistQuery = artistQuery.eq('venue_id', venueId);
+        }
+
+        if (festivalId) {
+          artistQuery = artistQuery.eq('festival_id', festivalId);
+        }
+
+        if (parkId) {
+          artistQuery = artistQuery.eq('venues.park_id', parkId);
+        }
+
+        // Add the artist filter
+        filterPromises.push(artistQuery.in('artist_id', matchingArtistIds));
+      }
+
+      // Create a more efficient version of the query builder function
+      const createFilteredQuery = filterType => {
         let query = supabase
           .from('concerts')
           .select(
@@ -572,7 +920,7 @@ const searchService = {
           .order('start_time')
           .limit(limit);
 
-        // Apply date filters
+        // Apply all the common filters
         if (startDate) {
           query = query.gte('start_time', startDate.toISOString());
         } else {
@@ -583,7 +931,6 @@ const searchService = {
           query = query.lte('start_time', endDate.toISOString());
         }
 
-        // Apply entity filters
         if (artistId) {
           query = query.eq('artist_id', artistId);
         }
@@ -600,47 +947,76 @@ const searchService = {
           query = query.eq('venues.park_id', parkId);
         }
 
+        // Apply the specific text filter
+        if (filterType === 'venue') {
+          query = query.ilike('venues.name', `%${trimmedQuery}%`);
+        } else if (filterType === 'festival') {
+          query = query.ilike('festivals.name', `%${trimmedQuery}%`);
+        }
+
         return query;
       };
 
-      // Execute separate queries for each text condition
-      const [artistResults, venueResults, festivalResults] = await Promise.all([
-        // Filter by artist name
-        createFilteredQuery().ilike('artists.name', `%${query}%`),
-
+      // Add other text search queries
+      filterPromises.push(
         // Filter by venue name
-        createFilteredQuery().ilike('venues.name', `%${query}%`),
+        createFilteredQuery('venue'),
 
         // Filter by festival name
-        createFilteredQuery().ilike('festivals.name', `%${query}%`),
-      ]);
+        createFilteredQuery('festival')
+      );
 
-      // Extract data and handle errors
-      const artistData = artistResults.error ? [] : artistResults.data || [];
-      const venueData = venueResults.error ? [] : venueResults.data || [];
-      const festivalData = festivalResults.error ? [] : festivalResults.data || [];
+      console.log('[searchService] Executing filter + text search queries');
 
-      // Combine and deduplicate results
-      const combinedResults = [...artistData];
+      // Execute all search promises
+      const searchResults = await Promise.all(filterPromises);
 
-      venueData.forEach(venueResult => {
-        if (!combinedResults.some(item => item.id === venueResult.id)) {
-          combinedResults.push(venueResult);
+      // Process all results
+      const allConcerts = [];
+
+      // Handle results from each search method
+      searchResults.forEach((result, index) => {
+        if (result.error) {
+          console.error('[searchService] Error in filtered search:', result.error);
+          return;
         }
-      });
 
-      festivalData.forEach(festivalResult => {
-        if (!combinedResults.some(item => item.id === festivalResult.id)) {
-          combinedResults.push(festivalResult);
-        }
+        const data = result.data || [];
+        const searchType =
+          index === 0 && matchingArtistIds.length > 0
+            ? 'By artist ID'
+            : index === (matchingArtistIds.length > 0 ? 1 : 0)
+            ? 'By venue name'
+            : 'By festival name';
+
+        console.log(`[searchService] Filter search results ${searchType}:`, data.length);
+
+        // Add results without duplicates
+        data.forEach(concert => {
+          if (!allConcerts.some(existing => existing.id === concert.id)) {
+            allConcerts.push(concert);
+          }
+        });
       });
 
       // Sort by start_time and limit to requested amount
-      return combinedResults
+      const result = allConcerts
         .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
         .slice(0, limit);
+
+      console.log('[searchService] Final filter + text search results:', result.length);
+
+      // Log a sample if available
+      if (result.length > 0) {
+        console.log(
+          '[searchService] Sample filter + text search result:',
+          JSON.stringify(result[0], null, 2)
+        );
+      }
+
+      return result;
     } catch (error) {
-      console.error('Error searching with filters:', error);
+      console.error('[searchService] Error searching with filters:', error);
       throw error;
     }
   },

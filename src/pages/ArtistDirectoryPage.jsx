@@ -8,6 +8,7 @@ import Button from '../components/atoms/Button';
 import Spinner from '../components/atoms/Spinner';
 import Icon from '../components/atoms/Icon';
 import FilterAccordion from '../components/organisms/FilterAccordion';
+// eslint-disable-next-line no-unused-vars
 import IconButton from '../components/atoms/IconButton';
 import useArtists from '../hooks/useArtists';
 
@@ -25,13 +26,39 @@ const ArtistDirectoryPage = () => {
   });
 
   // Fetch artists with search and filters
-  const { artists, loading, error, pagination, loadMore } = useArtists({
+  const { artists, loading, error, pagination, loadMore, updateFilters } = useArtists({
     name: debouncedSearch,
     ...(filters.genres.length > 0 ? { genre: filters.genres } : {}),
   });
 
-  // Debounce search input to avoid excessive API calls
+  // Update filters when search or filter values change
   useEffect(() => {
+    // When any filter changes, reset to first page
+    const newFilters = {
+      name: debouncedSearch,
+    };
+
+    // Only add genre filter if there are selected genres
+    if (filters.genres.length > 0) {
+      newFilters.genre = filters.genres;
+    }
+
+    // Log what we're searching for to help troubleshoot
+    console.log('Updating filters:', newFilters);
+
+    // Apply the new filters
+    updateFilters(newFilters);
+  }, [debouncedSearch, filters.genres, updateFilters]);
+
+  // Debounce search input to avoid excessive API calls on mobile
+  useEffect(() => {
+    // If search is empty, update immediately without debounce
+    if (searchValue === '') {
+      setDebouncedSearch('');
+      return;
+    }
+
+    // Otherwise use debounce for better mobile performance
     const timer = setTimeout(() => {
       setDebouncedSearch(searchValue);
     }, 500);
@@ -42,12 +69,22 @@ const ArtistDirectoryPage = () => {
   // Handle search input change
   const handleSearchChange = e => {
     setSearchValue(e.target.value);
+    // When search is cleared via input, make sure to update debouncedSearch immediately
+    if (e.target.value === '') {
+      setDebouncedSearch('');
+    }
   };
 
-  // Handle search clear
+  // Handle search clear button click
   const handleSearchClear = () => {
     setSearchValue('');
     setDebouncedSearch('');
+
+    // Explicitly trigger a search with empty string to reset results
+    updateFilters({
+      name: '',
+      ...(filters.genres.length > 0 ? { genre: filters.genres } : {}),
+    });
   };
 
   // Handle filter changes
@@ -59,6 +96,7 @@ const ArtistDirectoryPage = () => {
   };
 
   // Toggle filters visibility
+  // eslint-disable-next-line no-unused-vars
   const toggleFilters = () => {
     setShowFilters(prev => !prev);
   };
@@ -93,6 +131,7 @@ const ArtistDirectoryPage = () => {
               <SearchInput
                 value={searchValue}
                 onChange={handleSearchChange}
+                onSubmit={() => setDebouncedSearch(searchValue)}
                 onClear={handleSearchClear}
                 placeholder="Search artists..."
                 darkMode={true}
@@ -100,12 +139,12 @@ const ArtistDirectoryPage = () => {
             </div>
 
             <div className="ml-sm">
-              <IconButton
+              {/*<IconButton
                 icon="filter"
                 ariaLabel={showFilters ? 'Hide filters' : 'Show filters'}
                 onClick={toggleFilters}
                 variant={filters.genres.length > 0 ? 'primary' : 'ghost'}
-              />
+              />*/}
             </div>
           </div>
         </div>
