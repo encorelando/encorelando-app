@@ -1,7 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Spinner from './components/atoms/Spinner';
-import { AuthProvider } from './context/AuthContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
@@ -63,174 +62,179 @@ const LoadingFallback = () => (
 
 const AppRoutes = () => {
   return (
-    <AuthProvider>
-      <FavoritesProvider>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            {/* Main pages */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/calendar" element={<CalendarPage />} />
-            <Route path="/artists" element={<ArtistDirectoryPage />} />
-            <Route path="/search" element={<SearchPage />} />
-            <Route path="/festivals" element={<FestivalsPage />} />
-            <Route path="/venues" element={<VenuesPage />} />
+    <FavoritesProvider>
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          {/* Main pages */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/artists" element={<ArtistDirectoryPage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/festivals" element={<FestivalsPage />} />
+          <Route path="/venues" element={<VenuesPage />} />
 
-            {/* Detail pages */}
-            <Route path="/artists/:id" element={<ArtistDetailPage />} />
-            <Route path="/concerts/:id" element={<ConcertDetailPage />} />
-            <Route path="/festivals/:id" element={<FestivalDetailPage />} />
-            <Route path="/venues/:id" element={<VenueDetailPage />} />
-            <Route path="/parks/:id" element={<ParkDetailPage />} />
+          {/* Detail pages */}
+          <Route path="/artists/:id" element={<ArtistDetailPage />} />
+          <Route path="/concerts/:id" element={<ConcertDetailPage />} />
+          <Route path="/festivals/:id" element={<FestivalDetailPage />} />
+          <Route path="/venues/:id" element={<VenueDetailPage />} />
+          <Route path="/parks/:id" element={<ParkDetailPage />} />
 
-            {/* Admin routes */}
-            <Route path="/admin/login" element={<AdminLoginPage />} />
-            <Route
-              path="/admin/dashboard"
-              element={
-                <ProtectedRoute>
-                  <AdminDashboardPage />
-                </ProtectedRoute>
-              }
-            />
+          {/* Admin routes */}
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute>
+                <AdminDashboardPage />
+              </ProtectedRoute>
+            }
+          />
 
-            {/* Concerts Management */}
-            <Route
-              path="/admin/concerts"
-              element={
-                <ProtectedRoute>
-                  <ConcertsManagementPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/concerts/new"
-              element={
-                <ProtectedRoute>
-                  <ConcertFormPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/concerts/edit/:id"
-              element={
-                <ProtectedRoute>
-                  <ConcertFormPage />
-                </ProtectedRoute>
-              }
-            />
+          {/* Concerts Management */}
+          <Route
+            path="/admin/concerts"
+            element={
+              <ProtectedRoute>
+                <ConcertsManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/concerts/new"
+            element={
+              <ProtectedRoute>
+                <ConcertFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/concerts/edit/:id"
+            element={
+              <ProtectedRoute>
+                <ConcertFormPage />
+              </ProtectedRoute>
+            }
+          />
 
-            {/* Artists Management */}
-            <Route
-              path="/admin/artists"
-              element={
-                <ProtectedRoute>
-                  <ArtistsManagementPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/artists/new"
-              element={
-                <ProtectedRoute>
-                  <ArtistFormPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/artists/edit/:id"
-              element={
-                <ProtectedRoute>
-                  <ArtistFormPage />
-                </ProtectedRoute>
-              }
-            />
+          {/* Artists Management */}
+          <Route
+            path="/admin/artists"
+            element={
+              <ProtectedRoute>
+                <ArtistsManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/artists/new"
+            element={
+              <ProtectedRoute>
+                <ArtistFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/artists/edit/:id"
+            element={
+              <ProtectedRoute>
+                <ArtistFormPage />
+              </ProtectedRoute>
+            }
+          />
 
-            {/* Venues Management */}
-            <Route
-              path="/admin/venues"
-              element={
-                <ProtectedRoute>
-                  <VenuesManagementPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/venues/new"
-              element={
-                <ProtectedRoute>
-                  <VenueFormPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/venues/edit/:id"
-              element={
-                <ProtectedRoute>
-                  <VenueFormPage />
-                </ProtectedRoute>
-              }
-            />
+          {/* Venues Management */}
+          <Route
+            path="/admin/venues"
+            element={
+              <ProtectedRoute>
+                <VenuesManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/venues/new"
+            element={
+              <ProtectedRoute>
+                <VenueFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/venues/edit/:id"
+            element={
+              <ProtectedRoute>
+                <VenueFormPage />
+              </ProtectedRoute>
+            }
+          />
 
-            {/* Festivals Management */}
-            <Route
-              path="/admin/festivals"
-              element={
-                <ProtectedRoute>
-                  <FestivalsManagementPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/festivals/new"
-              element={
-                <ProtectedRoute>
-                  <FestivalFormPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/festivals/edit/:id"
-              element={
-                <ProtectedRoute>
-                  <FestivalFormPage />
-                </ProtectedRoute>
-              }
-            />
+          {/* Festivals Management */}
+          <Route
+            path="/admin/festivals"
+            element={
+              <ProtectedRoute>
+                <FestivalsManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/festivals/new"
+            element={
+              <ProtectedRoute>
+                <FestivalFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/festivals/edit/:id"
+            element={
+              <ProtectedRoute>
+                <FestivalFormPage />
+              </ProtectedRoute>
+            }
+          />
 
-            {/* User Management */}
-            <Route
-              path="/admin/users"
-              element={
-                <ProtectedRoute>
-                  <UserManagementPage />
-                </ProtectedRoute>
-              }
-            />
+          {/* User Management */}
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute>
+                <UserManagementPage />
+              </ProtectedRoute>
+            }
+          />
 
-            {/* User auth routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+          {/* User auth routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute adminOnly={false} redirectPath="/login">
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
 
-            {/* Branding showcase */}
-            <Route path="/brand" element={<BrandExamplePage />} />
+          {/* Branding showcase */}
+          <Route path="/brand" element={<BrandExamplePage />} />
 
-            {/* Debug page (temporary) */}
-            <Route path="/debug" element={<DebugPage />} />
+          {/* Debug page (temporary) */}
+          <Route path="/debug" element={<DebugPage />} />
 
-            {/* Menu page */}
-            <Route path="/menu" element={<MenuPage />} />
+          {/* Menu page */}
+          <Route path="/menu" element={<MenuPage />} />
 
-            {/* Redirect legacy routes */}
-            <Route path="/events" element={<Navigate to="/calendar" replace />} />
-            <Route path="/performers" element={<Navigate to="/artists" replace />} />
+          {/* Redirect legacy routes */}
+          <Route path="/events" element={<Navigate to="/calendar" replace />} />
+          <Route path="/performers" element={<Navigate to="/artists" replace />} />
 
-            {/* 404 page */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Suspense>
-      </FavoritesProvider>
-    </AuthProvider>
+          {/* 404 page */}
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Suspense>
+    </FavoritesProvider>
   );
 };
 

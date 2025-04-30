@@ -130,6 +130,7 @@ const LoginPage = () => {
                 onChange={e => setEmail(e.target.value)}
                 className="w-full px-md py-xs bg-white bg-opacity-10 border border-white border-opacity-10 rounded focus:ring-2 focus:ring-sunset-orange focus:border-sunset-orange min-h-touch text-white font-manrope"
                 placeholder="your.email@example.com"
+                autoComplete="email"
               />
             </div>
 
@@ -149,6 +150,7 @@ const LoginPage = () => {
                 onChange={e => setPassword(e.target.value)}
                 className="w-full px-md py-xs bg-white bg-opacity-10 border border-white border-opacity-10 rounded focus:ring-2 focus:ring-sunset-orange focus:border-sunset-orange min-h-touch text-white font-manrope"
                 placeholder="Your password"
+                autoComplete="current-password"
               />
             </div>
 

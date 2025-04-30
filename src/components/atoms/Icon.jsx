@@ -39,6 +39,7 @@ import {
   FiLogIn,
   FiDownload,
   FiShare,
+  FiUserPlus,
 } from 'react-icons/fi';
 
 /**
@@ -86,6 +87,8 @@ const Icon = ({ name, size = 'md', color = 'currentColor', className = '' }) => 
     'log-in': FiLogIn,
     download: FiDownload,
     share: FiShare,
+    'user-plus': FiUserPlus,
+    'log-out': FiLogOut,
   };
 
   // Icon sizes in pixels - ensuring visibility on mobile

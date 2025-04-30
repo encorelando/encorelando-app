@@ -1,19 +1,19 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import supabase from '../services/supabase';
+import apiClient from '../services/apiClient';
+import { getToken, storeToken, getUser, storeUser, clearAuthData } from '../utils/tokenStorage';
 
 /**
  * Authentication Context for EncoreLando
  *
- * This context provides authentication state and functions throughout
- * the application. It handles user session state, login, signup, logout,
- * and session persistence for both regular users and admins.
+ * Provides authentication state and functions throughout the application.
+ * Simplified implementation focused on reliability, especially across page refreshes.
  *
  * Mobile-first design considerations:
  * - Minimizes re-renders to maintain performance on mobile devices
  * - Uses localStorage for session persistence to support offline patterns
  * - Simple API to reduce bundle size
- * - Optimized for touch interactions on mobile devices
+ * - Handles authentication across page reloads reliably
  */
 
 // Create the context
@@ -31,116 +31,96 @@ export const useAuth = () => {
 // Authentication provider component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
+
+  // Initialize auth state from storage
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        setLoading(true);
+
+        // Try to get token and user from storage first
+        const storedToken = getToken();
+        const storedUser = getUser();
+
+        if (storedToken && storedUser) {
+          // We have stored credentials, verify they are still valid
+          try {
+            // Verify the session with Supabase
+            const session = await apiClient.getSession();
+
+            if (session) {
+              // Session is valid, update state
+              setUser(storedUser);
+
+              // Fetch user profile data
+              const profile = await fetchUserProfile(storedUser.id);
+              setUserProfile(profile);
+            } else {
+              // Session is invalid, clear storage
+              clearAuthData();
+            }
+          } catch (err) {
+            console.error('Session verification failed:', err);
+            clearAuthData();
+          }
+        }
+      } catch (err) {
+        console.error('Auth initialization error:', err);
+        setError('Authentication initialization failed. Please try logging in again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    // Add event listener for logout events from other tabs/components
+    const handleLogout = () => {
+      setUser(null);
+      setUserProfile(null);
+    };
+
+    window.addEventListener('auth:logout', handleLogout);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('auth:logout', handleLogout);
+    };
+  }, []);
 
   // Fetch user profile data from the database
   const fetchUserProfile = async userId => {
     if (!userId) return null;
 
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        return null;
-      }
-
-      return data;
+      const profile = await apiClient.getById('user_profiles', userId);
+      return profile;
     } catch (error) {
-      console.error('Error in fetchUserProfile:', error.message);
+      console.error('Error fetching user profile:', error);
       return null;
     }
   };
-
-  // Check for existing session on mount
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        setLoading(true);
-        // Get the current session from Supabase
-        const { data, error } = await supabase.auth.getSession();
-
-        if (error) {
-          throw error;
-        }
-
-        if (data?.session) {
-          setUser(data.session.user);
-
-          // Fetch user profile data
-          const profile = await fetchUserProfile(data.session.user.id);
-          setUserProfile(profile);
-        }
-      } catch (error) {
-        console.error('Error checking session:', error.message);
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkSession();
-
-    // Subscribe to auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-        console.log('Auth state change:', event, session.user);
-        setUser(session.user);
-
-        // Fetch user profile on sign in
-        const profile = await fetchUserProfile(session.user.id);
-        setUserProfile(profile);
-
-        // Create user profile if it doesn't exist (new signup)
-        if (!profile && event === 'SIGNED_IN') {
-          await createUserProfile(session.user);
-        }
-      } else if (event === 'SIGNED_OUT') {
-        console.log('User signed out');
-        setUser(null);
-        setUserProfile(null);
-      }
-    });
-
-    // Cleanup subscription on unmount
-    return () => {
-      subscription?.unsubscribe();
-    };
-  }, []);
 
   // Create a user profile in the database
   const createUserProfile = async user => {
     if (!user) return null;
 
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .insert({
-          id: user.id,
-          email: user.email,
-          display_name: user.user_metadata?.name || user.email.split('@')[0], // Default to username from email
-          avatar_url: user.user_metadata?.avatar_url || null,
-        })
-        .select()
-        .single();
+      const newProfile = {
+        id: user.id,
+        email: user.email,
+        display_name: user.user_metadata?.name || user.email.split('@')[0],
+        avatar_url: user.user_metadata?.avatar_url || null,
+      };
 
-      if (error) {
-        console.error('Error creating user profile:', error);
-        return null;
-      }
-
-      setUserProfile(data);
-      return data;
+      const profile = await apiClient.create('user_profiles', newProfile);
+      setUserProfile(profile);
+      return profile;
     } catch (error) {
-      console.error('Error in createUserProfile:', error.message);
+      console.error('Error creating user profile:', error);
       return null;
     }
   };
@@ -150,21 +130,11 @@ export const AuthProvider = ({ children }) => {
     if (!user) return { error: 'Not authenticated' };
 
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .update(profileData)
-        .eq('id', user.id)
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      setUserProfile(data);
-      return { data };
+      const updatedProfile = await apiClient.update('user_profiles', user.id, profileData);
+      setUserProfile(updatedProfile);
+      return { data: updatedProfile };
     } catch (error) {
-      console.error('Error updating profile:', error.message);
+      console.error('Error updating profile:', error);
       return { error: error.message };
     }
   };
@@ -176,27 +146,25 @@ export const AuthProvider = ({ children }) => {
       setError(null);
 
       // Register the user
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name: displayName || email.split('@')[0], // Use display name or extract username from email
-          },
-        },
+      const authData = await apiClient.signup(email, password, {
+        name: displayName || email.split('@')[0],
       });
 
-      if (error) {
-        throw error;
+      if (authData.user) {
+        // Store authentication data
+        storeToken(authData.session.access_token);
+        storeUser(authData.user);
+
+        // Update state
+        setUser(authData.user);
+
+        // Create user profile
+        await createUserProfile(authData.user);
       }
 
-      setUser(data.user);
-
-      // User profile will be created by the onAuthStateChange handler
-
-      return data;
+      return authData;
     } catch (error) {
-      console.error('Signup error:', error.message);
+      console.error('Signup error:', error);
       setError(error.message);
       throw error;
     } finally {
@@ -210,24 +178,29 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const authData = await apiClient.login(email, password);
 
-      if (error) {
-        throw error;
+      if (authData.user) {
+        // Store authentication data
+        storeToken(authData.session.access_token);
+        storeUser(authData.user);
+
+        // Update state
+        setUser(authData.user);
+
+        // Fetch user profile
+        const profile = await fetchUserProfile(authData.user.id);
+        setUserProfile(profile);
+
+        // Create profile if it doesn't exist
+        if (!profile) {
+          await createUserProfile(authData.user);
+        }
       }
 
-      setUser(data.user);
-
-      // Fetch user profile
-      const profile = await fetchUserProfile(data.user.id);
-      setUserProfile(profile);
-
-      return data;
+      return authData;
     } catch (error) {
-      console.error('Login error:', error.message);
+      console.error('Login error:', error);
       setError(error.message);
       throw error;
     } finally {
@@ -241,18 +214,22 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      const { error } = await supabase.auth.signOut();
+      await apiClient.logout();
 
-      if (error) {
-        throw error;
-      }
-
+      // Clear local state
       setUser(null);
       setUserProfile(null);
+
+      // Clear stored auth data
+      clearAuthData();
     } catch (error) {
-      console.error('Logout error:', error.message);
+      console.error('Logout error:', error);
       setError(error.message);
-      throw error;
+
+      // Force clear even on error
+      clearAuthData();
+      setUser(null);
+      setUserProfile(null);
     } finally {
       setLoading(false);
     }

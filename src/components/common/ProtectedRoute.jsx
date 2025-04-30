@@ -10,7 +10,7 @@ import Spinner from '../atoms/Spinner';
  * Follows mobile-first design by handling loading states efficiently
  * and maintaining a smooth user experience on mobile devices.
  */
-const ProtectedRoute = ({ children, adminOnly = true }) => {
+const ProtectedRoute = ({ children, adminOnly = true, redirectPath = '/admin/login' }) => {
   const { user, loading, isAdmin } = useAuth();
   const location = useLocation();
 
@@ -25,7 +25,7 @@ const ProtectedRoute = ({ children, adminOnly = true }) => {
 
   // If user is not authenticated, redirect to login
   if (!user) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    return <Navigate to={redirectPath} state={{ from: location }} replace />;
   }
 
   // If admin access is required but user is not admin, redirect to home
@@ -41,6 +41,7 @@ const ProtectedRoute = ({ children, adminOnly = true }) => {
 ProtectedRoute.propTypes = {
   children: PropTypes.node.isRequired,
   adminOnly: PropTypes.bool,
+  redirectPath: PropTypes.string,
 };
 
 export default ProtectedRoute;
