@@ -67,8 +67,7 @@ CREATE TABLE concerts (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- Future implementation tables (commented out for MVP but included for reference)
-/*
+-- User profiles and favorites tables for user authentication
 CREATE TABLE user_profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id),
   email TEXT NOT NULL,
@@ -78,14 +77,43 @@ CREATE TABLE user_profiles (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
-CREATE TABLE favorites (
+-- Create trigger for user_profiles updated_at
+CREATE TRIGGER update_user_profiles_modtime
+BEFORE UPDATE ON user_profiles
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+-- Favorites tables for different entity types
+CREATE TABLE favorites_concerts (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES user_profiles(id) ON DELETE CASCADE,
   concert_id UUID REFERENCES concerts(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   UNIQUE (user_id, concert_id)
 );
-*/
+
+CREATE TABLE favorites_artists (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES user_profiles(id) ON DELETE CASCADE,
+  artist_id UUID REFERENCES artists(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  UNIQUE (user_id, artist_id)
+);
+
+CREATE TABLE favorites_venues (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES user_profiles(id) ON DELETE CASCADE,
+  venue_id UUID REFERENCES venues(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  UNIQUE (user_id, venue_id)
+);
+
+CREATE TABLE favorites_festivals (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES user_profiles(id) ON DELETE CASCADE,
+  festival_id UUID REFERENCES festivals(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  UNIQUE (user_id, festival_id)
+);
 
 -- Create indexes for optimized queries
 -- Fast lookups for concerts by date
@@ -108,6 +136,11 @@ ALTER TABLE venues ENABLE ROW LEVEL SECURITY;
 ALTER TABLE artists ENABLE ROW LEVEL SECURITY;
 ALTER TABLE festivals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE concerts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE favorites_concerts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE favorites_artists ENABLE ROW LEVEL SECURITY;
+ALTER TABLE favorites_venues ENABLE ROW LEVEL SECURITY;
+ALTER TABLE favorites_festivals ENABLE ROW LEVEL SECURITY;
 
 -- Public read access policies
 CREATE POLICY "Anyone can view parks" ON parks FOR SELECT USING (true);
@@ -158,6 +191,56 @@ CREATE POLICY "Only admins can update concerts" ON concerts
     FOR UPDATE USING (auth.jwt() ->> 'role' = 'admin');
 CREATE POLICY "Only admins can delete concerts" ON concerts 
     FOR DELETE USING (auth.jwt() ->> 'role' = 'admin');
+
+-- User profile policies
+CREATE POLICY "Users can view their own profile" ON user_profiles
+    FOR SELECT USING (auth.uid() = id);
+    
+CREATE POLICY "Users can update their own profile" ON user_profiles
+    FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Users can insert their own profile" ON user_profiles
+    FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Favorites policies for concerts
+CREATE POLICY "Users can view their own favorites_concerts" ON favorites_concerts
+    FOR SELECT USING (auth.uid() = user_id);
+    
+CREATE POLICY "Users can insert their own favorites_concerts" ON favorites_concerts
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+    
+CREATE POLICY "Users can delete their own favorites_concerts" ON favorites_concerts
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- Favorites policies for artists
+CREATE POLICY "Users can view their own favorites_artists" ON favorites_artists
+    FOR SELECT USING (auth.uid() = user_id);
+    
+CREATE POLICY "Users can insert their own favorites_artists" ON favorites_artists
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+    
+CREATE POLICY "Users can delete their own favorites_artists" ON favorites_artists
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- Favorites policies for venues
+CREATE POLICY "Users can view their own favorites_venues" ON favorites_venues
+    FOR SELECT USING (auth.uid() = user_id);
+    
+CREATE POLICY "Users can insert their own favorites_venues" ON favorites_venues
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+    
+CREATE POLICY "Users can delete their own favorites_venues" ON favorites_venues
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- Favorites policies for festivals
+CREATE POLICY "Users can view their own favorites_festivals" ON favorites_festivals
+    FOR SELECT USING (auth.uid() = user_id);
+    
+CREATE POLICY "Users can insert their own favorites_festivals" ON favorites_festivals
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+    
+CREATE POLICY "Users can delete their own favorites_festivals" ON favorites_festivals
+    FOR DELETE USING (auth.uid() = user_id);
 
 -- Create triggers for updated_at timestamps
 CREATE OR REPLACE FUNCTION update_modified_column()

@@ -7,7 +7,9 @@ import Icon from '../components/atoms/Icon';
 import Button from '../components/atoms/Button';
 import Card from '../components/atoms/Card';
 import Badge from '../components/atoms/Badge';
-import CalendarModal from '../components/molecules/CalendarModal';
+import FavoriteButton from '../components/molecules/FavoriteButton';
+import ShareButton from '../components/molecules/ShareButton';
+import AddToCalendarButton from '../components/molecules/AddToCalendarButton';
 import { formatDate, formatTime } from '../utils/dateUtils';
 import { generateEventFromConcert } from '../utils/calendarUtils';
 import useConcerts from '../hooks/useConcerts';
@@ -21,7 +23,6 @@ const ConcertDetailPage = () => {
   const [concert, setConcert] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [calendarEvent, setCalendarEvent] = useState(null);
 
   // Use custom hook
@@ -49,16 +50,6 @@ const ConcertDetailPage = () => {
 
     fetchConcertDetails();
   }, [id, getConcertById]);
-
-  // Handle calendar button click
-  const handleAddToCalendar = () => {
-    setShowCalendarModal(true);
-  };
-
-  // Handle calendar modal close
-  const handleCloseCalendarModal = () => {
-    setShowCalendarModal(false);
-  };
 
   // Show loading state
   if (loading) {
@@ -124,6 +115,45 @@ const ConcertDetailPage = () => {
       subtitle="" // Remove the venue name from the header to prevent overlap
       imageUrl={artist.image_url || '/images/placeholder-concert.jpg'}
     >
+      {/* Action buttons - Moved to top and styled as labeled buttons */}
+      <Card className="mb-md p-3">
+        <div className="flex justify-between gap-3">
+          {/* Favorite button */}
+          <div className="flex flex-col items-center flex-1">
+            <FavoriteButton entityType="concert" entityId={id} size="lg" className="mb-2" />
+            <Typography variant="body2" color="medium-gray">
+              Favorite
+            </Typography>
+          </div>
+
+          {/* Share button */}
+          <div className="flex flex-col items-center flex-1">
+            <ShareButton
+              title={`${artist.name} at ${venue.name}`}
+              text={`Check out ${artist.name} at ${venue.name} on ${formattedDate} at ${formatTime(
+                start_time
+              )}`}
+              url={`/concerts/${id}`}
+              size="lg"
+              className="mb-2"
+            />
+            <Typography variant="body2" color="medium-gray">
+              Share
+            </Typography>
+          </div>
+
+          {/* Add to calendar button */}
+          {!isPast && calendarEvent && (
+            <div className="flex flex-col items-center flex-1">
+              <AddToCalendarButton event={calendarEvent} size="lg" className="mb-2" />
+              <Typography variant="body2" color="medium-gray">
+                Calendar
+              </Typography>
+            </div>
+          )}
+        </div>
+      </Card>
+
       {/* Status badge */}
       <div className="mb-md">
         {isPast ? (
@@ -223,19 +253,6 @@ const ConcertDetailPage = () => {
             <Typography variant="body1">{notes}</Typography>
           </Card>
         </div>
-      )}
-
-      {/* Add to calendar button (if upcoming) */}
-      {!isPast && (
-        <Button variant="primary" fullWidth className="mt-lg" onClick={handleAddToCalendar}>
-          <Icon name="calendar" size="sm" className="mr-xs" />
-          Add to Calendar
-        </Button>
-      )}
-
-      {/* Calendar Modal */}
-      {showCalendarModal && calendarEvent && (
-        <CalendarModal event={calendarEvent} onClose={handleCloseCalendarModal} />
       )}
     </DetailPageLayout>
   );

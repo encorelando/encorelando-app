@@ -15,9 +15,6 @@ import useVenues from '../hooks/useVenues';
  * Mobile-optimized with responsive grid for larger screens and filtering functionality
  */
 const VenuesPage = () => {
-  // Track the active filter type
-  const [activeFilter, setActiveFilter] = useState('all');
-
   // Create a venues hook instance
   const { venues, loading, error, refresh, getVenuesByPark, getVenuesWithUpcomingConcerts } =
     useVenues();
@@ -46,7 +43,6 @@ const VenuesPage = () => {
 
   // Handle filter change
   const handleFilterChange = async filterType => {
-    setActiveFilter(filterType);
     setIsLoading(true);
 
     try {
@@ -70,17 +66,6 @@ const VenuesPage = () => {
       setIsLoading(false);
     }
   };
-
-  // Simplify park filtering by mapping park IDs to names
-  // In a real implementation, these would come from a parks service/hook
-  const parks = [
-    { id: 'magic-kingdom', name: 'Magic Kingdom' },
-    { id: 'epcot', name: 'EPCOT' },
-    { id: 'hollywood-studios', name: 'Hollywood Studios' },
-    { id: 'animal-kingdom', name: 'Animal Kingdom' },
-    { id: 'universal-studios', name: 'Universal Studios' },
-    { id: 'islands-of-adventure', name: 'Islands of Adventure' },
-  ];
 
   /**
    * VenueCard component for displaying venue information
@@ -168,39 +153,6 @@ const VenuesPage = () => {
         <Typography variant="body1" color="medium-gray">
           Concert and performance venues across Orlando theme parks
         </Typography>
-      </div>
-
-      {/* Filter tabs - Horizontally scrollable on mobile for good touch targets */}
-      <div className="flex justify-start px-4 mb-6 overflow-x-auto pb-2">
-        <Button
-          variant={activeFilter === 'all' ? 'primary' : 'secondary'}
-          size="sm"
-          className="mr-3 min-w-[100px] whitespace-nowrap"
-          onClick={() => handleFilterChange('all')}
-        >
-          All Venues
-        </Button>
-        <Button
-          variant={activeFilter === 'upcoming-concerts' ? 'primary' : 'secondary'}
-          size="sm"
-          className="mr-3 min-w-[100px] whitespace-nowrap"
-          onClick={() => handleFilterChange('upcoming-concerts')}
-        >
-          With Concerts
-        </Button>
-
-        {/* Park filters */}
-        {parks.map(park => (
-          <Button
-            key={park.id}
-            variant={activeFilter === `park-${park.id}` ? 'primary' : 'secondary'}
-            size="sm"
-            className="mr-3 min-w-[100px] whitespace-nowrap"
-            onClick={() => handleFilterChange(`park-${park.id}`)}
-          >
-            {park.name}
-          </Button>
-        ))}
       </div>
 
       {/* Venues grid - Single column on mobile, multi-column on larger screens */}

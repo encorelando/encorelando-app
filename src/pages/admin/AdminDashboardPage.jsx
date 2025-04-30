@@ -63,6 +63,13 @@ const AdminDashboardPage = () => {
       count: '•••',
       icon: '🎪',
     },
+    {
+      title: 'Users',
+      description: 'Manage user accounts and permissions',
+      link: '/admin/users',
+      count: '•••',
+      icon: '👤',
+    },
   ];
 
   return (

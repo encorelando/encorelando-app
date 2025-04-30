@@ -17,17 +17,21 @@
   "cSpell.words": [
     "addevent",
     "ampm",
+    "apikey",
     "BYDAY",
     "BYMONTH",
     "CALSCALE",
     "couldn",
     "deeplink",
+    "deeplinks",
     "desaturation",
     "DTEND",
     "DTSTAMP",
     "DTSTART",
     "encorelando",
     "enddt",
+    "favorited",
+    "favoriting",
     "Geoapify",
     "Harambe",
     "ical",
@@ -46,6 +50,8 @@
     "RRULE",
     "Scrollability",
     "Segoe",
+    "signup",
+    "sprop",
     "startdt",
     "supabase",
     "Toon",
@@ -53,6 +59,7 @@
     "TZOFFSETTO",
     "VCALENDAR",
     "VEVENT",
-    "vtimezone"
+    "vtimezone",
+    "YYYYMMDDTHHMMSSZ"
   ]
 }
