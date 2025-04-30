@@ -1,0 +1,77 @@
+name: Data Scraping Pipeline
+
+on:
+  schedule:
+    # Run every Monday at 2 AM UTC
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+    # Allow manual triggering with optional parameters
+    inputs:
+      scrape_type:
+        description: 'Type of data to scrape (all, artists, festivals, concerts, venues, parks)'
+        required: false
+        default: 'all'
+      force_update:
+        description: 'Force update even if already scraped recently'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  trigger-scraping:
+    runs-on: ubuntu-latest
+    env:
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
+      - name: Create scraping run record
+        id: create-run
+        run: |
+          # Create a scraping run record in the database
+          SCRAPING_RUN_ID=$(netlify functions:invoke --name create-scraping-run --no-identity --payload '{}' | jq -r '.id')
+          echo "Scraping run created with ID: $SCRAPING_RUN_ID"
+          echo "::set-output name=run_id::$SCRAPING_RUN_ID"
+      
+      - name: Trigger scraping function
+        run: |
+          # Determine which scrape type to run
+          SCRAPE_TYPE="${{ github.event.inputs.scrape_type || 'all' }}"
+          FORCE_UPDATE="${{ github.event.inputs.force_update || 'false' }}"
+          RUN_ID="${{ steps.create-run.outputs.run_id }}"
+          
+          # Invoke the scraper Netlify function
+          netlify functions:invoke --name scraper --no-identity --payload "{\"runId\": \"$RUN_ID\", \"type\": \"$SCRAPE_TYPE\", \"forceUpdate\": $FORCE_UPDATE}"
+
+      - name: Update scraping run status
+        if: always()
+        run: |
+          # Update the scraping run status based on the job outcome
+          STATUS="completed"
+          if [ "${{ job.status }}" != "success" ]; then
+            STATUS="failed"
+          fi
+          
+          netlify functions:invoke --name update-scraping-run --no-identity --payload "{\"id\": \"${{ steps.create-run.outputs.run_id }}\", \"status\": \"$STATUS\"}"
+      
+      - name: Send notification on failure
+        if: failure()
+        run: |
+          # Send a notification to the admin when the job fails
+          netlify functions:invoke --name send-admin-notification --no-identity --payload "{\"type\": \"scraping_failure\", \"runId\": \"${{ steps.create-run.outputs.run_id }}\"}"

@@ -1,171 +1,443 @@
 # EncoreLando Admin Interface Guide
 
-This document provides a comprehensive guide to the EncoreLando Admin Interface, which was implemented in April 2025 following our strict mobile-first design approach.
-
 ## Overview
 
-The EncoreLando Admin Interface is a secure, mobile-optimized backend management system that allows authorized administrators to create, read, update, and delete data across all core entities: concerts, artists, venues, and festivals. The interface follows our established design patterns and prioritizes touch-friendly interactions for mobile users.
+The EncoreLando admin interface provides a comprehensive set of tools for managing content within the application. This document details the implementation, features, and mobile-first considerations of the admin interface.
 
-## Authentication System
+## Key Features
 
-The Admin Interface uses [Supabase Authentication](https://supabase.com/docs/guides/auth) with the following features:
+The admin interface includes:
 
-- Email/password authentication
-- JWT-based security with role validation
-- Protected routes for admin-only access
-- Session persistence for better user experience
+1. **Dashboard**: Central hub for quick access to all management features
+2. **Content Management**: CRUD operations for all entity types
+3. **User Management**: Control over user accounts and permissions
+4. **Authentication**: Secure login and role-based access control
+5. **Mobile Optimization**: Touch-friendly design following mobile-first principles
 
-### Authentication Setup
+## Implementation Details
 
-To set up the authentication system:
+### Admin Dashboard
 
-1. The admin user must be created in Supabase with the email `encorelandoapp@gmail.com`
-2. The `is_admin` function in the database checks against this email
-3. The `AuthContext` maintains authentication state throughout the application
-4. Protected routes redirect unauthenticated users to the login page
+The `AdminDashboardPage` component serves as the main entry point for admin functionality:
 
-## Admin Dashboard
+```jsx
+const AdminDashboardPage = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-The Admin Dashboard serves as the central hub for all admin operations, featuring:
+  // Admin sections configuration
+  const adminSections = [
+    {
+      title: 'Concerts',
+      description: 'Manage concert listings, times, and details',
+      link: '/admin/concerts',
+      icon: '🎵',
+    },
+    {
+      title: 'Artists',
+      description: 'Manage artist profiles and information',
+      link: '/admin/artists',
+      icon: '🎤',
+    },
+    // Other sections...
+  ];
 
-- Card-based navigation to each management section
+  // Component implementation
+};
+```
+
+#### Dashboard Features:
+
+- Card-based navigation with large touch targets
 - Quick action buttons for common tasks
-- Mobile-optimized layout with appropriate spacing
-- Responsive design that adapts to various screen sizes
+- User information display
+- Logout functionality
+- Section-based organization of admin tools
 
-### Dashboard Components
+### Content Management
 
-- **Top Header**: Shows current section and provides navigation controls
-- **Side Navigation**: Collapsible on mobile, persistent on desktop
-- **Data Cards**: Touch-friendly cards for accessing different data sections
-- **Quick Actions**: Shortcut buttons for common operations
+Each entity type has a dedicated management page with:
 
-## Data Management
+1. **List View**: Showing all entries with key information
+2. **Create/Edit Forms**: Mobile-optimized data entry
+3. **Delete Functionality**: With confirmation dialogs
+4. **Filtering**: To find specific entries quickly
 
-### Concerts Management
+Example from `ConcertsManagementPage`:
 
-The Concerts Management section allows administrators to:
+```jsx
+const ConcertsManagementPage = () => {
+  const [concerts, setConcerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-- View all concerts with sorting by date
-- Filter concerts by artist, venue, or festival
-- Create new concerts with all required details
-- Edit existing concert information
-- View related artist and venue information
+  // Data fetching
+  useEffect(() => {
+    const fetchConcerts = async () => {
+      try {
+        setLoading(true);
+        const concertData = await apiClient.get('concerts', {
+          select: '*, artists(*), venues(*), festivals(*)',
+          orderBy: 'start_time',
+          ascending: true,
+        });
+        setConcerts(concertData);
+      } catch (err) {
+        setError('Failed to load concerts. Please try again.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-### Artists Management
+    fetchConcerts();
+  }, []);
 
-The Artists Management section provides:
+  // Component implementation with list view and actions
+};
+```
 
-- Grid view of all artists with search functionality
-- Create new artist profiles with social media links and genres
-- Edit existing artist details
-- Preview artist images before saving
+### Form Implementation
 
-### Venues Management
+Entity forms (like `ConcertFormPage`) provide:
 
-The Venues Management section offers:
+1. **Field Validation**: Immediate feedback on input errors
+2. **Relationship Management**: Dropdowns for related entities
+3. **Error Handling**: Clear error messages for API failures
+4. **Loading States**: Indicators for async operations
+5. **Touch-Optimized Controls**: Large input elements and action buttons
 
-- Filterable list of venues by park
-- Ability to add new venues with geographic coordinates
-- Edit venue details including capacity and location
-- Image management for venue photos
+Example form validation:
 
-### Festivals Management
+```jsx
+const validateForm = () => {
+  const errors = {};
 
-The Festivals Management section includes:
+  if (!formData.artist_id) {
+    errors.artist_id = 'Artist is required';
+  }
 
-- Festival management with date range controls
-- Status filtering (Current, Upcoming, Past)
-- Creation and editing of festival details
-- Support for recurring festivals
+  if (!formData.venue_id) {
+    errors.venue_id = 'Venue is required';
+  }
 
-## Mobile-First Design Elements
+  if (!formData.start_time) {
+    errors.start_time = 'Start time is required';
+  }
 
-The Admin Interface strictly follows our mobile-first design mandate:
+  if (formData.end_time && new Date(formData.end_time) <= new Date(formData.start_time)) {
+    errors.end_time = 'End time must be after start time';
+  }
 
-### Touch Optimization
+  setFormErrors(errors);
+  return Object.keys(errors).length === 0;
+};
+```
+
+### Authentication & Authorization
+
+The admin interface uses:
+
+1. **Supabase Authentication**: For secure login
+2. **Protected Routes**: For access control
+3. **Role-Based Permissions**: Admin role verification
+4. **Persistent Sessions**: Token-based authentication with proper storage
+
+Example protected route implementation:
+
+```jsx
+<Route
+  path="/admin/dashboard"
+  element={
+    <ProtectedRoute>
+      <AdminDashboardPage />
+    </ProtectedRoute>
+  }
+/>
+```
+
+The `ProtectedRoute` component:
+
+```jsx
+const ProtectedRoute = ({ children, adminOnly = true, redirectPath = '/admin/login' }) => {
+  const { user, loading, isAdmin } = useAuth();
+
+  if (loading) {
+    return <LoadingPage />;
+  }
+
+  if (!user) {
+    return <Navigate to={redirectPath} replace />;
+  }
+
+  if (adminOnly && !isAdmin()) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  return children;
+};
+```
+
+## Routing Structure
+
+The admin interface uses the following route structure:
+
+```jsx
+// Admin routes
+<Route path="/admin/login" element={<AdminLoginPage />} />
+<Route
+  path="/admin/dashboard"
+  element={
+    <ProtectedRoute>
+      <AdminDashboardPage />
+    </ProtectedRoute>
+  }
+/>
+
+// Concerts Management
+<Route
+  path="/admin/concerts"
+  element={
+    <ProtectedRoute>
+      <ConcertsManagementPage />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/admin/concerts/new"
+  element={
+    <ProtectedRoute>
+      <ConcertFormPage />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/admin/concerts/edit/:id"
+  element={
+    <ProtectedRoute>
+      <ConcertFormPage />
+    </ProtectedRoute>
+  }
+/>
+
+// Similar routes for artists, venues, festivals, and user management
+```
+
+## Mobile-First Design
+
+The admin interface adheres to mobile-first principles:
+
+### 1. Touch-Optimized Controls
 
 - All interactive elements have minimum 44×44px touch targets
-- Adequate spacing between touch elements to prevent accidental taps
 - Bottom-positioned action buttons within thumb reach
-- Swipe-friendly navigation patterns where appropriate
+- Proper spacing between interactive elements
+- Form fields sized appropriately for touch input
 
-### Performance Considerations
+Example:
 
-- Efficient data loading with appropriate loading states
-- Pagination for large data lists
-- Optimized form validation for mobile performance
-- Fixed-position action buttons for easy access
+```jsx
+<div className="fixed bottom-0 left-0 right-0 bg-neutral-800 border-t border-neutral-700 p-4 flex space-x-4">
+  <Button
+    type="button"
+    variant="secondary"
+    onClick={() => navigate('/admin/concerts')}
+    fullWidth
+    className="min-h-touch"
+  >
+    Cancel
+  </Button>
+  <Button
+    type="submit"
+    variant="primary"
+    onClick={handleSubmit}
+    disabled={saving}
+    fullWidth
+    className="min-h-touch"
+  >
+    {saving ? 'Saving...' : isEditMode ? 'Update Concert' : 'Create Concert'}
+  </Button>
+</div>
+```
 
-### Responsive Layout
+### 2. Vertical Space Optimization
 
-- Single column layout on mobile devices
-- Progressive enhancement for larger screens
-- Collapsible navigation on small screens
-- Touch-friendly filter controls
+- Single column layouts for forms
+- Collapsible sections for content organization
+- Progressive disclosure of complex information
+- Efficient use of screen real estate
 
-## Form Design
+### 3. Performance Considerations
 
-All forms in the Admin Interface are designed for mobile usability:
+- Pagination for large data sets
+- Optimized API requests with specific field selection
+- Lazy loading of components
+- Minimal dependencies
 
-- Single column layout for easy vertical scrolling
-- Input fields with appropriate sizing for touch input
-- Clear labels and error messages
-- Fixed-position submit buttons always visible
-- Native date pickers optimized for mobile
-- White backgrounds with black text for optimal readability
+### 4. Responsive Enhancement
 
-## Implementation Notes
+- Mobile layout first, enhanced for larger screens
+- Grid layouts that adapt to screen size
+- Typography that scales appropriately
+- Touch-first, mouse-second interaction design
 
-### Component Structure
+## Entity Management
 
-The Admin Interface follows our established component architecture:
+The admin interface supports the following entity types:
 
-- Templates: Layout components like `AdminLayout`
-- Organisms: Complex components like management lists
-- Molecules: Compound components like card items
-- Atoms: Basic UI elements like buttons and inputs
+### 1. Concerts
 
-### Code Organization
+Fields:
+- Artist (required)
+- Venue (required)
+- Festival (optional)
+- Start Time (required)
+- End Time (optional)
+- Notes (optional)
+- Ticket Required (boolean)
 
-- **Pages**: All admin pages are in `src/pages/admin/`
-- **Components**: Admin-specific components are in their respective atom/molecule/organism folders
-- **Context**: Authentication context is in `src/context/AuthContext.jsx`
-- **Routes**: Admin routes are defined in `src/routes.jsx`
+### 2. Artists
 
-### Notable Features
+Fields:
+- Name (required)
+- Description (optional)
+- Image URL (optional)
+- Website URL (optional)
+- Genre (optional)
+- Social Media Links (optional)
 
-- **Protected Routes**: Uses a custom `ProtectedRoute` component
-- **Form Validation**: Client-side validation with clear error messages
-- **Role-Based Access**: Only authorized admins can access admin features
-- **Card Interactions**: Uses the `interactive` variant for clickable cards
+### 3. Venues
 
-## Best Practices for Admin Interface
+Fields:
+- Name (required)
+- Park (required)
+- Description (optional)
+- Image URL (optional)
+- Capacity (optional)
+- Status (open/closed)
+- Location Details (optional)
+- Latitude (optional)
+- Longitude (optional)
+- Website URL (optional)
 
-When extending or modifying the Admin Interface, follow these guidelines:
+### 4. Festivals
 
-1. **Maintain Touch Targets**: Keep all interactive elements at least 44×44px
-2. **Test on Mobile First**: Ensure all features work well on small screens before optimizing for desktop
-3. **Fixed Action Buttons**: Keep primary actions easily accessible
-4. **Validation Feedback**: Provide clear, contextual error messages
-5. **Loading States**: Always include appropriate loading indicators
-6. **Consistent Styling**: Maintain white backgrounds with black text for form inputs
+Fields:
+- Name (required)
+- Description (optional)
+- Start Date (required)
+- End Date (required)
+- Image URL (optional)
+- Featured (boolean)
+- Website URL (optional)
 
-## Troubleshooting
+### 5. Users
 
-Common issues and their solutions:
+Fields:
+- Email (required)
+- Display Name (required)
+- Avatar URL (optional)
+- Roles (array)
 
-1. **Authentication Issues**: Ensure the Supabase JWT function is properly set up
-2. **Card Click Not Working**: Ensure Card components have the `variant="interactive"` prop
-3. **Form Input Text Not Visible**: Make sure inputs use `bg-white text-black` classes
-4. **Protected Routes Not Working**: Check that `ProtectedRoute` component is correctly implemented
+## User Roles
 
-## Future Enhancements
+The admin interface supports the following roles:
 
-Planned enhancements for the Admin Interface include:
+1. **Admin**: Full access to all management features
+2. **Editor**: Can create and edit content but not manage users
+3. **Viewer**: Read-only access to admin dashboard
 
-1. **Bulk Operations**: Ability to edit multiple items at once
-2. **Advanced Filtering**: More sophisticated search and filter capabilities
-3. **Image Upload**: Direct image upload rather than URL-based images
-4. **User Management**: Admin user management interface
-5. **Activity Logging**: Track changes made by administrators
+Role checking:
+
+```jsx
+const isAdmin = () => {
+  if (!user) return false;
+
+  // Check if roles array contains 'admin'
+  if (userProfile?.roles && Array.isArray(userProfile.roles)) {
+    return userProfile.roles.includes('admin');
+  }
+
+  // Fallback to email check for backward compatibility
+  return user.email === 'encorelandoapp@gmail.com';
+};
+
+// Check if user has a specific role
+const hasRole = role => {
+  if (!user || !userProfile?.roles || !Array.isArray(userProfile.roles)) {
+    return false;
+  }
+
+  return userProfile.roles.includes(role);
+};
+```
+
+## API Integration
+
+The admin interface uses the `apiClient` service for data operations:
+
+```jsx
+// Create a new item
+const createConcert = async (concertData) => {
+  try {
+    setSaving(true);
+    const data = await apiClient.create('concerts', concertData);
+    navigate('/admin/concerts');
+    return data;
+  } catch (error) {
+    setError('Failed to create concert. Please try again.');
+    console.error(error);
+  } finally {
+    setSaving(false);
+  }
+};
+
+// Update an existing item
+const updateConcert = async (id, concertData) => {
+  try {
+    setSaving(true);
+    const data = await apiClient.update('concerts', id, concertData);
+    navigate('/admin/concerts');
+    return data;
+  } catch (error) {
+    setError('Failed to update concert. Please try again.');
+    console.error(error);
+  } finally {
+    setSaving(false);
+  }
+};
+```
+
+## Error Handling
+
+The admin interface includes comprehensive error handling:
+
+1. **Form Validation**: Client-side validation with clear error messages
+2. **API Error Handling**: Proper catching and display of server errors
+3. **Authentication Errors**: Automatic redirection to login on auth failures
+4. **Loading States**: Clear indication of async operations
+5. **Empty State Handling**: Appropriate messaging for no-data scenarios
+
+Example form error display:
+
+```jsx
+{formErrors.artist_id && (
+  <p className="mt-1 text-sm text-error">{formErrors.artist_id}</p>
+)}
+```
+
+## Usage Instructions
+
+To access the admin interface:
+
+1. Navigate to `/admin/login`
+2. Sign in with admin credentials
+3. Use the dashboard to access entity management
+4. Create, read, update, and delete entities as needed
+5. Manage user roles and permissions
+
+## Conclusion
+
+The EncoreLando admin interface provides a comprehensive, mobile-optimized solution for content management. Following mobile-first design principles, it offers a touch-friendly, efficient, and secure way to manage all aspects of the application's content while maintaining consistency with the public-facing design.

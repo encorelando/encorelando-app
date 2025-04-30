@@ -13,6 +13,11 @@ EncoreLando provides comprehensive information about concerts, performances, and
 - Explore venue information with location maps
 - Search for artists, venues, and performances
 - Filter events by park, date, and more
+- Admin interface for content management
+- User authentication and profile management
+- Venue directory with "Get Directions" functionality
+- Artist directory with upcoming performances
+- Festival directory with day-by-day schedules
 
 ## Mobile-First Design
 
@@ -23,6 +28,10 @@ This application is built with a strict mobile-first approach. All features are 
 - Battery-conscious operations
 - Responsive design that enhances for larger screens
 - Bottom navigation for thumb-reach optimization
+- Horizontal scrollers for efficient content browsing
+- High contrast options for outdoor viewing
+- Efficient data loading for mobile connections
+- Touch-optimized date selection and calendar views
 
 ## Getting Started
 
@@ -37,69 +46,66 @@ cd encorelando
 npm install
 ```
 
-3. Start the development server:
+3. Set up environment variables:
+```
+cp .env.example .env
+```
+Edit the `.env` file with your Supabase credentials.
+
+4. Start the development server:
 ```
 npm start
 ```
 
 ## Recent Updates
 
-### Admin Interface Implementation (May 1, 2025)
+### Admin Interface Implementation
 
-- Built comprehensive admin interface with Supabase authentication
-- Created mobile-optimized CRUD forms for all data types:
-  - Concerts management
-  - Artists management 
-  - Venues management
-  - Festivals management
-- Implemented protected routes with role-based access control
-- Designed responsive admin dashboard with touch-friendly cards
-- Added client-side validation with clear error messaging
+- Comprehensive admin interface with Supabase authentication
+- Mobile-optimized CRUD forms for all data types
+- Role-based access control system
+- Touch-friendly admin dashboard with quick actions
+- Client-side validation with clear error messaging
 
-### Festival Schedule Enhancement (April 30, 2025)
-
-- Implemented day-by-day breakdown of festival performances
-- Added touch-optimized filtering for venues and time of day
-- Created tab-based interface for better mobile organization
-- Enhanced festival information display with clear visual hierarchy
-- Added day numbering (Day 1, Day 2, etc.) for easier festival navigation
-
-### VenueDetailPage Enhancement (April 29, 2025)
-
-- Added comprehensive upcoming performances section
-- Implemented tab-based interface with "Upcoming" and "Calendar" views
-- Enhanced performance information display with date grouping
-- Optimized all interactive elements for mobile touch interaction
-- Improved location details with direct "Get Directions" integration
-
-### Map Integration (April 28, 2025)
+### Map Integration
 
 - Added venue location maps to venue detail pages
-- Implemented a fully client-side, CSS-based map solution
+- Implemented client-side, CSS-based map solution
 - Zero external dependencies for 100% reliability
-- Interactive toggle for precise coordinates
-- Added "Get Directions" integration with native map applications
-- Optimized for mobile with no data usage or battery drain
+- Interactive coordinate display
+- "Get Directions" integration with native map applications
+- Optimized for mobile with minimal data usage and battery drain
 
-### Venue Directory (April 15, 2025)
+### Authentication Refactor
 
-- Implemented VenuesPage with mobile-optimized grid layout
-- Added filtering capabilities by park and upcoming concerts
-- Created responsive design with single column on mobile, expanding to multi-column on larger screens
+- Centralized token storage for improved reliability
+- Enhanced API client with consistent auth handling
+- Simplified Auth Context with improved state management
+- Enhanced Protected Routes with better UX
+- Global auth event handling for app-wide state consistency
+
+### Branding Updates
+
+- New dark theme with vibrant accent colors
+- Updated typography with Poppins and Manrope fonts
+- Gradient accent implementation
+- Consistent design across all components
+- Enhanced readability for outdoor viewing
 
 ## Technical Documentation
 
 Detailed technical documentation is available in the `/docs` directory:
 
-- [Mobile-First Design Mandate](docs/design/wireframes.md)
-- [Map Integration Guide](docs/design/map-integration.md)
-- [Map Providers Configuration](docs/design/map-providers-config.md)
+- [Project Overview](docs/project/overview.md)
+- [Mobile-First Design Mandate](docs/design/mobile-first-mandate.md)
+- [API Implementation](docs/api/api-implementation.md)
+- [Authentication System](docs/auth/authentication-system.md)
 - [Database Schema](docs/database/schema.sql)
-- [Implementation Summary - April 2025](docs/project/implementation-summary-april2025.md)
-- [Project Tracking](docs/project/project-tracking.md)
-- [Remaining Tasks](docs/project/remaining-tasks.md)
+- [Implementation Summary](docs/project/implementation-summary.md)
+- [Map Integration Guide](docs/design/map-integration.md)
 - [Admin Interface Guide](docs/admin/admin-interface-guide.md)
-- [Supabase Auth Setup](docs/admin/supabase-auth-setup.md)
+- [Branding Guidelines](docs/design/brand-guidelines.md)
+- [Testing Strategy](docs/testing/testing-strategy.md)
 
 ## Project Structure
 
@@ -110,16 +116,42 @@ src/
 │   ├── molecules/    # Combinations of atoms
 │   ├── organisms/    # Complex components
 │   ├── templates/    # Page layouts
+│   ├── brand/        # Brand-specific components
+│   ├── ui/           # Additional UI components
+│   ├── layout/       # Layout components
 │   └── common/       # Shared components like ProtectedRoute
 ├── context/          # React context providers
-│   └── AuthContext.jsx  # Authentication context
+│   ├── AuthContext.jsx  # Authentication context
+│   └── FavoritesContext.jsx # User favorites management
 ├── hooks/            # Custom React hooks
 ├── pages/            # Page components
-│   └── admin/        # Admin interface pages
+│   ├── admin/        # Admin interface pages
+│   └── auth/         # Authentication pages
 ├── services/         # API services
 │   └── supabase.js   # Supabase client configuration
-└── utils/            # Utility functions
+├── styles/           # Global styles
+├── utils/            # Utility functions
+└── assets/           # Static assets
 ```
+
+## Available Scripts
+
+- `npm start` - Start the development server
+- `npm test` - Run the test suite
+- `npm run build` - Build for production
+- `npm run lint` - Check code quality
+- `npm run format` - Format code with Prettier
+- `npm run netlify:dev` - Run with Netlify functions
+- `npm run download-maps` - Download static maps for development
+
+## Next Steps
+
+Our roadmap includes:
+- Enhanced offline capabilities with service workers
+- Geolocation features for nearby performances
+- Additional performance optimizations
+- Advanced search capabilities
+- User preference and personalization features
 
 ## License
 
