@@ -10,6 +10,7 @@ import useArtists from '../hooks/useArtists';
 import useConcerts from '../hooks/useConcerts';
 import supabase from '../services/supabase';
 import Icon from '../components/atoms/Icon';
+import { getValidDateString } from '../utils/dateUtils';
 
 /**
  * ArtistDetailPage component for artist profiles
@@ -23,11 +24,9 @@ const ArtistDetailPage = () => {
   const [processedConcerts, setProcessedConcerts] = useState([]);
   const [includePastPerformances, setIncludePastPerformances] = useState(false);
 
-  // Use custom hooks
   const { getArtistById } = useArtists();
   const { getConcertsByArtist, concerts, loading: concertsLoading } = useConcerts();
 
-  // Fetch the venue details including park information
   const fetchVenueDetails = async venueId => {
     try {
       const { data, error } = await supabase
@@ -50,15 +49,12 @@ const ArtistDetailPage = () => {
     }
   };
 
-  // Fetch artist details
   useEffect(() => {
     const fetchArtistDetails = async () => {
       try {
         setLoading(true);
         const artistData = await getArtistById(id);
         setArtist(artistData);
-
-        // Fetch artist's concerts
         await getConcertsByArtist(id, includePastPerformances);
       } catch (err) {
         console.error('Error fetching artist details:', err);
@@ -71,59 +67,42 @@ const ArtistDetailPage = () => {
     fetchArtistDetails();
   }, [id, getArtistById, getConcertsByArtist, includePastPerformances]);
 
-  // Effect to process concert data and add venue/park details
   useEffect(() => {
     const processConcertData = async () => {
       if (!artist) return;
 
-      // Reset processed concerts if there are no concerts to process
       if (!concerts.length) {
         setProcessedConcerts([]);
         return;
       }
 
-      console.log('Processing concerts for artist:', artist.name, concerts.length);
-
-      // Verify these concerts are for the current artist by checking artist_id
-      const artistConcerts = concerts.filter(concert => {
-        // Only include concerts that explicitly have this artist's ID
-        return concert.artist_id === artist.id;
-      });
+      const artistConcerts = concerts.filter(concert => concert.artist_id === artist.id);
 
       if (artistConcerts.length === 0) {
-        console.log('No matching concerts found for this artist');
         setProcessedConcerts([]);
         return;
       }
 
-      // Process each concert to add park information
       const processedData = await Promise.all(
         artistConcerts.map(async concert => {
           let themeParkName = '';
-
-          // Support both singular and plural field names
           const venueData = concert.venue || concert.venues;
 
-          // If venue exists, try to get its park information
           if (venueData && venueData.id) {
             const venueDetails = await fetchVenueDetails(venueData.id);
-            if (venueDetails && venueDetails.park) {
+            if (venueDetails?.park) {
               themeParkName = venueDetails.park.name;
             }
           }
 
-          // Adjust date if needed to ensure correct local date
           const startTime = concert.startTime || concert.start_time;
-          const adjustedDate = startTime ? new Date(startTime) : null;
 
           return {
             ...concert,
-            // Use the corrected date if available
-            start_time: adjustedDate ? adjustedDate.toISOString() : concert.start_time,
-            startTime: adjustedDate ? adjustedDate.toISOString() : concert.startTime,
-            name: 'Concert', // Use generic "Concert" as the default name
-            artist_name: artist.name, // Add artist name explicitly
-            theme_park: themeParkName || '', // Add theme park name if available
+            name: 'Concert',
+            artist_name: artist.name,
+            theme_park: themeParkName,
+            date: getValidDateString(startTime), // ✅ use safe date string
           };
         })
       );
@@ -134,7 +113,6 @@ const ArtistDetailPage = () => {
     processConcertData();
   }, [concerts, artist]);
 
-  // Show loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -143,7 +121,6 @@ const ArtistDetailPage = () => {
     );
   }
 
-  // Show error state
   if (error || !artist) {
     return (
       <DetailPageLayout title="Artist Not Found" imageUrl="/images/placeholder-artist.jpg">
@@ -157,18 +134,13 @@ const ArtistDetailPage = () => {
     );
   }
 
-  // Ensure we have a valid image URL
   const artistImageUrl =
-    artist.image_url && artist.image_url.trim() !== ''
-      ? artist.image_url
-      : '/images/placeholder-artist.jpg';
+    artist.image_url?.trim() !== '' ? artist.image_url : '/images/placeholder-artist.jpg';
 
   return (
     <DetailPageLayout title={artist.name} imageUrl={artistImageUrl} minHeight="full">
-      {/* Artist metadata */}
       <div className="mb-lg">
-        {/* Genres */}
-        {artist.genres && artist.genres.length > 0 && (
+        {artist.genres?.length > 0 && (
           <div className="mb-md">
             <Typography variant="h4" className="mb-xs">
               Genres
@@ -181,7 +153,6 @@ const ArtistDetailPage = () => {
           </div>
         )}
 
-        {/* Description */}
         {artist.description && (
           <div className="mt-md">
             <Typography variant="h4" className="mb-xs">
@@ -191,7 +162,6 @@ const ArtistDetailPage = () => {
           </div>
         )}
 
-        {/* Website */}
         {artist.website_url && (
           <div className="mt-md">
             <Button variant="outline" onClick={() => window.open(artist.website_url, '_blank')}>
@@ -201,22 +171,16 @@ const ArtistDetailPage = () => {
         )}
       </div>
 
-      {/* Performances */}
       <div className="mt-xl">
         <div className="flex justify-between items-center mb-md">
           <Typography variant="h3">Performances</Typography>
-
-          {/* Past performances toggle - Mobile-friendly touch target */}
           <button
             onClick={() => setIncludePastPerformances(prev => !prev)}
-            className={`
-              flex items-center px-xs py-xxs rounded-full min-h-touch
-              ${
-                includePastPerformances
-                  ? 'bg-primary bg-opacity-20 text-primary'
-                  : 'bg-dark-gray text-light-gray'
-              }
-            `}
+            className={`flex items-center px-xs py-xxs rounded-full min-h-touch ${
+              includePastPerformances
+                ? 'bg-primary bg-opacity-20 text-primary'
+                : 'bg-dark-gray text-light-gray'
+            }`}
           >
             <div className="mr-xs">
               <Icon name="clock" size="sm" />

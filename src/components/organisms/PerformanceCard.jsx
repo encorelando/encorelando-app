@@ -10,6 +10,7 @@ import { formatTime, formatDate } from '../../utils/dateUtils';
 /**
  * PerformanceCard component with the new EncoreLando branding
  * Mobile-optimized with touch-friendly design on dark background
+ * Now includes artist image similar to VenuePerformanceCard
  */
 const PerformanceCard = ({ performance, showDate = false, featured = false, className = '' }) => {
   // Handle both camelCase and snake_case property names for compatibility
@@ -29,8 +30,6 @@ const PerformanceCard = ({ performance, showDate = false, featured = false, clas
 
   // Format the date of the performance
   const formattedDate = formatDate(startTime);
-
-  // Note: We're using formattedDate directly without the displayDate variable
 
   return (
     <Link

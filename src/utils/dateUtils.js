@@ -116,7 +116,10 @@ export const getRelativeDate = date => {
     return 'Date TBD';
   }
 
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const dateObj =
+    typeof date === 'string'
+      ? new Date(`${date}T12:00:00`) // ensures local date rendering
+      : date;
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -146,7 +149,7 @@ export const getRelativeDate = date => {
 
 /**
  * Extract valid date string from a date object or string
- * Handles timezone issues by using local date components
+ * CRITICAL FIX: Always extracts date directly from ISO string to preserve UTC dates
  * @param {Date|string} date - The date to process
  * @returns {string|null} - YYYY-MM-DD format date string or null if invalid
  */
@@ -154,38 +157,31 @@ export const getValidDateString = date => {
   if (!date) return null;
 
   try {
-    let dateObj;
-
-    // If it's a string, parse it carefully to avoid timezone shifts
+    // If it's a string (most common case from API)
     if (typeof date === 'string') {
-      // First try to extract just the date part from an ISO string
+      // Direct extraction of date part from ISO string (YYYY-MM-DD)
+      // This avoids all timezone issues by not creating a Date object
       const datePart = date.split('T')[0];
       if (datePart && datePart.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        // Use current date with the year/month/day from the string
-        const [year, month, day] = datePart.split('-').map(Number);
-        dateObj = new Date();
-        dateObj.setFullYear(year);
-        dateObj.setMonth(month - 1); // JS months are 0-based
-        dateObj.setDate(day);
-        dateObj.setHours(0, 0, 0, 0); // Reset time part
-      } else {
-        // Regular date parsing as fallback
-        dateObj = new Date(date);
+        return datePart; // Return the date part directly
       }
-    } else {
-      // It's already a Date object
-      dateObj = new Date(date.getTime());
+
+      // If not in ISO format, create a Date and extract UTC components
+      const dateObj = new Date(date);
+      if (isNaN(dateObj.getTime())) return null;
+
+      // Use UTC components to avoid timezone shifts
+      return dateObj.toISOString().split('T')[0];
+    }
+    // If it's already a Date object
+    else if (date instanceof Date) {
+      if (isNaN(date.getTime())) return null;
+
+      // Always use UTC/ISO string to avoid timezone issues
+      return date.toISOString().split('T')[0];
     }
 
-    // Check for invalid dates
-    if (isNaN(dateObj.getTime())) return null;
-
-    // Use the current date's components in local timezone
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
+    return null;
   } catch (e) {
     console.error('Error extracting date:', e);
     return null;
@@ -193,7 +189,7 @@ export const getValidDateString = date => {
 };
 
 /**
- * Group performances by date - uses current date to get the correct local date
+ * Group performances by date - uses the ISO date string directly to avoid timezone issues
  * @param {Array} performances - Array of performance objects
  * @returns {Object} - Object with dates as keys and arrays of performances as values
  */
@@ -212,8 +208,19 @@ export const groupPerformancesByDate = performances => {
       return groups;
     }
 
-    // Get a valid date string - corrected for timezone
-    const dateStr = getValidDateString(startTime);
+    // Extract date part directly from ISO string to avoid timezone conversions
+    let dateStr;
+
+    if (typeof startTime === 'string') {
+      // Always use the date directly from the ISO string (YYYY-MM-DD)
+      dateStr = startTime.split('T')[0];
+    } else if (startTime instanceof Date) {
+      // For Date objects, use UTC date components to maintain consistency with ISO strings
+      dateStr = startTime.toISOString().split('T')[0];
+    } else {
+      return groups; // Invalid date format
+    }
+
     if (!dateStr) return groups;
 
     if (!groups[dateStr]) {
@@ -226,19 +233,8 @@ export const groupPerformancesByDate = performances => {
 };
 
 /**
- * Get today's date as a YYYY-MM-DD string in local timezone
- * @returns {string} Today's date string
- */
-export const getTodayDateString = () => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-/**
  * Group performances by date and then by venue for artists
+ * Uses ISO date strings to avoid timezone issues
  * @param {Array} performances - Array of performance objects
  * @returns {Object} - Object with dates as keys and arrays of consolidated performances
  */
@@ -255,8 +251,38 @@ export const groupArtistPerformancesByDateAndVenue = performances => {
 
   if (validPerformances.length === 0) return {};
 
-  // Group by date first - with timezone correction
-  const byDate = groupPerformancesByDate(validPerformances);
+  // Create date groups manually to avoid timezone issues
+  const byDate = {};
+
+  // Group by date directly from the ISO string date part
+  validPerformances.forEach(performance => {
+    if (!performance) return;
+
+    const startTime = performance.startTime || performance.start_time;
+    if (!startTime) return;
+
+    // Get date string directly from ISO string when possible
+    let dateStr;
+
+    if (typeof startTime === 'string') {
+      // Always use the date directly from the ISO string (YYYY-MM-DD)
+      dateStr = startTime.split('T')[0];
+    } else if (startTime instanceof Date) {
+      // For Date objects, use toISOString() to get the date part
+      dateStr = startTime.toISOString().split('T')[0];
+    } else {
+      return; // Invalid date format
+    }
+
+    if (!dateStr) return;
+
+    if (!byDate[dateStr]) {
+      byDate[dateStr] = [];
+    }
+
+    byDate[dateStr].push(performance);
+  });
+
   const consolidatedByDate = {};
 
   // Process each date group
@@ -380,5 +406,17 @@ export const formatDateForApi = date => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+/**
+ * Get today's date as a YYYY-MM-DD string in local timezone
+ * @returns {string} Today's date string
+ */
+export const getTodayDateString = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };

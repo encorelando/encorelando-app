@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DetailPageLayout from '../components/templates/DetailPageLayout';
@@ -12,40 +13,28 @@ import Calendar from '../components/organisms/Calendar';
 import StaticMap from '../components/molecules/StaticMap';
 import useVenues from '../hooks/useVenues';
 import useConcerts from '../hooks/useConcerts';
-import { groupPerformancesByDate } from '../utils/dateUtils';
+import { groupPerformancesByDate, getValidDateString } from '../utils/dateUtils';
 
-/**
- * VenueDetailPage component for venue information and schedule
- * Mobile-optimized with calendar and upcoming performances
- * Enhanced with sections for upcoming performances and calendar view
- */
 const VenueDetailPage = () => {
   const { id } = useParams();
   const [venue, setVenue] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [dateHasConcerts, setDateHasConcerts] = useState([]);
   const [activeTab, setActiveTab] = useState('upcoming');
   const [upcomingConcerts, setUpcomingConcerts] = useState([]);
+  const [calendarConcerts, setCalendarConcerts] = useState([]);
+  const [calendarEventCounts, setCalendarEventCounts] = useState([]);
   const [isUpcomingLoading, setIsUpcomingLoading] = useState(true);
 
-  // Use custom hooks
   const { getVenueById } = useVenues();
-  const {
-    getConcertsByVenue,
-    concerts,
-    loading: concertsLoading,
-    getUpcomingConcerts,
-  } = useConcerts();
+  const { getConcertsByVenue, concerts, loading: concertsLoading } = useConcerts();
 
-  // Define tabs for mobile interface
   const tabs = [
     { id: 'upcoming', label: 'Upcoming', icon: 'calendar' },
     { id: 'calendar', label: 'Calendar', icon: 'calendar-days' },
   ];
 
-  // Fetch venue details and upcoming concerts
   useEffect(() => {
     const fetchVenueDetails = async () => {
       try {
@@ -55,24 +44,21 @@ const VenueDetailPage = () => {
         const venueData = await getVenueById(id);
         setVenue(venueData);
 
-        // Fetch upcoming concerts at this venue
-        const concertData = await getConcertsByVenue(id);
+        // Fetch all concerts for event highlighting
+        const allConcerts = await getConcertsByVenue(id);
+        setCalendarConcerts(allConcerts);
 
-        // Extract unique dates that have concerts for calendar
-        const dates = concertData.map(
-          concert => new Date(concert.start_time).toISOString().split('T')[0]
-        );
-        setDateHasConcerts([...new Set(dates)]);
+        const grouped = groupPerformancesByDate(allConcerts);
+        const counts = Object.entries(grouped).map(([date, perfs]) => ({
+          date,
+          count: perfs.length,
+        }));
+        setCalendarEventCounts(counts);
 
-        // Fetch specifically upcoming concerts for the upcoming tab
-        // NOTE: We use getConcertsByVenue instead of getUpcomingConcerts here
-        // because getUpcomingConcerts doesn't support venueId filtering
-        // The future parameter ensures we only get upcoming concerts
         const upcomingData = await getConcertsByVenue(id, {
           future: true,
-          limit: 20, // Limit for initial load
+          limit: 20,
         });
-
         setUpcomingConcerts(upcomingData);
       } catch (err) {
         console.error('Error fetching venue details:', err);
@@ -84,48 +70,31 @@ const VenueDetailPage = () => {
     };
 
     fetchVenueDetails();
-  }, [id, getVenueById, getConcertsByVenue, getUpcomingConcerts]);
+  }, [id, getVenueById, getConcertsByVenue]);
 
-  // Fetch concerts for selected date
   useEffect(() => {
     if (venue) {
       const fetchConcertsForDate = async () => {
-        // Create date at local midnight to ensure proper date boundaries
-        const localDate = new Date(selectedDate);
-
-        // Ensure we're working with the local date by resetting hours to midnight local time
-        // and then formatting specifically to prevent timezone shifts
-        localDate.setHours(0, 0, 0, 0);
-
-        // Format as YYYY-MM-DD
-        const year = localDate.getFullYear();
-        const month = String(localDate.getMonth() + 1).padStart(2, '0');
-        const day = String(localDate.getDate()).padStart(2, '0');
-        const formattedDate = `${year}-${month}-${day}`;
-
+        const formattedDate =
+          getValidDateString(selectedDate) || new Date().toISOString().split('T')[0];
         await getConcertsByVenue(id, { date: formattedDate });
       };
-
       fetchConcertsForDate();
     }
   }, [selectedDate, id, venue, getConcertsByVenue]);
 
-  // Handle date selection
-  const handleDateSelect = date => {
-    setSelectedDate(date);
-  };
+  const handleDateSelect = date => setSelectedDate(date);
 
-  // Group upcoming concerts by date for better organization on mobile
-  const groupedUpcomingConcerts = useMemo(() => {
-    return groupPerformancesByDate(upcomingConcerts);
-  }, [upcomingConcerts]);
+  const groupedUpcomingConcerts = useMemo(
+    () => groupPerformancesByDate(upcomingConcerts),
+    [upcomingConcerts]
+  );
 
-  // Convert grouped concerts to sorted array for rendering
-  const sortedUpcomingDates = useMemo(() => {
-    return Object.keys(groupedUpcomingConcerts).sort();
-  }, [groupedUpcomingConcerts]);
+  const sortedUpcomingDates = useMemo(
+    () => Object.keys(groupedUpcomingConcerts).sort(),
+    [groupedUpcomingConcerts]
+  );
 
-  // Show loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -134,7 +103,6 @@ const VenueDetailPage = () => {
     );
   }
 
-  // Show error state
   if (error || !venue) {
     return (
       <DetailPageLayout title="Venue Not Found" imageUrl="/images/placeholder-venue.jpg">
@@ -154,7 +122,6 @@ const VenueDetailPage = () => {
       subtitle={venue.park?.name}
       imageUrl={venue.image_url || '/images/placeholder-venue.jpg'}
     >
-      {/* Venue status */}
       {venue.status && (
         <div className="mb-md">
           <Badge
@@ -164,17 +131,14 @@ const VenueDetailPage = () => {
         </div>
       )}
 
-      {/* Venue description */}
       {venue.description && (
         <div className="mb-lg">
           <Typography variant="body1">{venue.description}</Typography>
         </div>
       )}
 
-      {/* Map and location details */}
       {(venue.location_details || venue.latitude || venue.longitude) && (
         <div className="mb-lg">
-          {/* Use map when coordinates are available */}
           {venue.latitude && venue.longitude ? (
             <div className="mb-sm">
               <StaticMap
@@ -201,7 +165,6 @@ const VenueDetailPage = () => {
                   <Typography variant="body1">{venue.location_details}</Typography>
                 </div>
               )}
-
               <div className="text-center p-4 bg-light-gray rounded-lg mt-md">
                 <Icon name="map-off" size="md" className="mb-sm text-medium-gray mx-auto" />
                 <Typography variant="body2" color="medium-gray">
@@ -213,7 +176,6 @@ const VenueDetailPage = () => {
         </div>
       )}
 
-      {/* Park information */}
       {venue.park && (
         <div className="mb-lg">
           <Typography variant="h4" className="mb-sm">
@@ -228,16 +190,12 @@ const VenueDetailPage = () => {
         </div>
       )}
 
-      {/* Performances Section with Tabs - Mobile Optimized */}
       <div className="mb-lg">
         <Typography variant="h3" className="mb-md">
           Performances
         </Typography>
-
-        {/* Mobile-optimized tabs */}
         <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} className="mb-md" />
 
-        {/* Upcoming Performances Tab */}
         {activeTab === 'upcoming' && (
           <div className="pb-6">
             {isUpcomingLoading ? (
@@ -248,14 +206,11 @@ const VenueDetailPage = () => {
                 </Typography>
               </div>
             ) : sortedUpcomingDates.length > 0 ? (
-              <div>
-                {/* Show grouped performances by date for better mobile organization */}
-                <VenuePerformanceList
-                  performances={upcomingConcerts}
-                  groupByDate={true}
-                  emptyMessage="No upcoming performances scheduled"
-                />
-              </div>
+              <VenuePerformanceList
+                performances={upcomingConcerts}
+                groupByDate={true}
+                emptyMessage="No upcoming performances scheduled"
+              />
             ) : (
               <div className="text-center p-6 bg-background-secondary rounded-lg">
                 <Icon name="calendar-x" size="lg" className="mb-sm text-medium-gray mx-auto" />
@@ -267,28 +222,26 @@ const VenueDetailPage = () => {
           </div>
         )}
 
-        {/* Calendar View Tab */}
         {activeTab === 'calendar' && (
           <div>
-            {/* Calendar for selecting dates - Mobile friendly */}
             <div className="mb-md">
               <Calendar
                 selectedDate={selectedDate}
                 onDateSelect={handleDateSelect}
-                highlightedDates={dateHasConcerts}
+                eventCounts={calendarEventCounts}
               />
             </div>
-
-            {/* Performances for selected date */}
             <div className="pb-6">
               <Typography variant="h4" className="mb-md">
-                {new Date(selectedDate).toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                {new Date(`${getValidDateString(selectedDate)}T12:00:00`).toLocaleDateString(
+                  'en-US',
+                  {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                  }
+                )}
               </Typography>
-
               <VenuePerformanceList
                 performances={concerts}
                 loading={concertsLoading}
@@ -299,7 +252,6 @@ const VenueDetailPage = () => {
         )}
       </div>
 
-      {/* Website link if available */}
       {venue.website_url && (
         <Button
           variant="outline"
