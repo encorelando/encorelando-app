@@ -17,6 +17,8 @@
   "cSpell.words": [
     "addevent",
     "ampm",
+    "BYDAY",
+    "BYMONTH",
     "CALSCALE",
     "couldn",
     "deeplink",
@@ -32,6 +34,7 @@
     "ilike",
     "Lando",
     "lonlat",
+    "luxon",
     "modtime",
     "Nemo",
     "oaicite",
@@ -40,12 +43,16 @@
     "plpgsql",
     "PRODID",
     "rgba",
+    "RRULE",
     "Scrollability",
     "Segoe",
     "startdt",
     "supabase",
     "Toon",
+    "TZOFFSETFROM",
+    "TZOFFSETTO",
     "VCALENDAR",
-    "VEVENT"
+    "VEVENT",
+    "vtimezone"
   ]
 }

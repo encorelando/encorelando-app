@@ -1,7 +1,15 @@
+import { DateTime } from 'luxon';
+
 /**
  * Calendar utility functions for creating calendar events
  * Mobile-optimized with cross-platform support
+ *
+ * IMPORTANT: All events are in Eastern Time (ET) regardless of user's local timezone
  */
+
+// Define the timezone identifier for Eastern Time
+// eslint-disable-next-line no-unused-vars
+const TIMEZONE_ID = 'America/New_York';
 
 /**
  * Escape text for use in iCalendar format
@@ -18,27 +26,63 @@ const escapeICalText = text => {
 };
 
 /**
- * Format date for iCalendar format
+ * Ensures a date is properly interpreted as Eastern Time
+ * @param {string|Date} dateInput - The date from API or user input
+ * @returns {Date} - Date object correctly interpreted as Eastern Time
+ */
+/**
+ * Parses a string or Date and forces interpretation as Eastern Time, ignoring any timezone suffix
+ * @param {string|Date} dateInput
+ * @returns {Date} - JS Date object representing correct local Eastern Time
+ */
+const parseEasternTime = dateInput => {
+  console.log('[parseEasternTime] Raw input:', dateInput);
+
+  if (!dateInput) return new Date();
+
+  if (typeof dateInput === 'string') {
+    // Remove timezone suffix (Z or ±HH:mm) if present, to prevent UTC interpretation
+    const cleaned = dateInput.replace(/([+-]\d{2}:?\d{2}|Z)$/, '');
+    const dt = DateTime.fromISO(cleaned, { zone: 'America/New_York' });
+
+    console.log('[parseEasternTime] Cleaned input:', cleaned);
+    console.log('[parseEasternTime] Luxon ET parsed:', dt.toString());
+
+    if (!dt.isValid) {
+      console.warn('[parseEasternTime] Invalid format, falling back to native Date');
+      return new Date(dateInput);
+    }
+
+    return dt.toJSDate();
+  }
+
+  return dateInput;
+};
+
+/**
+ * Format date for iCalendar format with explicit timezone
  * @param {string|Date} date - Date to format
  * @returns {string} - Formatted date string (e.g., "20230415T193000")
  */
 const formatICalDate = date => {
   if (!date) return '';
 
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  // Parse the date, ensuring it's treated as Eastern Time
+  const dateObj = parseEasternTime(date);
 
-  const year = dateObj.getFullYear();
-  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const day = String(dateObj.getDate()).padStart(2, '0');
-  const hours = String(dateObj.getHours()).padStart(2, '0');
-  const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-  const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+  // Format in UTC for iCalendar (add Z suffix)
+  const year = dateObj.getUTCFullYear();
+  const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getUTCDate()).padStart(2, '0');
+  const hours = String(dateObj.getUTCHours()).padStart(2, '0');
+  const minutes = String(dateObj.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(dateObj.getUTCSeconds()).padStart(2, '0');
 
-  return `${year}${month}${day}T${hours}${minutes}${seconds}`;
+  return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
 };
 
 /**
- * Generate Google Calendar URL
+ * Generate Google Calendar URL with timezone handling
  * @param {Object} event - Event details
  * @returns {string} - Google Calendar URL
  */
@@ -55,18 +99,19 @@ export const generateGoogleCalendarUrl = ({
     return '';
   }
 
-  const startDate = typeof startTime === 'string' ? new Date(startTime) : startTime;
+  // Parse dates with proper Eastern Time handling
+  const startDate = parseEasternTime(startTime);
 
   // If no end time is provided, set it to 1 hour after start time
   let endDate;
   if (endTime) {
-    endDate = typeof endTime === 'string' ? new Date(endTime) : endTime;
+    endDate = parseEasternTime(endTime);
   } else {
     endDate = new Date(startDate);
     endDate.setHours(endDate.getHours() + 1);
   }
 
-  // Format dates for Google Calendar
+  // Format dates for Google Calendar with UTC designation (Z)
   const startDateStr = startDate.toISOString().replace(/-|:|\.\d+/g, '');
   const endDateStr = endDate.toISOString().replace(/-|:|\.\d+/g, '');
 
@@ -75,6 +120,7 @@ export const generateGoogleCalendarUrl = ({
     action: 'TEMPLATE',
     text: title,
     dates: `${startDateStr}/${endDateStr}`,
+    ctz: 'America/New_York', // Explicitly set Eastern timezone
   });
 
   // Add optional parameters if provided
@@ -94,7 +140,7 @@ export const generateGoogleCalendarUrl = ({
 };
 
 /**
- * Generate iCalendar (.ics) file content
+ * Generate iCalendar (.ics) file content with timezone support
  * @param {Object} event - Event details
  * @returns {string} - iCalendar file content
  */
@@ -111,12 +157,13 @@ export const generateICalendarContent = ({
     return '';
   }
 
-  const startDate = typeof startTime === 'string' ? new Date(startTime) : startTime;
+  // Parse dates with proper Eastern Time handling
+  const startDate = parseEasternTime(startTime);
 
   // If no end time is provided, set it to 1 hour after start time
   let endDate;
   if (endTime) {
-    endDate = typeof endTime === 'string' ? new Date(endTime) : endTime;
+    endDate = parseEasternTime(endTime);
   } else {
     endDate = new Date(startDate);
     endDate.setHours(endDate.getHours() + 1);
@@ -137,6 +184,25 @@ export const generateICalendarContent = ({
       (eventDescription ? '\\n\\n' : '') + escapeICalText(`View event details: ${url}`);
   }
 
+  // Add Eastern Time Zone information
+  const vtimezone = [
+    'BEGIN:VTIMEZONE',
+    'TZID:America/New_York',
+    'BEGIN:STANDARD',
+    'DTSTART:20071104T020000',
+    'RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU',
+    'TZOFFSETFROM:-0400',
+    'TZOFFSETTO:-0500',
+    'END:STANDARD',
+    'BEGIN:DAYLIGHT',
+    'DTSTART:20070311T020000',
+    'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU',
+    'TZOFFSETFROM:-0500',
+    'TZOFFSETTO:-0400',
+    'END:DAYLIGHT',
+    'END:VTIMEZONE',
+  ].join('\r\n');
+
   // Build the iCalendar content
   let icalContent = [
     'BEGIN:VCALENDAR',
@@ -144,6 +210,7 @@ export const generateICalendarContent = ({
     'PRODID:-//EncoreLando//Concert Calendar//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
+    vtimezone,
     'BEGIN:VEVENT',
     `UID:${uid}`,
     `DTSTAMP:${now}`,
@@ -186,7 +253,7 @@ export const generateAppleCalendarUrl = event => {
 };
 
 /**
- * Generate Outlook.com calendar URL
+ * Generate Outlook.com calendar URL with timezone handling
  * @param {Object} event - Event details
  * @returns {string} - Outlook.com calendar URL
  */
@@ -203,18 +270,19 @@ export const generateOutlookCalendarUrl = ({
     return '';
   }
 
-  const startDate = typeof startTime === 'string' ? new Date(startTime) : startTime;
+  // Parse dates with proper Eastern Time handling
+  const startDate = parseEasternTime(startTime);
 
   // If no end time is provided, set it to 1 hour after start time
   let endDate;
   if (endTime) {
-    endDate = typeof endTime === 'string' ? new Date(endTime) : endTime;
+    endDate = parseEasternTime(endTime);
   } else {
     endDate = new Date(startDate);
     endDate.setHours(endDate.getHours() + 1);
   }
 
-  // Format dates for Outlook
+  // Format dates for Outlook (UTC format)
   const startDateStr = startDate.toISOString().replace(/-|:|\.\d+/g, '');
   const endDateStr = endDate.toISOString().replace(/-|:|\.\d+/g, '');
 
@@ -227,13 +295,20 @@ export const generateOutlookCalendarUrl = ({
     enddt: endDateStr,
   });
 
+  // Add timezone parameter (Outlook supports this)
+  params.append('ctz', 'Eastern Standard Time');
+
   // Add optional parameters if provided
   if (description) {
-    // Include the URL in the description if provided
-    const fullDescription = url ? `${description}\n\nView event details: ${url}` : description;
+    // Include the URL and timezone in the description if provided
+    const fullDescription = url
+      ? `${description}\n\nView event details: ${url}\n\nThis event time is in Eastern Time (ET).`
+      : `${description}\n\nThis event time is in Eastern Time (ET).`;
     params.append('body', fullDescription);
   } else if (url) {
-    params.append('body', `View event details: ${url}`);
+    params.append('body', `View event details: ${url}\n\nThis event time is in Eastern Time (ET).`);
+  } else {
+    params.append('body', 'This event time is in Eastern Time (ET).');
   }
 
   if (location) {
@@ -267,7 +342,7 @@ export const downloadICalendarFile = event => {
 };
 
 /**
- * Generate event details from concert data
+ * Generate event details from concert data with proper Eastern Time handling
  * @param {Object} concert - Concert data
  * @param {string} concertUrl - URL to the concert details page
  * @returns {Object} - Event details for calendar functions
@@ -289,8 +364,9 @@ export const generateEventFromConcert = (concert, concertUrl) => {
     location += location ? `, ${parkData.name}` : parkData.name;
   }
 
-  // Build description
-  let description = `${artistData.name} performing at ${venueData.name}`;
+  // Build description with timezone information
+  let description = `${artistData.name} performing at ${venueData.name}\n\nNOTE: Event time is in Eastern Time (ET).`;
+
   if (concert.notes) {
     description += `\n\nPerformance Notes:\n${concert.notes}`;
   }

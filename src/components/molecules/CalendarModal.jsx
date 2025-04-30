@@ -63,7 +63,7 @@ const CalendarModal = ({ event, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-md bg-black bg-opacity-75">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-md bg-black bg-opacity-95 backdrop-blur-sm">
       <Card className="w-full max-w-sm p-lg relative overflow-hidden">
         {/* Close button */}
         <button className="absolute top-xs right-xs p-xs" onClick={onClose} aria-label="Close">
@@ -71,8 +71,13 @@ const CalendarModal = ({ event, onClose }) => {
         </button>
 
         {/* Header */}
-        <Typography variant="h3" className="mb-md text-center">
+        <Typography variant="h3" className="mb-sm text-center">
           Add to Calendar
+        </Typography>
+
+        {/* Timezone notice */}
+        <Typography variant="body2" color="medium-gray" className="mb-md text-center">
+          Event time is in Eastern Time (ET)
         </Typography>
 
         {/* Calendar options */}
