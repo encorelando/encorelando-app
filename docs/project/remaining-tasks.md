@@ -5,6 +5,7 @@ This document outlines the remaining tasks needed to complete the EncoreLando MV
 ## High Priority Tasks
 
 ### 1. Venue Directory Implementation ✅ COMPLETED
+
 - ✅ **Create VenuesPage component** for listing all venues
   - ✅ Mobile-optimized grid layout similar to FestivalsPage
   - ✅ Filtering options (by park, by type)
@@ -15,12 +16,14 @@ This document outlines the remaining tasks needed to complete the EncoreLando MV
   - ✅ Ensure proper mobile layout
 
 ### 2. Festival Schedule Enhancement ✅ COMPLETED
+
 - ✅ **Improve festival schedule view** within FestivalDetailPage
   - ✅ Day-by-day breakdown of performances
   - ✅ Time-based organization of events
   - ✅ Filtering options for festival schedules
 
 ### 3. Map Integration ✅ COMPLETED
+
 - ✅ **Add static maps to venue details**
   - ✅ Location markers for venues
   - ✅ Mobile-optimized map display
@@ -30,6 +33,7 @@ This document outlines the remaining tasks needed to complete the EncoreLando MV
 ## Medium Priority Tasks
 
 ### 1. Admin Interface ✅ COMPLETED
+
 - ✅ **Create admin authentication flow**
   - ✅ Login screen with secure authentication
   - ✅ Role-based access control
@@ -38,13 +42,23 @@ This document outlines the remaining tasks needed to complete the EncoreLando MV
   - ✅ Form validation and error handling
   - ✅ Mobile-friendly admin interface
 
-### 2. Testing Infrastructure
+### 2. User Account Setup
+
+- **Implement User Management**
+  - Create account sign up and login process
+  - Update infrastructure to allow users to favorite artists, concerts, festivals, and venues
+  - Add sharing capabilities to enable users to share info on events to social media that links back to our app
+  - Complete calendar deeplink infrastructure (currently we just have a button that says "Add to Calendar" let's make that work and include links back to our webapp.)
+
+### 3. Testing Infrastructure
+
 - **Expand test coverage**
   - Unit tests for critical components
   - Integration tests for main user flows
   - Mobile-specific testing
 
-### 3. Offline Capabilities
+### 4. Offline Capabilities
+
 - **Implement service workers**
   - Cache essential data for offline use
   - Appropriate UI for offline mode
@@ -53,6 +67,7 @@ This document outlines the remaining tasks needed to complete the EncoreLando MV
 ## Low Priority Tasks
 
 ### 1. CI/CD Workflow
+
 - **Set up continuous integration pipeline**
   - Automated testing on commits
   - Build validation
@@ -61,6 +76,7 @@ This document outlines the remaining tasks needed to complete the EncoreLando MV
   - Rollback capabilities
 
 ### 2. Performance Optimizations
+
 - **Further bundle size reduction**
   - Additional code splitting
   - Asset optimization
@@ -69,6 +85,7 @@ This document outlines the remaining tasks needed to complete the EncoreLando MV
   - Cache warming strategies
 
 ### 3. Enhanced Mobile Features
+
 - **Implement "Add to Home Screen" functionality**
   - PWA manifest configuration
   - Install prompts
@@ -81,11 +98,13 @@ This document outlines the remaining tasks needed to complete the EncoreLando MV
 With all high-priority tasks completed, we recommend focusing on these key areas:
 
 1. **Team A**: Admin interface development
+
    - Create admin authentication flow
    - Build data management forms
    - Ensure mobile-friendly admin experience
 
 2. **Team B**: Testing infrastructure and offline capabilities
+
    - Expand test coverage for critical components
    - Implement service workers for offline use
    - Develop offline-friendly UI patterns
@@ -124,6 +143,7 @@ Regular progress reviews should be conducted weekly to adjust priorities and tim
 ## Recent Implementations
 
 ### VenueDetailPage Enhancements (April 2025)
+
 - Implemented a tab-based interface for better mobile organization
 - Added a comprehensive "Upcoming Performances" section with optimized layout
 - Enhanced the calendar view for selecting specific dates
@@ -131,6 +151,7 @@ Regular progress reviews should be conducted weekly to adjust priorities and tim
 - Ensured all components maintain touch-friendly interaction sizes (44×44px minimum)
 
 ### FestivalDetailPage Improvements (April 2025)
+
 - Created a robust day-by-day breakdown of performances
 - Implemented touch-optimized filter controls for venues and time of day
 - Added day numbering (Day 1, Day 2, etc.) for easier festival navigation

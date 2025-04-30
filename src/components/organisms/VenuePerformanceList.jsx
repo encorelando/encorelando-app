@@ -1,20 +1,16 @@
 import PropTypes from 'prop-types';
-import PerformanceCard from './PerformanceCard';
-import ArtistPerformanceCard from './ArtistPerformanceCard';
+import VenuePerformanceCard from './VenuePerformanceCard';
 import Spinner from '../atoms/Spinner';
 import Typography from '../atoms/Typography';
 import Icon from '../atoms/Icon';
-import {
-  getRelativeDate,
-  groupPerformancesByDate,
-  groupArtistPerformancesByDateAndVenue,
-} from '../../utils/dateUtils';
+import { getRelativeDate, groupPerformancesByDate } from '../../utils/dateUtils';
 
 /**
- * PerformanceList component for displaying a list of performances
+ * VenuePerformanceList component for displaying performances at a specific venue
  * Mobile-optimized with date grouping and loading states
+ * Omits venue information display since we're already on the venue page
  */
-const PerformanceList = ({
+const VenuePerformanceList = ({
   performances,
   loading = false,
   error = null,
@@ -23,7 +19,6 @@ const PerformanceList = ({
   groupByDate = false,
   className = '',
   emptyMessage = 'No performances found',
-  useArtistCard = false,
 }) => {
   // Render loading spinner
   if (loading && !performances.length) {
@@ -63,11 +58,7 @@ const PerformanceList = ({
 
   // If grouping by date
   if (groupByDate) {
-    // Use different grouping logic based on whether we're on an artist page
-    const performancesByDate = useArtistCard
-      ? groupArtistPerformancesByDateAndVenue(performances)
-      : groupPerformancesByDate(performances);
-
+    const performancesByDate = groupPerformancesByDate(performances);
     const sortedDates = Object.keys(performancesByDate).sort();
 
     return (
@@ -81,21 +72,13 @@ const PerformanceList = ({
 
             {/* Performances for this date */}
             <div className="space-y-md">
-              {performancesByDate[dateStr].map(performance =>
-                useArtistCard ? (
-                  <ArtistPerformanceCard
-                    key={performance.id}
-                    performance={performance}
-                    showDate={false}
-                  />
-                ) : (
-                  <PerformanceCard
-                    key={performance.id}
-                    performance={performance}
-                    showDate={false}
-                  />
-                )
-              )}
+              {performancesByDate[dateStr].map(performance => (
+                <VenuePerformanceCard
+                  key={performance.id}
+                  performance={performance}
+                  showDate={false}
+                />
+              ))}
             </div>
           </div>
         ))}
@@ -126,13 +109,9 @@ const PerformanceList = ({
   // Simple list without date grouping
   return (
     <div className={`space-y-md ${className}`}>
-      {performances.map(performance =>
-        useArtistCard ? (
-          <ArtistPerformanceCard key={performance.id} performance={performance} showDate={true} />
-        ) : (
-          <PerformanceCard key={performance.id} performance={performance} showDate={true} />
-        )
-      )}
+      {performances.map(performance => (
+        <VenuePerformanceCard key={performance.id} performance={performance} showDate={true} />
+      ))}
 
       {/* Load more button */}
       {hasMore && (
@@ -176,14 +155,6 @@ const performanceShape = PropTypes.shape({
     name: PropTypes.string.isRequired,
     image_url: PropTypes.string,
   }),
-  venue: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-  venues: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
   festival: PropTypes.shape({
     id: PropTypes.string,
     name: PropTypes.string,
@@ -194,7 +165,7 @@ const performanceShape = PropTypes.shape({
   }),
 });
 
-PerformanceList.propTypes = {
+VenuePerformanceList.propTypes = {
   performances: PropTypes.arrayOf(performanceShape).isRequired,
   loading: PropTypes.bool,
   error: PropTypes.string,
@@ -203,7 +174,6 @@ PerformanceList.propTypes = {
   groupByDate: PropTypes.bool,
   className: PropTypes.string,
   emptyMessage: PropTypes.string,
-  useArtistCard: PropTypes.bool,
 };
 
-export default PerformanceList;
+export default VenuePerformanceList;

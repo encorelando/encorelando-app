@@ -215,6 +215,27 @@ const useConcerts = (initialFilters = {}) => {
     }
   }, []);
 
+  /**
+   * Get dates with concert counts for calendar display
+   * @param {Object} options - Filter options
+   * @returns {Promise<Array>} - Array of date objects with counts
+   */
+  const getConcertDatesWithCounts = useCallback(async (options = {}) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await concertService.getConcertDatesWithCounts(options);
+      return data;
+    } catch (err) {
+      setError(err.message || 'Failed to fetch concert dates');
+      console.error('Error fetching concert dates:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     concerts,
     setConcerts,
@@ -231,6 +252,7 @@ const useConcerts = (initialFilters = {}) => {
     getConcertsByVenue,
     getConcertsByArtist,
     getConcertsByFestival,
+    getConcertDatesWithCounts,
   };
 };
 

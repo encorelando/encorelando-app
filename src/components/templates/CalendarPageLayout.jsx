@@ -14,6 +14,9 @@ const CalendarPageLayout = ({
   initialDate = new Date(),
   onDateSelect,
   highlightedDates = [],
+  eventCounts = [],
+  allowPastSelection = true,
+  onMonthChange,
   resultsTitle,
   filterComponent,
   children,
@@ -21,12 +24,26 @@ const CalendarPageLayout = ({
 }) => {
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [showCalendar, setShowCalendar] = useState(true);
+  // eslint-disable-next-line no-unused-vars
+  const [currentMonth, setCurrentMonth] = useState(initialDate.getMonth());
+  // eslint-disable-next-line no-unused-vars
+  const [currentYear, setCurrentYear] = useState(initialDate.getFullYear());
 
   // Handle date selection
   const handleDateSelect = date => {
     setSelectedDate(date);
     if (onDateSelect) {
       onDateSelect(date);
+    }
+  };
+
+  // Handle month change in calendar
+  const handleMonthChange = (month, year) => {
+    setCurrentMonth(month);
+    setCurrentYear(year);
+
+    if (onMonthChange) {
+      onMonthChange(month, year);
     }
   };
 
@@ -60,6 +77,10 @@ const CalendarPageLayout = ({
               selectedDate={selectedDate}
               onDateSelect={handleDateSelect}
               highlightedDates={highlightedDates}
+              eventCounts={eventCounts}
+              allowPastSelection={allowPastSelection}
+              onMonthChange={handleMonthChange}
+              className="mb-6" // Adding extra bottom margin
             />
           </div>
         </div>
@@ -91,6 +112,14 @@ CalendarPageLayout.propTypes = {
   highlightedDates: PropTypes.arrayOf(
     PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)])
   ),
+  eventCounts: PropTypes.arrayOf(
+    PropTypes.shape({
+      date: PropTypes.string.isRequired,
+      count: PropTypes.number.isRequired,
+    })
+  ),
+  allowPastSelection: PropTypes.bool,
+  onMonthChange: PropTypes.func,
   resultsTitle: PropTypes.string,
   filterComponent: PropTypes.node,
   children: PropTypes.node.isRequired,

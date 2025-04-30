@@ -8,14 +8,19 @@ import ImageThumbnail from '../molecules/ImageThumbnail';
 import { formatTime, formatDate } from '../../utils/dateUtils';
 
 /**
- * PerformanceCard component with the new EncoreLando branding
- * Mobile-optimized with touch-friendly design on dark background
+ * VenuePerformanceCard component specifically for venue detail pages
+ * Mobile-optimized with touch-friendly design, focuses on artist and time info
+ * Omits venue information since we're already on the venue page
  */
-const PerformanceCard = ({ performance, showDate = false, featured = false, className = '' }) => {
+const VenuePerformanceCard = ({
+  performance,
+  showDate = false,
+  featured = false,
+  className = '',
+}) => {
   // Handle both camelCase and snake_case property names for compatibility
   const id = performance.id;
   const artist = performance.artist || performance.artists;
-  const venue = performance.venue || performance.venues;
   const festival = performance.festival || performance.festivals;
 
   // Handle both naming conventions for time fields
@@ -29,8 +34,6 @@ const PerformanceCard = ({ performance, showDate = false, featured = false, clas
 
   // Format the date of the performance
   const formattedDate = formatDate(startTime);
-
-  // Note: We're using formattedDate directly without the displayDate variable
 
   return (
     <Link
@@ -101,24 +104,6 @@ const PerformanceCard = ({ performance, showDate = false, featured = false, clas
               </div>
             )}
 
-            {/* Venue */}
-            <div className="flex items-center mb-xs">
-              <Icon name="map-pin" size="sm" className="mr-xs text-sunset-orange flex-shrink-0" />
-              <Typography variant="body1" color="white" className="truncate">
-                {venue?.name || 'Location TBD'}
-              </Typography>
-            </div>
-
-            {/* Theme Park - if available */}
-            {(performance.themePark || performance.theme_park) && (
-              <div className="flex items-center mb-sm">
-                <Icon name="map" size="sm" className="mr-xs text-sunset-orange flex-shrink-0" />
-                <Typography variant="body1" color="white" className="truncate">
-                  {performance.themePark || performance.theme_park}
-                </Typography>
-              </div>
-            )}
-
             {/* Festival badge - if part of a festival */}
             {festival && (
               <div className="mt-xs">
@@ -161,14 +146,6 @@ const performanceShape = PropTypes.shape({
     name: PropTypes.string.isRequired,
     image_url: PropTypes.string,
   }),
-  venue: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
-  venues: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-  }),
   festival: PropTypes.shape({
     id: PropTypes.string,
     name: PropTypes.string,
@@ -177,9 +154,6 @@ const performanceShape = PropTypes.shape({
     id: PropTypes.string,
     name: PropTypes.string,
   }),
-  // Theme park information
-  themePark: PropTypes.string,
-  theme_park: PropTypes.string,
   // Performance times
   performanceTimes: PropTypes.arrayOf(
     PropTypes.shape({
@@ -192,11 +166,11 @@ const performanceShape = PropTypes.shape({
   ),
 });
 
-PerformanceCard.propTypes = {
+VenuePerformanceCard.propTypes = {
   performance: performanceShape.isRequired,
   showDate: PropTypes.bool,
   featured: PropTypes.bool,
   className: PropTypes.string,
 };
 
-export default PerformanceCard;
+export default VenuePerformanceCard;

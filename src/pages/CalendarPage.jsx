@@ -1,8 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import CalendarPageLayout from '../components/templates/CalendarPageLayout';
 import PerformanceList from '../components/organisms/PerformanceList';
-import IconButton from '../components/atoms/IconButton';
-import FilterAccordion from '../components/organisms/FilterAccordion';
 import useConcerts from '../hooks/useConcerts';
 import useParks from '../hooks/useParks';
 
@@ -13,7 +11,9 @@ import useParks from '../hooks/useParks';
 const CalendarPage = () => {
   // State for selected date and filters
   const [selectedDate, setSelectedDate] = useState(new Date());
+  // eslint-disable-next-line no-unused-vars
   const [showFilters, setShowFilters] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [filters, setFilters] = useState({
     parkIds: [],
   });
@@ -38,21 +38,82 @@ const CalendarPage = () => {
     [startOfDay, endOfDay]
   );
 
-  // Get all the needed hook functions and state
-  const { loading, error, concerts, updateFilters } = useConcerts(initialFilters);
-
-  // Fetch parks for filter options
-  const { parks } = useParks();
+  // Add state for event counts
+  const [eventCounts, setEventCounts] = useState([]);
+  // eslint-disable-next-line no-unused-vars
+  const [eventCountsLoading, setEventCountsLoading] = useState(false);
 
   // Track if initial load has happened
   const [initialLoad, setInitialLoad] = useState(false);
+  const currentMonthRef = useRef(new Date().getMonth());
+
+  // Get all the needed hook functions and state
+  const { loading, error, concerts, updateFilters, getConcertDatesWithCounts } =
+    useConcerts(initialFilters);
+
+  // Fetch parks for filter options
+  // eslint-disable-next-line no-unused-vars
+  const { parks } = useParks();
+
+  // Function to load event counts for calendar display - defined before it's used
+  const loadEventCounts = useCallback(
+    async (month = new Date().getMonth(), year = new Date().getFullYear()) => {
+      try {
+        setEventCountsLoading(true);
+
+        // Create start date (first day of month)
+        const startDate = new Date(year, month, 1);
+
+        // Create end date (last day of next month to include 2 months of data)
+        const endDate = new Date(year, month + 2, 0);
+
+        // Fetch event counts
+        const filterOptions = {
+          startDate,
+          endDate,
+          ...(filters.parkIds && filters.parkIds.length > 0 ? { parkId: filters.parkIds } : {}),
+        };
+
+        const counts = await getConcertDatesWithCounts(filterOptions);
+        setEventCounts(counts);
+
+        // Update the current month reference
+        currentMonthRef.current = month;
+      } catch (error) {
+        console.error('Failed to load event counts:', error);
+      } finally {
+        setEventCountsLoading(false);
+      }
+    },
+    [filters.parkIds, getConcertDatesWithCounts]
+  );
+
+  // Handle date selection
+  const handleDateSelect = useCallback(
+    date => {
+      console.log(`Date selected: ${date.toISOString()}`);
+      setSelectedDate(date);
+
+      // If the month changes, load event counts for the new month
+      const selectedMonth = date.getMonth();
+      if (selectedMonth !== currentMonthRef.current) {
+        loadEventCounts(selectedMonth, date.getFullYear());
+      }
+
+      // Note: The concerts will be updated through the filter change in useEffect
+    },
+    [loadEventCounts]
+  );
 
   // After initial render, mark as loaded
   useEffect(() => {
     if (!initialLoad) {
       setInitialLoad(true);
+
+      // Load initial event counts for the current month and next month
+      loadEventCounts();
     }
-  }, [initialLoad]);
+  }, [initialLoad, loadEventCounts]);
 
   // Update filters when date or park filters change
   useEffect(() => {
@@ -77,47 +138,13 @@ const CalendarPage = () => {
     }
   }, [startOfDay, endOfDay, filters.parkIds, updateFilters, initialLoad]);
 
-  // Handle date selection
-  const handleDateSelect = useCallback(date => {
-    console.log(`Date selected: ${date.toISOString()}`);
-    setSelectedDate(date);
-    // Note: The concerts will be updated through the filter change in useEffect
-  }, []);
-
-  // Handle filter changes
-  const handleFilterChange = useCallback((key, values) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: values,
-    }));
-  }, []);
-
-  // Toggle filters visibility
-  const toggleFilters = useCallback(() => {
-    setShowFilters(prev => !prev);
-  }, []);
-
-  // Build filter options from parks data
-  const parkOptions = parks.map(park => ({
-    value: park.id,
-    label: park.name,
-  }));
-
-  // Filter button component for the calendar header
-  const filterButton = (
-    <IconButton
-      icon="filter"
-      ariaLabel={showFilters ? 'Hide filters' : 'Show filters'}
-      onClick={toggleFilters}
-      variant={filters.parkIds.length > 0 ? 'primary' : 'ghost'}
-    />
-  );
-
   return (
     <CalendarPageLayout
       initialDate={selectedDate}
       onDateSelect={handleDateSelect}
-      filterComponent={filterButton}
+      eventCounts={eventCounts}
+      allowPastSelection={true}
+      onMonthChange={loadEventCounts}
       resultsTitle={`Performances on ${selectedDate.toLocaleDateString('en-US', {
         weekday: 'long',
         month: 'long',
@@ -125,19 +152,7 @@ const CalendarPage = () => {
         year: 'numeric',
       })}`}
     >
-      {/* Filters panel (conditionally shown) */}
-      {showFilters && (
-        <div className="mb-lg">
-          <FilterAccordion
-            title="Parks"
-            icon="map-pin"
-            options={parkOptions}
-            selectedValues={filters.parkIds}
-            onChange={values => handleFilterChange('parkIds', values)}
-            initialExpanded={true}
-          />
-        </div>
-      )}
+      {/* Filters panel temporarily disabled */}
 
       {/* Performance list */}
       <PerformanceList

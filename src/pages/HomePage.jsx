@@ -102,7 +102,7 @@ const HomePage = () => {
               </Typography>
             </div>
           ) : (
-            <HorizontalScroller itemWidth={300}>
+            <HorizontalScroller itemWidth={340}>
               {groupPerformancesByArtist(concerts).map((group, index) => {
                 // Safety check for valid performances
                 if (!group.performances || group.performances.length === 0) {
@@ -110,7 +110,7 @@ const HomePage = () => {
                 }
 
                 return (
-                  <div key={group.artistId} className="w-[300px]">
+                  <div key={group.artistId} className="w-[340px]">
                     {group.performances.length > 1 ? (
                       <PerformanceCard
                         performance={{

@@ -80,7 +80,7 @@ const searchService = {
             id,
             start_time,
             end_time,
-            artists:artist_id (id, name),
+            artists:artist_id (id, name, image_url),
             venues:venue_id (id, name),
             festivals:festival_id (id, name)
           `
@@ -98,7 +98,7 @@ const searchService = {
             id,
             start_time,
             end_time,
-            artists:artist_id (id, name),
+            artists:artist_id (id, name, image_url),
             venues:venue_id (id, name),
             festivals:festival_id (id, name)
           `
@@ -564,7 +564,7 @@ const searchService = {
             id,
             start_time,
             end_time,
-            artists:artist_id (id, name),
+            artists:artist_id (id, name, image_url),
             venues:venue_id (id, name, parks:park_id (id, name)),
             festivals:festival_id (id, name)
           `

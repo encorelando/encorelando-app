@@ -7,8 +7,17 @@ import { formatDate, isDatePast } from '../../utils/dateUtils';
 /**
  * Calendar component for date selection
  * Mobile-optimized with touchable date cells
+ * Enhanced with event counts and past date selection
  */
-const Calendar = ({ selectedDate, onDateSelect, highlightedDates = [], className = '' }) => {
+const Calendar = props => {
+  const {
+    selectedDate,
+    onDateSelect,
+    highlightedDates = [],
+    eventCounts = [],
+    allowPastSelection = true,
+    className = '',
+  } = props;
   const [currentMonth, setCurrentMonth] = useState(
     selectedDate ? new Date(selectedDate) : new Date()
   );
@@ -61,6 +70,12 @@ const Calendar = ({ selectedDate, onDateSelect, highlightedDates = [], className
     setCurrentMonth(prevDate => {
       const newDate = new Date(prevDate);
       newDate.setMonth(newDate.getMonth() - 1);
+
+      // Notify parent component of month change
+      if (props.onMonthChange) {
+        props.onMonthChange(newDate.getMonth(), newDate.getFullYear());
+      }
+
       return newDate;
     });
   };
@@ -70,6 +85,12 @@ const Calendar = ({ selectedDate, onDateSelect, highlightedDates = [], className
     setCurrentMonth(prevDate => {
       const newDate = new Date(prevDate);
       newDate.setMonth(newDate.getMonth() + 1);
+
+      // Notify parent component of month change
+      if (props.onMonthChange) {
+        props.onMonthChange(newDate.getMonth(), newDate.getFullYear());
+      }
+
       return newDate;
     });
   };
@@ -82,7 +103,8 @@ const Calendar = ({ selectedDate, onDateSelect, highlightedDates = [], className
 
   // Check if a date has events
   const hasEvents = date => {
-    return highlightedDates.some(highlightedDate => {
+    // First check if it's in the highlighted dates array
+    const inHighlighted = highlightedDates.some(highlightedDate => {
       const highlighted = new Date(highlightedDate);
       return (
         date.getDate() === highlighted.getDate() &&
@@ -90,6 +112,19 @@ const Calendar = ({ selectedDate, onDateSelect, highlightedDates = [], className
         date.getFullYear() === highlighted.getFullYear()
       );
     });
+
+    if (inHighlighted) return true;
+
+    // Then check if it's in the event counts array
+    const dateStr = date.toISOString().split('T')[0];
+    return eventCounts.some(event => event.date === dateStr && event.count > 0);
+  };
+
+  // Get event count for a date
+  const getEventCount = date => {
+    const dateStr = date.toISOString().split('T')[0];
+    const eventData = eventCounts.find(event => event.date === dateStr);
+    return eventData ? eventData.count : 0;
   };
 
   // Check if a date is selected
@@ -131,7 +166,7 @@ const Calendar = ({ selectedDate, onDateSelect, highlightedDates = [], className
       </div>
 
       {/* Day names row */}
-      <div className="grid grid-cols-7 mb-sm">
+      <div className="grid grid-cols-7 ">
         {weekDays.map(day => (
           <div key={day} className="text-center p-xxs">
             <Typography variant="caption" color="white" className="text-opacity-70">
@@ -142,7 +177,9 @@ const Calendar = ({ selectedDate, onDateSelect, highlightedDates = [], className
       </div>
 
       {/* Calendar days grid */}
-      <div className="grid grid-cols-7 gap-0.5 max-h-[calc(100vh-200px)]">
+      <div className="grid grid-cols-7 gap-0.5 pb-4">
+        {' '}
+        {/* Replaced max-height with padding-bottom */}
         {calendarDays.map((dayObj, index) => {
           const { date, isCurrentMonth } = dayObj;
           const isPast = isDatePast(date);
@@ -177,8 +214,10 @@ const Calendar = ({ selectedDate, onDateSelect, highlightedDates = [], className
               key={index}
               className={dayClasses}
               onClick={() => onDateSelect(date)}
-              disabled={isPast && !isToday}
-              aria-label={`${date.toLocaleDateString()}`}
+              disabled={!allowPastSelection && isPast && !isToday}
+              aria-label={`${date.toLocaleDateString()}${
+                hasEvent ? ` - ${getEventCount(date)} events` : ''
+              }`}
               aria-selected={isDateSelected}
             >
               <Typography
@@ -189,9 +228,19 @@ const Calendar = ({ selectedDate, onDateSelect, highlightedDates = [], className
                 {day}
               </Typography>
 
-              {/* Event indicator dot */}
+              {/* Event count or indicator */}
               {hasEvent && !isDateSelected && (
-                <div className="absolute bottom-1 w-1 h-1 rounded-full bg-magenta-pink" />
+                <>
+                  {getEventCount(date) > 0 ? (
+                    <div className="absolute -bottom-1 flex items-center justify-center">
+                      <div className="bg-sunset-orange text-white text-[10px] px-1 rounded-full min-w-[14px] text-center">
+                        {getEventCount(date)}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="absolute bottom-1 w-1 h-1 rounded-full bg-magenta-pink" />
+                  )}
+                </>
               )}
             </button>
           );
@@ -207,6 +256,14 @@ Calendar.propTypes = {
   highlightedDates: PropTypes.arrayOf(
     PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)])
   ),
+  eventCounts: PropTypes.arrayOf(
+    PropTypes.shape({
+      date: PropTypes.string.isRequired,
+      count: PropTypes.number.isRequired,
+    })
+  ),
+  allowPastSelection: PropTypes.bool,
+  onMonthChange: PropTypes.func,
   className: PropTypes.string,
 };
 

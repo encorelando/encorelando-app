@@ -7,7 +7,7 @@ import Button from '../components/atoms/Button';
 import Icon from '../components/atoms/Icon';
 import Badge from '../components/atoms/Badge';
 import Tabs from '../components/molecules/Tabs';
-import PerformanceList from '../components/organisms/PerformanceList';
+import VenuePerformanceList from '../components/organisms/VenuePerformanceList';
 import Calendar from '../components/organisms/Calendar';
 import StaticMap from '../components/molecules/StaticMap';
 import useVenues from '../hooks/useVenues';
@@ -65,8 +65,11 @@ const VenueDetailPage = () => {
         setDateHasConcerts([...new Set(dates)]);
 
         // Fetch specifically upcoming concerts for the upcoming tab
-        const upcomingData = await getUpcomingConcerts({
-          venueId: id,
+        // NOTE: We use getConcertsByVenue instead of getUpcomingConcerts here
+        // because getUpcomingConcerts doesn't support venueId filtering
+        // The future parameter ensures we only get upcoming concerts
+        const upcomingData = await getConcertsByVenue(id, {
+          future: true,
           limit: 20, // Limit for initial load
         });
 
@@ -171,10 +174,6 @@ const VenueDetailPage = () => {
       {/* Map and location details */}
       {(venue.location_details || venue.latitude || venue.longitude) && (
         <div className="mb-lg">
-          <Typography variant="h3" className="mb-xs">
-            Location
-          </Typography>
-
           {/* Use map when coordinates are available */}
           {venue.latitude && venue.longitude ? (
             <div className="mb-sm">
@@ -189,30 +188,6 @@ const VenueDetailPage = () => {
                 }
                 className="w-full rounded-lg overflow-hidden"
               />
-
-              {venue.location_details && (
-                <div className="flex items-start mt-sm">
-                  <Icon
-                    name="map-pin"
-                    size="md"
-                    className="mr-sm text-sunset-orange mt-xxs flex-shrink-0"
-                  />
-                  <Typography variant="body1">{venue.location_details}</Typography>
-                </div>
-              )}
-
-              {/* Get directions button optimized for mobile */}
-              <a
-                href={`https://maps.google.com/?q=${venue.latitude},${venue.longitude}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block mt-sm"
-              >
-                <Button variant="outline" fullWidth className="flex items-center justify-center">
-                  <Icon name="navigation" size="sm" className="mr-xs" />
-                  Get Directions
-                </Button>
-              </a>
             </div>
           ) : (
             <div className="mb-sm">
@@ -275,7 +250,7 @@ const VenueDetailPage = () => {
             ) : sortedUpcomingDates.length > 0 ? (
               <div>
                 {/* Show grouped performances by date for better mobile organization */}
-                <PerformanceList
+                <VenuePerformanceList
                   performances={upcomingConcerts}
                   groupByDate={true}
                   emptyMessage="No upcoming performances scheduled"
@@ -314,7 +289,7 @@ const VenueDetailPage = () => {
                 })}
               </Typography>
 
-              <PerformanceList
+              <VenuePerformanceList
                 performances={concerts}
                 loading={concertsLoading}
                 emptyMessage="No performances scheduled for this date"
