@@ -10,15 +10,18 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
  * Create a new scraping run record
  * Used by the GitHub Actions workflow to initialize a run
  */
-exports.handler = async function(event, context) {
+// eslint-disable-next-line no-unused-vars
+exports.handler = async function (event, context) {
   try {
     // Create a new scraping run record
     const { data, error } = await supabase
       .from('scraping_runs')
-      .insert([{ 
-        status: 'initializing',
-        start_time: new Date().toISOString()
-      }])
+      .insert([
+        {
+          status: 'initializing',
+          start_time: new Date().toISOString(),
+        },
+      ])
       .select()
       .single();
 
@@ -26,22 +29,22 @@ exports.handler = async function(event, context) {
       console.error('Error creating scraping run:', error);
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'Failed to create scraping run' })
+        body: JSON.stringify({ error: 'Failed to create scraping run' }),
       };
     }
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         message: 'Scraping run created',
-        id: data.id
-      })
+        id: data.id,
+      }),
     };
   } catch (error) {
     console.error('Error in create-scraping-run:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Internal server error' })
+      body: JSON.stringify({ error: 'Internal server error' }),
     };
   }
 };

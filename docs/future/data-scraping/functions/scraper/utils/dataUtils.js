@@ -130,8 +130,8 @@ function normalizeText(text) {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
     .replace(/[^\w\s]/g, '') // Remove special characters
-    .replace(/\s+/g, ' ') // Normalize whitespace
-    .trim(); // Trim whitespace
+    .replace(/\s+/g, ' ')    // Normalize whitespace
+    .trim();                 // Trim whitespace
 }
 
 /**
