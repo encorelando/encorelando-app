@@ -3,7 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import BrandButton from '../../components/atoms/BrandButton';
 import BrandHeading from '../../components/atoms/BrandHeading';
-import BrandLogo from '../../components/atoms/BrandLogo';
+import { BrandLogo } from '../../components/branding';
 import BrandCard from '../../components/atoms/BrandCard';
 
 /**

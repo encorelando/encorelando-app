@@ -1,8 +1,7 @@
 import PropTypes from 'prop-types';
 import BottomNavigation from '../organisms/BottomNavigation';
 import HamburgerMenu from '../molecules/HamburgerMenu';
-import BrandLogo from '../atoms/branding/BrandLogo';
-import BrandName from '../atoms/branding/BrandName';
+import { BrandLogo, BrandName } from '../branding';
 import Icon from '../atoms/Icon';
 import { useState } from 'react';
 

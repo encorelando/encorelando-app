@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import BrandLogo from '../atoms/BrandLogo';
+import { BrandLogo } from '../branding';
 import IconButton from '../atoms/IconButton';
 import UserNavigation from '../molecules/UserNavigation';
 import HamburgerMenu from '../molecules/HamburgerMenu';

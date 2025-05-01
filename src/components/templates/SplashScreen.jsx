@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import BrandLogo from '../atoms/BrandLogo';
+import { BrandLogo, BrandName } from '../branding';
 
 /**
  * SplashScreen component showcasing the updated EncoreLando branding
@@ -36,11 +36,8 @@ const SplashScreen = ({ onComplete, duration = 2500, showProgressBar = true, cla
         <BrandLogo variant="gradient" size="xl" className="mb-lg" />
 
         {/* Typography split brand name */}
-        <div className="typography-split text-white text-2xl text-center mb-xl">
-          <span className="enc font-poppins">enc</span>
-          <span className="or font-manrope">or</span>
-          <span className="e font-poppins">e</span>
-          <span className="lando font-manrope">lando</span>
+        <div className="text-center mb-xl">
+          <BrandName variant="default" size="2xl" />
         </div>
       </div>
 

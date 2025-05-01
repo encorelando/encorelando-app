@@ -1,4 +1,4 @@
-import BrandLogo from '../components/atoms/BrandLogo';
+import { BrandLogo } from '../components/branding';
 import BrandButton from '../components/atoms/BrandButton';
 import BrandCard from '../components/atoms/BrandCard';
 import BrandHeading from '../components/atoms/BrandHeading';

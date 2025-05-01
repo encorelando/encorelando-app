@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import BrandHeading from '../../components/atoms/BrandHeading';
-import BrandLogo from '../../components/atoms/BrandLogo';
+import { BrandLogo } from '../../components/branding';
 import BrandCard from '../../components/atoms/BrandCard';
 import BrandButton from '../../components/atoms/BrandButton';
 
