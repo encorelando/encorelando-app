@@ -22,27 +22,27 @@ const MODEL = 'gpt-4'; // Or other model as appropriate
 async function queryLLM(prompt) {
   try {
     console.log('Querying LLM...');
-    
+
     const response = await axios.post(
       API_URL,
       {
         model: MODEL,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        max_tokens: 3000
+        max_tokens: 3000,
       },
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`
-        }
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
       }
     );
-    
+
     if (!response.data || !response.data.choices || !response.data.choices[0]) {
       throw new Error('Invalid response from LLM API');
     }
-    
+
     return response.data.choices[0].message.content;
   } catch (error) {
     console.error('Error calling LLM API:', error.message);
@@ -59,7 +59,7 @@ async function queryLLM(prompt) {
  */
 async function findArtistDataSources() {
   console.log('Finding artist data sources...');
-  
+
   const prompt = `
   I need to find reliable websites to scrape data about music artists performing at theme parks in Orlando, Florida.
 
@@ -102,16 +102,16 @@ async function findArtistDataSources() {
     }
   ]
   `;
-  
+
   const result = await queryLLM(prompt);
   let sources;
-  
+
   try {
     // Extract JSON from response (in case there's explanatory text)
     const jsonMatch = result.match(/\[\s*\{[\s\S]*\}\s*\]/);
     const jsonStr = jsonMatch ? jsonMatch[0] : result;
     sources = JSON.parse(jsonStr);
-    
+
     console.log(`Found ${sources.length} artist data sources`);
     return sources;
   } catch (error) {
@@ -127,7 +127,7 @@ async function findArtistDataSources() {
  */
 async function findFestivalDataSources() {
   console.log('Finding festival data sources...');
-  
+
   const prompt = `
   I need to find reliable websites to scrape data about music festivals and special events at theme parks in Orlando, Florida.
 
@@ -169,16 +169,16 @@ async function findFestivalDataSources() {
     }
   ]
   `;
-  
+
   const result = await queryLLM(prompt);
   let sources;
-  
+
   try {
     // Extract JSON from response (in case there's explanatory text)
     const jsonMatch = result.match(/\[\s*\{[\s\S]*\}\s*\]/);
     const jsonStr = jsonMatch ? jsonMatch[0] : result;
     sources = JSON.parse(jsonStr);
-    
+
     console.log(`Found ${sources.length} festival data sources`);
     return sources;
   } catch (error) {
@@ -194,7 +194,7 @@ async function findFestivalDataSources() {
  */
 async function findConcertDataSources() {
   console.log('Finding concert data sources...');
-  
+
   const prompt = `
   I need to find reliable websites to scrape data about concerts and performances at theme parks in Orlando, Florida.
 
@@ -235,16 +235,16 @@ async function findConcertDataSources() {
     }
   ]
   `;
-  
+
   const result = await queryLLM(prompt);
   let sources;
-  
+
   try {
     // Extract JSON from response (in case there's explanatory text)
     const jsonMatch = result.match(/\[\s*\{[\s\S]*\}\s*\]/);
     const jsonStr = jsonMatch ? jsonMatch[0] : result;
     sources = JSON.parse(jsonStr);
-    
+
     console.log(`Found ${sources.length} concert data sources`);
     return sources;
   } catch (error) {
@@ -264,42 +264,39 @@ async function main() {
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
-    
+
     // Find data sources for each entity type
     const artistSources = await findArtistDataSources();
     const festivalSources = await findFestivalDataSources();
     const concertSources = await findConcertDataSources();
-    
+
     // Combine all sources
     const allSources = [
       ...artistSources.map(s => ({ ...s, type: 'artist' })),
       ...festivalSources.map(s => ({ ...s, type: 'festival' })),
-      ...concertSources.map(s => ({ ...s, type: 'concert' }))
+      ...concertSources.map(s => ({ ...s, type: 'concert' })),
     ];
-    
+
     // Save to JSON file
     const outputPath = path.join(outputDir, 'data-sources.json');
-    fs.writeFileSync(
-      outputPath,
-      JSON.stringify(allSources, null, 2)
-    );
-    
+    fs.writeFileSync(outputPath, JSON.stringify(allSources, null, 2));
+
     console.log(`Saved ${allSources.length} data sources to ${outputPath}`);
-    
+
     // Check if we have Supabase credentials
     if (!supabaseUrl || !supabaseServiceKey) {
       console.warn('Supabase credentials not found. Skipping database insertion.');
       return;
     }
-    
+
     // Ask for confirmation before inserting into database
     console.log(`Ready to insert ${allSources.length} data sources into Supabase.`);
     // In a real implementation, you would prompt for confirmation here
-    
+
     // Insert data sources into Supabase
     console.log('Inserting data sources into Supabase...');
     let successCount = 0;
-    
+
     for (const source of allSources) {
       // Convert source to database format
       const dbSource = {
@@ -316,26 +313,25 @@ async function main() {
           dateTimeFormat: source.dateTimeFormat,
           recurring: source.recurring || false,
           challenges: source.challenges,
-          urls: source.urls
+          urls: source.urls,
         },
         scraping_frequency: source.updateFrequency || 'weekly',
-        notes: source.description
+        notes: source.description,
       };
-      
+
       // Insert into database
-      const { error } = await supabase
-        .from('data_sources')
-        .insert(dbSource);
-        
+      const { error } = await supabase.from('data_sources').insert(dbSource);
+
       if (error) {
         console.error(`Error inserting source "${source.name}":`, error);
       } else {
         successCount++;
       }
     }
-    
-    console.log(`Successfully inserted ${successCount} of ${allSources.length} data sources into Supabase`);
-    
+
+    console.log(
+      `Successfully inserted ${successCount} of ${allSources.length} data sources into Supabase`
+    );
   } catch (error) {
     console.error('Error in main process:', error);
     process.exit(1);
@@ -353,5 +349,5 @@ if (require.main === module) {
 module.exports = {
   findArtistDataSources,
   findFestivalDataSources,
-  findConcertDataSources
+  findConcertDataSources,
 };

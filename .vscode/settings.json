@@ -55,11 +55,13 @@
     "startdt",
     "supabase",
     "Toon",
+    "TZNAME",
     "TZOFFSETFROM",
     "TZOFFSETTO",
     "VCALENDAR",
     "VEVENT",
     "vtimezone",
+    "YYYYMMDDTHHMMSS",
     "YYYYMMDDTHHMMSSZ"
   ]
 }

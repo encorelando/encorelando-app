@@ -55,10 +55,19 @@ const SignupPage = () => {
       setError('');
 
       // Call signup method from AuthContext
-      await signup(email, password, displayName);
+      const result = await signup(email, password, displayName);
 
-      // Redirect to home page after successful signup
-      navigate('/', { replace: true });
+      // Check if email confirmation is needed
+      if (result && result.needsEmailConfirmation) {
+        // Show success message instead of redirecting
+        navigate('/signup-confirmation', {
+          replace: true,
+          state: { email },
+        });
+      } else {
+        // Redirect to home page after successful signup
+        navigate('/', { replace: true });
+      }
     } catch (error) {
       console.error('Signup error:', error);
 

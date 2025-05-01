@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import HomePageLayout from '../components/templates/HomePageLayout';
 import HorizontalScroller from '../components/organisms/HorizontalScroller';
 import PerformanceCard from '../components/organisms/PerformanceCard';
@@ -10,6 +10,7 @@ import Button from '../components/atoms/Button';
 import Spinner from '../components/atoms/Spinner';
 import BrandHeading from '../components/atoms/BrandHeading';
 import Divider from '../components/atoms/Divider';
+import EmailConfirmationSuccess from '../components/auth/EmailConfirmationSuccess';
 import useConcerts from '../hooks/useConcerts';
 import useArtists from '../hooks/useArtists';
 import useFestivals from '../hooks/useFestivals';
@@ -45,8 +46,27 @@ const groupPerformancesByArtist = concerts => {
  * Mobile-optimized with dark background and vibrant accents
  */
 const HomePage = () => {
+  // Get search parameters and location for detecting email confirmation
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const [showConfirmationSuccess, setShowConfirmationSuccess] = useState(false);
+
   // State for today's date
   const [today] = useState(new Date());
+
+  // Check for email confirmation success
+  useEffect(() => {
+    // Look for the confirmation success parameter from Supabase
+    const isConfirmed = searchParams.get('email_confirmed') === 'true';
+
+    if (isConfirmed) {
+      setShowConfirmationSuccess(true);
+
+      // Remove the query parameter from URL (for cleaner UX)
+      const newUrl = location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, [searchParams, location]);
 
   // Fetch today's concerts - make sure we capture the full date range for today
   const {
@@ -240,6 +260,7 @@ const HomePage = () => {
   return (
     <div className="bg-background min-h-screen pb-16">
       <HomePageLayout sections={homeSections} />
+      {showConfirmationSuccess && <EmailConfirmationSuccess />}
     </div>
   );
 };

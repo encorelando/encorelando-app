@@ -107,53 +107,61 @@ const ConcertDetailPage = () => {
   const timeRange = `${formatTime(start_time)}${end_time ? ` - ${formatTime(end_time)}` : ''}`;
 
   // Check if concert has already occurred
-  const isPast = new Date(start_time) < new Date();
+  // Account for timezone differences and add a buffer period
+  const currentTime = new Date();
+  const concertStartTime = new Date(start_time);
+  const concertEndTime = end_time
+    ? new Date(end_time)
+    : new Date(concertStartTime.getTime() + 90 * 60 * 1000); // Default to 90 min if no end time
+
+  // Add a 2-hour buffer to account for timezone issues
+  // This ensures a concert isn't marked as "past" during the performance time
+  const bufferTimeMs = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+  const isPast = concertEndTime.getTime() + bufferTimeMs < currentTime.getTime();
+
+  // Create action buttons for the header
+  const actionButtons = (
+    <>
+      {/* Favorite button */}
+      <FavoriteButton
+        entityType="concert"
+        entityId={id}
+        size="sm"
+        className="text-white bg-black bg-opacity-20 hover:bg-opacity-30"
+      />
+
+      {/* Share button */}
+      <ShareButton
+        title={`${artist.name} at ${venue.name}`}
+        text={`Check out ${artist.name} at ${venue.name} on ${formattedDate} at ${formatTime(
+          start_time
+        )}`}
+        url={`/concerts/${id}`}
+        size="sm"
+        className="text-white bg-black bg-opacity-20 hover:bg-opacity-30"
+      />
+
+      {/* Add to calendar button - Only show for appropriate events */}
+      {calendarEvent &&
+        (!isPast ||
+          new Date().getTime() - new Date(end_time || start_time).getTime() <
+            24 * 60 * 60 * 1000) && (
+          <AddToCalendarButton
+            event={calendarEvent}
+            size="sm"
+            className="text-white bg-black bg-opacity-20 hover:bg-opacity-30"
+          />
+        )}
+    </>
+  );
 
   return (
     <DetailPageLayout
       title={artist.name}
       subtitle="" // Remove the venue name from the header to prevent overlap
       imageUrl={artist.image_url || '/images/placeholder-concert.jpg'}
+      actions={actionButtons}
     >
-      {/* Action buttons - Moved to top and styled as labeled buttons */}
-      <Card className="mb-md p-3">
-        <div className="flex justify-between gap-3">
-          {/* Favorite button */}
-          <div className="flex flex-col items-center flex-1">
-            <FavoriteButton entityType="concert" entityId={id} size="lg" className="mb-2" />
-            <Typography variant="body2" color="medium-gray">
-              Favorite
-            </Typography>
-          </div>
-
-          {/* Share button */}
-          <div className="flex flex-col items-center flex-1">
-            <ShareButton
-              title={`${artist.name} at ${venue.name}`}
-              text={`Check out ${artist.name} at ${venue.name} on ${formattedDate} at ${formatTime(
-                start_time
-              )}`}
-              url={`/concerts/${id}`}
-              size="lg"
-              className="mb-2"
-            />
-            <Typography variant="body2" color="medium-gray">
-              Share
-            </Typography>
-          </div>
-
-          {/* Add to calendar button */}
-          {!isPast && calendarEvent && (
-            <div className="flex flex-col items-center flex-1">
-              <AddToCalendarButton event={calendarEvent} size="lg" className="mb-2" />
-              <Typography variant="body2" color="medium-gray">
-                Calendar
-              </Typography>
-            </div>
-          )}
-        </div>
-      </Card>
-
       {/* Status badge */}
       <div className="mb-md">
         {isPast ? (

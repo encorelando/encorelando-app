@@ -151,15 +151,23 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (authData.user) {
-        // Store authentication data
-        storeToken(authData.session.access_token);
-        storeUser(authData.user);
+        // Check if session exists (it won't if email confirmation is required)
+        if (authData.session) {
+          // Store authentication data
+          storeToken(authData.session.access_token);
+          storeUser(authData.user);
 
-        // Update state
-        setUser(authData.user);
+          // Update state
+          setUser(authData.user);
 
-        // Create user profile
-        await createUserProfile(authData.user);
+          // Create user profile
+          await createUserProfile(authData.user);
+
+          return authData;
+        } else {
+          // Email confirmation is required
+          return { user: authData.user, needsEmailConfirmation: true };
+        }
       }
 
       return authData;

@@ -40,6 +40,7 @@ const UserManagementPage = lazy(() => import('./pages/admin/UserManagementPage')
 // User authentication pages
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const SignupPage = lazy(() => import('./pages/auth/SignupPage'));
+const SignupConfirmationPage = lazy(() => import('./pages/auth/SignupConfirmationPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 
 // Branding showcase page
@@ -208,6 +209,7 @@ const AppRoutes = () => {
           {/* User auth routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/signup-confirmation" element={<SignupConfirmationPage />} />
           <Route
             path="/profile"
             element={

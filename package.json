@@ -38,7 +38,6 @@
     "netlify:dev": "netlify dev",
     "download-maps": "node ./scripts/download-static-maps.js",
     "prebuild": "npm run download-maps",
-    "identify-sources": "node ./scripts/identify-data-sources.js",
     "scraper:test": "netlify functions:invoke --name scraper --no-identity --payload '{\"runId\": \"test\", \"type\": \"all\", \"forceUpdate\": true}'",
     "create-run": "netlify functions:invoke --name create-scraping-run --no-identity",
     "test-connection": "netlify functions:invoke --name test-connection --no-identity",

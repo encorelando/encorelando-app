@@ -12,6 +12,7 @@ const DetailPageLayout = ({
   title,
   subtitle,
   imageUrl,
+  actions,
   children,
   showNavigation = true,
   className = '',
@@ -46,7 +47,7 @@ const DetailPageLayout = ({
         </div>
 
         {/* Back button */}
-        <div className="absolute top-md left-md z-20">
+        <div className="absolute top-md left-md z-20 flex items-center">
           <IconButton
             icon="arrow-left"
             ariaLabel="Go back"
@@ -54,6 +55,9 @@ const DetailPageLayout = ({
             onClick={handleBack}
             className="text-white hover:bg-black hover:bg-opacity-20"
           />
+
+          {/* Action buttons slot - displayed to the right of back button */}
+          {actions && <div className="ml-2 flex items-center space-x-2">{actions}</div>}
         </div>
 
         {/* Artist name positioned next to back button */}
@@ -95,11 +99,10 @@ DetailPageLayout.propTypes = {
   title: PropTypes.string.isRequired,
   subtitle: PropTypes.string,
   imageUrl: PropTypes.string.isRequired,
-  actions: PropTypes.arrayOf(PropTypes.node),
+  actions: PropTypes.node,
   children: PropTypes.node.isRequired,
   showNavigation: PropTypes.bool,
   className: PropTypes.string,
-  minHeight: PropTypes.oneOf(['sm', 'md', 'lg', 'xl', 'full']),
 };
 
 export default DetailPageLayout;

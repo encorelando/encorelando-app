@@ -10,6 +10,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Create a single instance of the Supabase client to be used throughout the app
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    // Configure the redirection URL with the email confirmation parameter
+    redirectTo: `${window.location.origin}/?email_confirmed=true`,
+  },
+});
 
 export default supabase;

@@ -6,6 +6,26 @@
  */
 
 /**
+ * Parse a time string and extract hours and minutes values
+ * This handles times stored in the database without timezone conversion issues
+ *
+ * @param {string} timeString - Time string from database (e.g. "2025-05-01T17:30:00")
+ * @returns {Object} - Object containing hours and minutes
+ */
+const extractTimeComponents = timeString => {
+  // Extract hours and minutes directly from the string
+  // Format is typically "YYYY-MM-DDTHH:MM:SS" or similar
+  const timePart = timeString.split('T')[1]; // Get the time part after 'T'
+  if (!timePart) return { hours: 0, minutes: 0 };
+
+  const timeComponents = timePart.split(':');
+  const hours = parseInt(timeComponents[0], 10);
+  const minutes = parseInt(timeComponents[1], 10);
+
+  return { hours, minutes };
+};
+
+/**
  * Generate a calendar event object from a concert
  *
  * @param {Object} concert - The concert data
@@ -25,17 +45,24 @@ export const generateEventFromConcert = (concert, url) => {
     return null;
   }
 
-  // Set end time (default to 2 hours after start if not specified)
-  const startTime = new Date(concert.start_time);
-  let endTime;
+  // Extract date components directly from the time strings
+  // This avoids timezone conversion issues
+  const startTimeComponents = extractTimeComponents(concert.start_time);
+  let endTimeComponents;
 
   if (concert.end_time) {
-    endTime = new Date(concert.end_time);
+    endTimeComponents = extractTimeComponents(concert.end_time);
   } else {
-    // If no end time is provided, default to 2 hours after start time
-    endTime = new Date(startTime);
-    endTime.setHours(endTime.getHours() + 2);
+    // If no end time is provided, default to 1 hour after start time
+    endTimeComponents = {
+      hours: (startTimeComponents.hours + 1) % 24,
+      minutes: startTimeComponents.minutes,
+    };
   }
+
+  // Create Date objects for other needed information (year, month, day)
+  const startDate = new Date(concert.start_time);
+  const endDate = concert.end_time ? new Date(concert.end_time) : new Date(concert.start_time);
 
   // Build description
   let description = '';
@@ -73,10 +100,23 @@ export const generateEventFromConcert = (concert, url) => {
   return {
     title: `${artist.name} at ${venue.name}`,
     description,
-    startTime: startTime.toISOString(),
-    endTime: endTime.toISOString(),
+    // We still need ISO strings for some purposes
+    startTime: startDate.toISOString(),
+    endTime: endDate.toISOString(),
     location,
     url,
+    // Include date components for proper calendar formatting
+    startYear: startDate.getFullYear(),
+    startMonth: startDate.getMonth() + 1, // 0-based to 1-based
+    startDay: startDate.getDate(),
+    endYear: endDate.getFullYear(),
+    endMonth: endDate.getMonth() + 1, // 0-based to 1-based
+    endDay: endDate.getDate(),
+    // Store ACTUAL hours and minutes from original time strings, not from Date objects
+    startHours: startTimeComponents.hours,
+    startMinutes: startTimeComponents.minutes,
+    endHours: endTimeComponents.hours,
+    endMinutes: endTimeComponents.minutes,
   };
 };
 
@@ -131,6 +171,18 @@ export const generateEventFromFestival = (festival, url) => {
     endTime: endDate.toISOString(),
     location,
     url,
+    // Include date components for calendar formatting
+    startYear: startDate.getFullYear(),
+    startMonth: startDate.getMonth() + 1, // 0-based to 1-based
+    startDay: startDate.getDate(),
+    endYear: endDate.getFullYear(),
+    endMonth: endDate.getMonth() + 1, // 0-based to 1-based
+    endDay: endDate.getDate(),
+    // For all-day events
+    startHours: 0,
+    startMinutes: 0,
+    endHours: 23,
+    endMinutes: 59,
     allDay: true,
   };
 };

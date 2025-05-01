@@ -203,26 +203,32 @@ const openShareWindow = (title, text, url) => {
  * - Yahoo Calendar
  */
 export const generateCalendarLinks = event => {
-  const { title, description, startTime, endTime, location, url } = event;
+  const {
+    title,
+    description,
+    location,
+    url,
+    // Use object destructuring to get all date values
+    startYear,
+    startMonth,
+    startDay,
+    startHours,
+    startMinutes,
+    endYear,
+    endMonth,
+    endDay,
+    endHours,
+    endMinutes,
+  } = event;
 
-  // Format dates for calendar URLs
-  const formatDate = (date, format) => {
-    const d = new Date(date);
+  // Pad numbers for formatting
+  const pad = num => (num < 10 ? `0${num}` : `${num}`);
 
-    if (format === 'google') {
-      // Google Calendar format: YYYYMMDDTHHMMSSZ
-      return d.toISOString().replace(/-|:|\.\d+/g, '');
-    } else if (format === 'ics') {
-      // iCalendar format: YYYYMMDDTHHMMSSZ
-      return d.toISOString().replace(/-|:|\.\d+/g, '');
-    } else if (format === 'yahoo') {
-      // Yahoo Calendar format: YYYYMMDDTHHMMSSZ
-      return d.toISOString().replace(/-|:|\.\d+/g, '');
-    } else {
-      // Default ISO format
-      return d.toISOString();
-    }
-  };
+  // Format for Google Calendar: YYYYMMDDTHHMMSS
+  const googleStart = `${startYear}${pad(startMonth)}${pad(startDay)}T${pad(startHours)}${pad(
+    startMinutes
+  )}00`;
+  const googleEnd = `${endYear}${pad(endMonth)}${pad(endDay)}T${pad(endHours)}${pad(endMinutes)}00`;
 
   // Add deep link back to the app in the description
   const deepLink = url.startsWith('/') ? generateDeepLink(url) : url;
@@ -231,35 +237,53 @@ export const generateCalendarLinks = event => {
   const encodedLocation = encodeURIComponent(location || '');
   const encodedDescription = encodeURIComponent(fullDescription);
 
-  // Generate Google Calendar link
-  const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodedTitle}&dates=${formatDate(
-    startTime,
-    'google'
-  )}/${formatDate(
-    endTime,
-    'google'
-  )}&details=${encodedDescription}&location=${encodedLocation}&sprop=website:${encodeURIComponent(
-    deepLink
-  )}`;
+  // Generate Google Calendar link with static timezone
+  const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodedTitle}&dates=${googleStart}/${googleEnd}&details=${encodedDescription}&location=${encodedLocation}&ctz=America/New_York`;
+
+  // Format for Outlook/Yahoo - specify Eastern Time
+  const outlookStart = `${startYear}-${pad(startMonth)}-${pad(startDay)}T${pad(startHours)}:${pad(
+    startMinutes
+  )}:00`;
+  const outlookEnd = `${endYear}-${pad(endMonth)}-${pad(endDay)}T${pad(endHours)}:${pad(
+    endMinutes
+  )}:00`;
 
   // Generate Outlook.com link
-  const outlookUrl = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodedTitle}&startdt=${formatDate(
-    startTime
-  )}&enddt=${formatDate(endTime)}&body=${encodedDescription}&location=${encodedLocation}`;
+  const outlookUrl = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodedTitle}&startdt=${outlookStart}&enddt=${outlookEnd}&body=${encodedDescription}&location=${encodedLocation}&timeZone=Eastern%20Standard%20Time`;
 
   // Generate Yahoo Calendar link
-  const yahooUrl = `https://calendar.yahoo.com/?title=${encodedTitle}&st=${formatDate(
-    startTime,
-    'yahoo'
-  )}&et=${formatDate(endTime, 'yahoo')}&desc=${encodedDescription}&in_loc=${encodedLocation}`;
+  const yahooUrl = `https://calendar.yahoo.com/?title=${encodedTitle}&st=${googleStart}&et=${googleEnd}&desc=${encodedDescription}&in_loc=${encodedLocation}&in_tz=America/New_York`;
 
-  // Generate Apple Calendar ICS data
+  // Generate Apple Calendar ICS data with Eastern Time zone
   const icsData = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VTIMEZONE',
+    'TZID:America/New_York',
+    'BEGIN:DAYLIGHT',
+    'TZOFFSETFROM:-0500',
+    'TZOFFSETTO:-0400',
+    'TZNAME:EDT',
+    'DTSTART:20070311T020000',
+    'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU',
+    'END:DAYLIGHT',
+    'BEGIN:STANDARD',
+    'TZOFFSETFROM:-0400',
+    'TZOFFSETTO:-0500',
+    'TZNAME:EST',
+    'DTSTART:20071104T020000',
+    'RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU',
+    'END:STANDARD',
+    'END:VTIMEZONE',
     'BEGIN:VEVENT',
-    `DTSTART:${formatDate(startTime, 'ics')}`,
-    `DTEND:${formatDate(endTime, 'ics')}`,
+    `DTSTART;TZID=America/New_York:${startYear}${pad(startMonth)}${pad(startDay)}T${pad(
+      startHours
+    )}${pad(startMinutes)}00`,
+    `DTEND;TZID=America/New_York:${endYear}${pad(endMonth)}${pad(endDay)}T${pad(endHours)}${pad(
+      endMinutes
+    )}00`,
     `SUMMARY:${title}`,
     `DESCRIPTION:${fullDescription.replace(/\n/g, '\\n')}`,
     `LOCATION:${location || ''}`,
