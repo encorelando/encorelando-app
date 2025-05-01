@@ -46,8 +46,9 @@ const DetailPageLayout = ({
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
         </div>
 
-        {/* Back button */}
-        <div className="absolute top-md left-md z-20 flex items-center">
+        {/* Header navigation bar */}
+        <div className="absolute top-md left-0 right-0 z-20 px-md flex items-center justify-between">
+          {/* Back button on left */}
           <IconButton
             icon="arrow-left"
             ariaLabel="Go back"
@@ -56,13 +57,13 @@ const DetailPageLayout = ({
             className="text-white hover:bg-black hover:bg-opacity-20"
           />
 
-          {/* Action buttons slot - displayed to the right of back button */}
-          {actions && <div className="ml-2 flex items-center space-x-2">{actions}</div>}
+          {/* Action buttons on right */}
+          {actions && <div className="flex items-center space-x-3">{actions}</div>}
         </div>
 
-        {/* Artist name positioned next to back button */}
+        {/* Artist name positioned below navigation bar */}
         {isArtistImage && title && (
-          <div className="absolute top-md left-[70px] z-20">
+          <div className="absolute top-[75px] left-md z-20">
             <div className="inline-block bg-black bg-opacity-50 backdrop-blur-sm px-3 py-2 rounded-md">
               <Typography variant="h3" color="white" className="drop-shadow-md">
                 {title}

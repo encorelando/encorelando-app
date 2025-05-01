@@ -14,6 +14,8 @@ import StaticMap from '../components/molecules/StaticMap';
 import useVenues from '../hooks/useVenues';
 import useConcerts from '../hooks/useConcerts';
 import { groupPerformancesByDate, getValidDateString } from '../utils/dateUtils';
+import FavoriteButton from '../components/molecules/FavoriteButton';
+import ShareButton from '../components/molecules/ShareButton';
 
 const VenueDetailPage = () => {
   const { id } = useParams();
@@ -116,11 +118,36 @@ const VenueDetailPage = () => {
     );
   }
 
+  // Create action buttons for the header
+  const actionButtons = (
+    <>
+      {/* Favorite button */}
+      <FavoriteButton
+        entityType="venue"
+        entityId={id}
+        size="sm"
+        className="text-white bg-black bg-opacity-20 hover:bg-opacity-30"
+      />
+
+      {/* Share button */}
+      <ShareButton
+        title={`${venue.name} | EncoreLando`}
+        text={`Check out performances at ${venue.name}${
+          venue.park ? ` in ${venue.park.name}` : ''
+        } on EncoreLando!`}
+        url={`/venues/${id}`}
+        size="sm"
+        className="text-white bg-black bg-opacity-20 hover:bg-opacity-30"
+      />
+    </>
+  );
+
   return (
     <DetailPageLayout
       title={venue.name}
       subtitle={venue.park?.name}
       imageUrl={venue.image_url || '/images/placeholder-venue.jpg'}
+      actions={actionButtons}
     >
       {venue.status && (
         <div className="mb-md">

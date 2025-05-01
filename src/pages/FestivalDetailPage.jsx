@@ -11,6 +11,8 @@ import Tabs from '../components/molecules/Tabs';
 import { formatDateRange, getValidDateString, groupPerformancesByDate } from '../utils/dateUtils';
 import useFestivals from '../hooks/useFestivals';
 import useConcerts from '../hooks/useConcerts';
+import FavoriteButton from '../components/molecules/FavoriteButton';
+import ShareButton from '../components/molecules/ShareButton';
 
 const FestivalDetailPage = () => {
   const { id } = useParams();
@@ -212,11 +214,36 @@ const FestivalDetailPage = () => {
     statusBadge = <Badge text="Past Event" variant="outline" />;
   }
 
+  // Create action buttons for the header
+  const actionButtons = (
+    <>
+      {/* Favorite button */}
+      <FavoriteButton
+        entityType="festival"
+        entityId={id}
+        size="sm"
+        className="text-white bg-black bg-opacity-20 hover:bg-opacity-30"
+      />
+
+      {/* Share button */}
+      <ShareButton
+        title={`${festival.name} | EncoreLando`}
+        text={`Check out the ${festival.name} festival${
+          festival.park ? ` at ${festival.park.name}` : ''
+        } from ${dateRange} on EncoreLando!`}
+        url={`/festivals/${id}`}
+        size="sm"
+        className="text-white bg-black bg-opacity-20 hover:bg-opacity-30"
+      />
+    </>
+  );
+
   return (
     <DetailPageLayout
       title={festival.name}
       subtitle={dateRange}
       imageUrl={festival.image_url || '/images/placeholder-festival.jpg'}
+      actions={actionButtons}
     >
       <div className="mb-md flex items-center flex-wrap">
         {statusBadge}

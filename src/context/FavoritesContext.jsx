@@ -170,13 +170,34 @@ export const FavoritesProvider = ({ children }) => {
 
       try {
         setError(null);
-        const { data, error } = await supabase
-          .from(entityType)
-          .select('*')
-          .in('id', favorites[entityType]);
 
-        if (error) throw error;
-        return data;
+        // For concerts, join with artists table to get artist name
+        if (entityType === ENTITY_TYPES.CONCERT) {
+          const { data, error } = await supabase
+            .from(entityType)
+            .select(
+              `
+              *,
+              artist:artist_id (
+                id,
+                name
+              )
+            `
+            )
+            .in('id', favorites[entityType]);
+
+          if (error) throw error;
+          return data;
+        } else {
+          // For other entity types, use the regular query
+          const { data, error } = await supabase
+            .from(entityType)
+            .select('*')
+            .in('id', favorites[entityType]);
+
+          if (error) throw error;
+          return data;
+        }
       } catch (error) {
         console.error(`Error fetching favorite ${entityType}:`, error.message);
         setError(error.message);

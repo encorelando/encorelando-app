@@ -64,6 +64,12 @@ const ProfilePage = () => {
         }
 
         const items = await getFavoriteItems(entityType);
+
+        // Add console log to debug the structure of concert data
+        if (entityType === ENTITY_TYPES.CONCERT) {
+          console.log('Concert favorites data:', items);
+        }
+
         setFavorites(prev => ({ ...prev, [activeTab]: items }));
       } catch (error) {
         console.error(`Error fetching favorite ${activeTab}:`, error);
@@ -140,7 +146,10 @@ const ProfilePage = () => {
           <p className="font-manrope text-white text-opacity-70 mb-md">
             No favorite {activeTab} yet.
           </p>
-          <BrandButton variant="secondary" onClick={() => navigate(`/${activeTab}`)}>
+          <BrandButton
+            variant="secondary"
+            onClick={() => navigate(activeTab === 'concerts' ? '/calendar' : `/${activeTab}`)}
+          >
             Browse {activeTab}
           </BrandButton>
         </div>
@@ -150,7 +159,7 @@ const ProfilePage = () => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md mt-md">
         {currentFavorites.map(item => (
-          <Link key={item.id} to={`/${activeTab.slice(0, -1)}/${item.id}`} className="block">
+          <Link key={item.id} to={`/${activeTab}/${item.id}`} className="block">
             <BrandCard variant="interactive">
               {item.image_url && (
                 <div className="h-40 bg-white bg-opacity-5 overflow-hidden rounded">
@@ -166,9 +175,23 @@ const ProfilePage = () => {
                   {item.name}
                 </h3>
                 {activeTab === 'concerts' && item.start_time && (
-                  <p className="text-sm font-manrope text-white text-opacity-70 mt-xs">
-                    {new Date(item.start_time).toLocaleDateString()}
-                  </p>
+                  <div className="mt-xs">
+                    <p className="text-sm font-manrope text-white font-medium">
+                      {item.artist && item.artist.name ? item.artist.name : 'Artist TBA'}
+                    </p>
+                    <p className="text-sm font-manrope text-white text-opacity-70">
+                      {new Date(item.start_time).toLocaleDateString()} •{' '}
+                      {new Date(item.start_time).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                      {item.end_time &&
+                        ` - ${new Date(item.end_time).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}`}
+                    </p>
+                  </div>
                 )}
                 {activeTab === 'festivals' && item.start_date && (
                   <p className="text-sm font-manrope text-white text-opacity-70 mt-xs">

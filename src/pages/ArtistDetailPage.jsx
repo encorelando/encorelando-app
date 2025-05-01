@@ -11,6 +11,8 @@ import useConcerts from '../hooks/useConcerts';
 import supabase from '../services/supabase';
 import Icon from '../components/atoms/Icon';
 import { getValidDateString } from '../utils/dateUtils';
+import FavoriteButton from '../components/molecules/FavoriteButton';
+import ShareButton from '../components/molecules/ShareButton';
 
 /**
  * ArtistDetailPage component for artist profiles
@@ -137,8 +139,35 @@ const ArtistDetailPage = () => {
   const artistImageUrl =
     artist.image_url?.trim() !== '' ? artist.image_url : '/images/placeholder-artist.jpg';
 
+  // Create action buttons for the header
+  const actionButtons = (
+    <>
+      {/* Favorite button */}
+      <FavoriteButton
+        entityType="artist"
+        entityId={id}
+        size="sm"
+        className="text-white bg-black bg-opacity-20 hover:bg-opacity-30"
+      />
+
+      {/* Share button */}
+      <ShareButton
+        title={`${artist.name} | EncoreLando`}
+        text={`Check out ${artist.name} on EncoreLando!`}
+        url={`/artists/${id}`}
+        size="sm"
+        className="text-white bg-black bg-opacity-20 hover:bg-opacity-30"
+      />
+    </>
+  );
+
   return (
-    <DetailPageLayout title={artist.name} imageUrl={artistImageUrl} minHeight="full">
+    <DetailPageLayout
+      title={artist.name}
+      imageUrl={artistImageUrl}
+      minHeight="full"
+      actions={actionButtons}
+    >
       <div className="mb-lg">
         {artist.genres?.length > 0 && (
           <div className="mb-md">
