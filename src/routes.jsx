@@ -3,7 +3,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Spinner from './components/atoms/Spinner';
 import { FavoritesProvider } from './context/FavoritesContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
-import { PrivacyPolicy, TermsAndConditions, CopyrightNotice } from './pages/LegalPages';
+// Import legal pages with named imports
+import LegalPages from './pages/LegalPages';
+const { PrivacyPolicy, TermsAndConditions, CopyrightNotice } = LegalPages;
 
 /**
  * Routes configuration with code-splitting
