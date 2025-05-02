@@ -261,6 +261,18 @@ const HomePage = () => {
     <div className="bg-background min-h-screen pb-16">
       <HomePageLayout sections={homeSections} />
       {showConfirmationSuccess && <EmailConfirmationSuccess />}
+      <div className="mt-lg px-md text-center space-x-md text-xs text-medium-gray">
+        <Link to="/privacy">Privacy&nbsp;Policy</Link>
+        <span>|</span>
+        <Link to="/terms">Terms&nbsp;&amp;&nbsp;Conditions</Link>
+        <span>|</span>
+        <Link to="/copyright">Copyright&nbsp;Notice</Link>
+      </div>
+      <div className="mt-sm mb-lg px-md text-center text-xs text-medium-gray">
+        <span className="text-medium-gray">
+          &copy; {new Date().getFullYear()} Starbright Lab LLC. All rights reserved.
+        </span>
+      </div>
     </div>
   );
 };

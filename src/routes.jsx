@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Spinner from './components/atoms/Spinner';
 import { FavoritesProvider } from './context/FavoritesContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import { PrivacyPolicy, TermsAndConditions, CopyrightNotice } from './pages/LegalPages';
 
 /**
  * Routes configuration with code-splitting
@@ -231,6 +232,11 @@ const AppRoutes = () => {
           {/* Redirect legacy routes */}
           <Route path="/events" element={<Navigate to="/calendar" replace />} />
           <Route path="/performers" element={<Navigate to="/artists" replace />} />
+
+          {/* Privacy and terms pages */}
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsAndConditions />} />
+          <Route path="/copyright" element={<CopyrightNotice />} />
 
           {/* 404 page */}
           <Route path="*" element={<NotFoundPage />} />
