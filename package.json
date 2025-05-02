@@ -16,7 +16,11 @@
     "react-icons": "^5.5.0",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.10.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "axios": "^1.6.7",
+    "csv-parser": "^3.0.0",
+    "dotenv": "latest",
+    "sharp": "latest"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -35,7 +39,8 @@
     "netlify:dev": "netlify dev",
     "download-maps": "node ./scripts/download-static-maps.js",
     "prebuild": "npm run download-maps",
-    "dev:functions": "netlify dev"
+    "dev:functions": "netlify dev",
+    "pipeline": "node scripts/process_images.js"
   },
   "eslintConfig": {
     "extends": [

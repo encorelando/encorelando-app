@@ -40,3 +40,7 @@ Thumbs.db
 # Netlify
 .netlify
 functions-build
+
+# Temporary files
+/backup
+/images/temp
