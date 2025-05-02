@@ -3,9 +3,7 @@ import PropTypes from 'prop-types';
 /**
  * Unified Card component for EncoreLando implementing dark theme branding
  * Mobile-optimized with appropriate styling for dark backgrounds
- *
- * This component combines the functionality of both Card and BrandCard
- * components with consistent styling across the application.
+ * Fixed to properly handle gradient borders with images
  */
 const Card = ({
   children,
@@ -32,21 +30,6 @@ const Card = ({
     outlined: 'border border-white border-opacity-20 bg-background',
   };
 
-  // Featured cards get a gradient border using the brand gradient
-  // But we add this to the parent div to ensure the border is outside the content
-  const featuredClasses = featured ? 'p-[1px]' : '';
-
-  // Add the gradient background to the parent container, not the classes
-  const gradientBackground = featured ? 'bg-brand-gradient' : '';
-
-  // Content wrapper classes with optional padding
-  const contentClasses = `${padding ? 'p-md' : ''} ${
-    featured ? 'bg-background rounded' : ''
-  } ${contentClassName}`;
-
-  // Combined classes (without the gradient that goes on the parent)
-  const combinedClasses = `${baseClasses} ${variantClasses[variant]} ${className}`;
-
   // Interactive props for clickable cards
   const interactiveProps =
     variant === 'interactive'
@@ -63,19 +46,29 @@ const Card = ({
         }
       : {};
 
-  // If featured, add an outer wrapper div with the gradient background
-  return featured ? (
-    <div className={`rounded overflow-hidden ${gradientBackground} ${featuredClasses}`}>
-      <div
-        className={`${baseClasses} ${variantClasses[variant]} w-full h-full bg-background`}
-        {...interactiveProps}
-      >
-        <div className={contentClasses}>{children}</div>
+  // For featured cards with gradient borders
+  if (featured) {
+    return (
+      <div className={`rounded overflow-hidden ${className}`}>
+        {/* Outer wrapper with gradient background */}
+        <div className="p-[1px] bg-brand-gradient rounded overflow-hidden">
+          {/* Inner card with dark background */}
+          <div
+            className={`${baseClasses} ${variantClasses[variant]} h-full w-full bg-background`}
+            {...interactiveProps}
+          >
+            {/* Content with optional padding */}
+            <div className={`${padding ? 'p-md' : ''} ${contentClassName}`}>{children}</div>
+          </div>
+        </div>
       </div>
-    </div>
-  ) : (
-    <div className={combinedClasses} {...interactiveProps}>
-      <div className={contentClasses}>{children}</div>
+    );
+  }
+
+  // Regular non-featured card
+  return (
+    <div className={`${baseClasses} ${variantClasses[variant]} ${className}`} {...interactiveProps}>
+      <div className={`${padding ? 'p-md' : ''} ${contentClassName}`}>{children}</div>
     </div>
   );
 };

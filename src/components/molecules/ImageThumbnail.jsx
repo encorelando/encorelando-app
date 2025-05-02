@@ -66,6 +66,15 @@ const ImageThumbnail = ({
     return {};
   };
 
+  // Add debug logging to see what image URLs we're getting
+  console.log('ImageThumbnail render:', {
+    src,
+    alt,
+    aspectRatio,
+    rounded,
+    className,
+  });
+
   return (
     <div
       className={`w-full relative overflow-hidden ${getRoundedClass()} ${className}`}

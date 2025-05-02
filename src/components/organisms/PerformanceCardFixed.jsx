@@ -4,7 +4,6 @@ import Card from '../atoms/Card';
 import Icon from '../atoms/Icon';
 import Typography from '../atoms/Typography';
 import Badge from '../atoms/Badge';
-import ImageThumbnail from '../molecules/ImageThumbnail';
 import { formatTime, formatDate } from '../../utils/dateUtils';
 
 /**
@@ -30,6 +29,7 @@ const PerformanceCard = ({
   className = '',
 }) => {
   if (!performance || !performance.id) {
+    console.error('Invalid performance data:', performance);
     return null;
   }
 
@@ -93,59 +93,41 @@ const PerformanceCard = ({
   const displayTitle =
     context === 'artist' ? venueName || 'Concert' : context === 'venue' ? artistName : artistName;
 
-  // Log all possible sources of image URLs for debugging
-  console.log('PerformanceCard image sources:', {
-    id: performance.id,
-    'artist?.image_url': artist?.image_url,
-    'performance.artist?.image_url': performance.artist?.image_url,
-    'performance.artists?.image_url': performance.artists?.image_url,
-    artistName,
-    context,
-  });
+  // Get artist image URL with fallbacks
+  const getArtistImageUrl = () => {
+    // For debugging - log all potential image sources
+    console.log('Image sources for artist:', {
+      'artist.image_url': artist?.image_url,
+      'performance.artist?.image_url': performance.artist?.image_url,
+      'performance.artists?.image_url': performance.artists?.image_url,
+      artistName,
+    });
 
-  // Get the image source - special handling for images
-  const getImageSource = () => {
-    // Check all possible sources and log what we get
-    const sources = {
-      artistImageUrl: artist?.image_url,
-      performanceArtistImageUrl: performance.artist?.image_url,
-      performanceArtistsImageUrl: performance.artists?.image_url,
-    };
-
-    console.log('Image source options:', sources);
-
-    // Return the first valid image URL or the placeholder
+    // Return the first valid URL or fallback to placeholder
     return (
-      sources.artistImageUrl ||
-      sources.performanceArtistImageUrl ||
-      sources.performanceArtistsImageUrl ||
-      '/images/artist-placeholder.jpg'
+      artist?.image_url ||
+      performance.artist?.image_url ||
+      performance.artists?.image_url ||
+      `/images/artist-placeholder.jpg`
     );
   };
 
-  const imageSource = getImageSource();
+  const artistImageUrl = getArtistImageUrl();
 
   return (
     <Link
       to={`/concerts/${id}`}
       className="block focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 rounded"
     >
-      <Card
-        variant="interactive"
-        featured={featured}
-        className={`w-full ${className}`}
-        padding={true}
-      >
-        <div className="flex items-center">
-          {/* Image - Artist image for venue and default context, hidden for artist context */}
+      <Card variant="interactive" featured={featured} className={`w-full ${className}`}>
+        <div className="flex items-center p-md">
+          {/* Artist image - always show except in artist context */}
           {context !== 'artist' && (
             <div className="mr-sm flex-shrink-0 self-center">
-              <ImageThumbnail
-                src={imageSource}
+              <img
+                src={artistImageUrl}
                 alt={artistName}
-                aspectRatio="square"
-                rounded="lg"
-                className="w-16 h-16"
+                className="w-16 h-16 object-cover rounded-lg"
               />
             </div>
           )}
@@ -246,10 +228,10 @@ const PerformanceCard = ({
 const performanceShape = PropTypes.shape({
   id: PropTypes.string.isRequired,
   // Support both camelCase and snake_case property names for time fields
-  startTime: PropTypes.string,
-  start_time: PropTypes.string,
-  endTime: PropTypes.string,
-  end_time: PropTypes.string,
+  startTime: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  start_time: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  endTime: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  end_time: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   // Direct IDs
   artist_id: PropTypes.string,
   venue_id: PropTypes.string,

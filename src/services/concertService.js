@@ -106,6 +106,16 @@ const concertService = {
       throw error;
     }
 
+    // Log API response to debug image URLs
+    if (data && data.length > 0) {
+      console.log('API response data structure:', {
+        firstConcert: data[0],
+        artistsStructure: data[0].artists,
+        hasImage: Boolean(data[0].artists?.image_url),
+        allArtistImageUrls: data.map(c => c.artists?.image_url).filter(Boolean),
+      });
+    }
+
     return {
       data,
       pagination: {

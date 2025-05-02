@@ -80,22 +80,46 @@ const PerformanceList = ({
 
             {/* Performances for this date */}
             <div className="space-y-md">
-              {performancesByDate[dateStr].map(performance =>
-                useArtistCard ? (
+              {performancesByDate[dateStr].map(performance => {
+                // Add debugging to see what we're passing to the PerformanceCard
+                console.log('PerformanceList rendering:', {
+                  performanceId: performance.id,
+                  hasArtist: Boolean(performance.artist),
+                  hasArtists: Boolean(performance.artists),
+                  artistImageUrl: performance.artist?.image_url,
+                  artistsImageUrl: performance.artists?.image_url,
+                });
+
+                // Ensure both artist and artists properties are defined for compatibility
+                const enhancedPerformance = {
+                  ...performance,
+                  artist: performance.artist || {
+                    id: performance.artists?.id,
+                    name: performance.artists?.name,
+                    image_url: performance.artists?.image_url,
+                  },
+                  artists: performance.artists || {
+                    id: performance.artist?.id,
+                    name: performance.artist?.name,
+                    image_url: performance.artist?.image_url,
+                  },
+                };
+
+                return useArtistCard ? (
                   <PerformanceCard
                     key={performance.id}
-                    performance={performance}
+                    performance={enhancedPerformance}
                     showDate={false}
                     context="artist"
                   />
                 ) : (
                   <PerformanceCard
                     key={performance.id}
-                    performance={performance}
+                    performance={enhancedPerformance}
                     showDate={false}
                   />
-                )
-              )}
+                );
+              })}
             </div>
           </div>
         ))}
@@ -126,18 +150,42 @@ const PerformanceList = ({
   // Simple list without date grouping
   return (
     <div className={`space-y-md ${className}`}>
-      {performances.map(performance =>
-        useArtistCard ? (
+      {performances.map(performance => {
+        // Add debugging to see what we're passing to the PerformanceCard
+        console.log('PerformanceList rendering (non-grouped):', {
+          performanceId: performance.id,
+          hasArtist: Boolean(performance.artist),
+          hasArtists: Boolean(performance.artists),
+          artistImageUrl: performance.artist?.image_url,
+          artistsImageUrl: performance.artists?.image_url,
+        });
+
+        // Ensure both artist and artists properties are defined for compatibility
+        const enhancedPerformance = {
+          ...performance,
+          artist: performance.artist || {
+            id: performance.artists?.id,
+            name: performance.artists?.name,
+            image_url: performance.artists?.image_url,
+          },
+          artists: performance.artists || {
+            id: performance.artist?.id,
+            name: performance.artist?.name,
+            image_url: performance.artist?.image_url,
+          },
+        };
+
+        return useArtistCard ? (
           <PerformanceCard
             key={performance.id}
-            performance={performance}
+            performance={enhancedPerformance}
             showDate={true}
             context="artist"
           />
         ) : (
-          <PerformanceCard key={performance.id} performance={performance} showDate={true} />
-        )
-      )}
+          <PerformanceCard key={performance.id} performance={enhancedPerformance} showDate={true} />
+        );
+      })}
 
       {/* Load more button */}
       {hasMore && (

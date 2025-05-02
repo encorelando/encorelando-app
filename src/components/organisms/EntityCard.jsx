@@ -91,6 +91,7 @@ const EntityCard = ({ entity, type, featured = false, className = '' }) => {
         featured={featured}
         className={`w-full overflow-hidden ${className}`}
         padding={false}
+        contentClassName="p-0 bg-background"
       >
         {/* Entity Image */}
         {config.imageSrc && (

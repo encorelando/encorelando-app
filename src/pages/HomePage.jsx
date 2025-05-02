@@ -16,27 +16,47 @@ import useFestivals from '../hooks/useFestivals';
 
 /**
  * Groups performances by artist to consolidate multiple shows
- * Ensures artist image data is preserved
+ * Ensures artist image data is preserved from all potential sources
  * @param {Array} concerts - List of concert performances
  * @returns {Array} - Grouped performances by artist
  */
 const groupPerformancesByArtist = concerts => {
+  // Log the first concert to debug data structure
+  if (concerts && concerts.length > 0) {
+    console.log('First concert data structure:', {
+      concert: concerts[0],
+      hasArtist: Boolean(concerts[0].artist),
+      hasArtists: Boolean(concerts[0].artists),
+      artistImageUrl: concerts[0].artist?.image_url,
+      artistsImageUrl: concerts[0].artists?.image_url,
+    });
+  }
+
   const groupedMap = concerts.reduce((groups, concert) => {
-    const artist = concert.artist || concert.artists;
-    const artistId = artist?.id || 'unknown';
+    // The API returns "artists" but our components expect "artist"
+    // So we need to handle both naming conventions
+    const artistData = concert.artists || concert.artist;
+    const artistId = artistData?.id || 'unknown';
 
     if (!groups[artistId]) {
       groups[artistId] = {
         artistId,
-        artistName: artist?.name || 'Unknown Artist',
-        artistImageUrl: artist?.image_url || null,
+        artistName: artistData?.name || 'Unknown Artist',
+        artistImageUrl: null, // Initialize image URL as null
         performances: [],
       };
     }
 
-    // Store artist image URL if available
-    if (artist?.image_url && !groups[artistId].artistImageUrl) {
-      groups[artistId].artistImageUrl = artist.image_url;
+    // Try to find and store artist image URL from any available source
+    // Check all possible locations for the image URL
+    if (!groups[artistId].artistImageUrl) {
+      const imageUrl =
+        concert.artists?.image_url || concert.artist?.image_url || artistData?.image_url || null;
+
+      if (imageUrl) {
+        groups[artistId].artistImageUrl = imageUrl;
+        console.log(`Found image URL for artist ${artistId}:`, imageUrl);
+      }
     }
 
     groups[artistId].performances.push(concert);
@@ -143,16 +163,32 @@ const HomePage = () => {
 
                 return (
                   <div key={group.artistId} className="w-[340px]">
+                    {/* Debug logs for artist data */}
+                    {console.log('HomePage artist debug:', {
+                      artistId: group.artistId,
+                      artistName: group.artistName,
+                      artistImageUrl: group.artistImageUrl,
+                      firstPerfHasArtist: Boolean(basePerformance.artist),
+                      firstPerfArtistImageUrl: basePerformance.artist?.image_url,
+                      artistUsingFromBasePerf:
+                        artist.image_url || basePerformance.artist?.image_url,
+                    })}
+
                     {group.performances.length > 1 ? (
                       <PerformanceCard
                         performance={{
                           ...basePerformance,
                           name: group.artistName,
-                          // Make sure we include the full artist object with image
+                          // Include both artist and artists properties for compatibility
                           artist: {
-                            id: artist.id || group.artistId,
-                            name: artist.name || group.artistName,
-                            image_url: artist.image_url || basePerformance.artist?.image_url,
+                            id: group.artistId,
+                            name: group.artistName,
+                            image_url: group.artistImageUrl,
+                          },
+                          artists: {
+                            id: group.artistId,
+                            name: group.artistName,
+                            image_url: group.artistImageUrl,
                           },
                           performanceTimes: group.performances.map(p => ({
                             id: p.id,
@@ -166,11 +202,16 @@ const HomePage = () => {
                       <PerformanceCard
                         performance={{
                           ...basePerformance,
-                          // Ensure the artist has all necessary data including image
+                          // Ensure both artist properties are defined with image
                           artist: {
-                            id: artist.id || group.artistId,
-                            name: artist.name || group.artistName,
-                            image_url: artist.image_url || basePerformance.artist?.image_url,
+                            id: group.artistId,
+                            name: group.artistName,
+                            image_url: group.artistImageUrl,
+                          },
+                          artists: {
+                            id: group.artistId,
+                            name: group.artistName,
+                            image_url: group.artistImageUrl,
                           },
                         }}
                         featured={index === 0}

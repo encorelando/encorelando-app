@@ -31,6 +31,17 @@ const useConcerts = (initialFilters = {}) => {
         offset: pagination.offset,
       });
 
+      // Debug log concerts data to check artist image structure
+      if (data && data.length > 0) {
+        console.log('Concerts API response sample:', {
+          firstConcert: data[0],
+          hasArtistProperty: Boolean(data[0].artist),
+          hasArtistsProperty: Boolean(data[0].artists),
+          artistImageUrl: data[0].artist?.image_url || data[0].artists?.image_url,
+          totalConcerts: data.length,
+        });
+      }
+
       setConcerts(data);
       setPagination(paginationData);
     } catch (err) {
