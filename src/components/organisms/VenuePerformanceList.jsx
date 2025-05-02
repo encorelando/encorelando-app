@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import VenuePerformanceCard from './VenuePerformanceCard';
+import PerformanceCard from './PerformanceCard';
 import Spinner from '../atoms/Spinner';
 import Typography from '../atoms/Typography';
 import Icon from '../atoms/Icon';
@@ -73,10 +73,11 @@ const VenuePerformanceList = ({
             {/* Performances for this date */}
             <div className="space-y-md">
               {performancesByDate[dateStr].map(performance => (
-                <VenuePerformanceCard
+                <PerformanceCard
                   key={performance.id}
                   performance={performance}
                   showDate={false}
+                  context="venue"
                 />
               ))}
             </div>
@@ -110,7 +111,12 @@ const VenuePerformanceList = ({
   return (
     <div className={`space-y-md ${className}`}>
       {performances.map(performance => (
-        <VenuePerformanceCard key={performance.id} performance={performance} showDate={true} />
+        <PerformanceCard
+          key={performance.id}
+          performance={performance}
+          showDate={true}
+          context="venue"
+        />
       ))}
 
       {/* Load more button */}

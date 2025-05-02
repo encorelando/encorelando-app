@@ -4,8 +4,7 @@ import SearchPageLayout from '../components/templates/SearchPageLayout';
 import SearchFilters from '../components/organisms/SearchFilters';
 import Typography from '../components/atoms/Typography';
 import BrandHeading from '../components/atoms/BrandHeading';
-import ArtistCard from '../components/organisms/ArtistCard';
-import FestivalCard from '../components/organisms/FestivalCard';
+import EntityCard from '../components/organisms/EntityCard';
 import Spinner from '../components/atoms/Spinner';
 import Icon from '../components/atoms/Icon';
 import Button from '../components/atoms/Button';
@@ -266,10 +265,11 @@ const SearchPage = () => {
                       console.log('[SearchPage] Formatted artist:', formattedArtist);
 
                       return (
-                        <ArtistCard
+                        <EntityCard
                           key={artist.id}
-                          artist={formattedArtist}
+                          entity={formattedArtist}
                           featured={index === 0}
+                          type="artist"
                         />
                       );
                     })}
@@ -314,10 +314,11 @@ const SearchPage = () => {
                       console.log('[SearchPage] Formatted festival:', formattedFestival);
 
                       return (
-                        <FestivalCard
+                        <EntityCard
                           key={festival.id}
-                          festival={formattedFestival}
+                          entity={formattedFestival}
                           featured={index === 0}
+                          type="festival"
                         />
                       );
                     })}

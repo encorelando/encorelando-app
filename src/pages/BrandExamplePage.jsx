@@ -1,6 +1,6 @@
 import { BrandLogo } from '../components/branding';
 import BrandButton from '../components/atoms/BrandButton';
-import BrandCard from '../components/atoms/BrandCard';
+import Card from '../components/atoms/Card';
 import BrandHeading from '../components/atoms/BrandHeading';
 import MainHeader from '../components/organisms/MainHeader';
 import BottomNavigation from '../components/organisms/BottomNavigation';
@@ -158,30 +158,30 @@ const BrandExamplePage = () => {
           </BrandHeading>
 
           <div className="space-y-md">
-            <BrandCard>
+            <Card>
               <BrandHeading level={3} className="mb-sm">
                 Standard Card
               </BrandHeading>
               <p className="font-manrope">
                 This is a standard card with white text on a semi-transparent background.
               </p>
-            </BrandCard>
+            </Card>
 
-            <BrandCard featured>
+            <Card featured>
               <BrandHeading level={3} gradient className="mb-sm">
                 Featured Card
               </BrandHeading>
               <p className="font-manrope">
                 This featured card has a gradient border to make it stand out.
               </p>
-            </BrandCard>
+            </Card>
 
-            <BrandCard variant="interactive" onClick={() => alert('Card clicked')}>
+            <Card variant="interactive" onClick={() => alert('Card clicked')}>
               <BrandHeading level={3} className="mb-sm">
                 Interactive Card
               </BrandHeading>
               <p className="font-manrope">This card is clickable and has hover/active states.</p>
-            </BrandCard>
+            </Card>
           </div>
         </section>
       </main>

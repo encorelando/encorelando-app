@@ -8,82 +8,80 @@ import ImageThumbnail from '../molecules/ImageThumbnail';
 import { formatTime, formatDate } from '../../utils/dateUtils';
 
 /**
- * PerformanceCard component with the new EncoreLando branding
+ * Unified PerformanceCard component with context-aware display options
  * Mobile-optimized with touch-friendly design on dark background
- * Now includes artist image similar to VenuePerformanceCard
+ *
+ * This component consolidates functionality from:
+ * - PerformanceCard
+ * - ArtistPerformanceCard
+ * - VenuePerformanceCard
+ *
+ * @param {Object} performance - The performance data
+ * @param {string} context - The context in which this card is displayed ('default', 'artist', 'venue')
+ * @param {boolean} showDate - Whether to show the date
+ * @param {boolean} featured - Whether this is a featured card
+ * @param {string} className - Additional CSS classes
  */
-const PerformanceCard = ({ performance, showDate = false, featured = false, className = '' }) => {
-  // Log received performance data for debugging
-  console.log('[PerformanceCard] Received performance data:', performance);
-
-  if (!performance) {
-    console.log('[PerformanceCard] No performance data provided');
+const PerformanceCard = ({
+  performance,
+  context = 'default',
+  showDate = false,
+  featured = false,
+  className = '',
+}) => {
+  if (!performance || !performance.id) {
     return null;
   }
 
+  // Extract and normalize data based on different possible structures
   // Handle both camelCase and snake_case property names for compatibility
   const id = performance.id;
 
-  // The data might come in different structures or have null values that we need to handle
-  // We'll do deep inspection of the data structure to ensure we extract what we need
-
-  // Extract artist data from either artist or artists fields, handling null values
+  // Extract artist data
   let artist = {};
   if (performance.artist && typeof performance.artist === 'object') {
     artist = performance.artist;
   } else if (performance.artists && typeof performance.artists === 'object') {
     artist = performance.artists;
   } else if (performance.artist_id) {
-    // If we only have an artist ID, create a minimal artist object
     artist = { id: performance.artist_id };
   }
 
-  // Extract venue data from either venue or venues fields, handling null values
+  // Extract venue data
   let venue = {};
   if (performance.venue && typeof performance.venue === 'object') {
     venue = performance.venue;
   } else if (performance.venues && typeof performance.venues === 'object') {
     venue = performance.venues;
   } else if (performance.venue_id) {
-    // If we only have a venue ID, create a minimal venue object
     venue = { id: performance.venue_id };
   }
 
-  // Extract festival data from either festival or festivals fields, handling null values
+  // Extract festival data
   let festival = {};
   if (performance.festival && typeof performance.festival === 'object') {
     festival = performance.festival;
   } else if (performance.festivals && typeof performance.festivals === 'object') {
     festival = performance.festivals;
   } else if (performance.festival_id) {
-    // If we only have a festival ID, create a minimal festival object
     festival = { id: performance.festival_id };
   }
-
-  console.log('[PerformanceCard] Normalized data:');
-  console.log('- artist:', artist ? JSON.stringify(artist) : 'null');
-  console.log('- venue:', venue ? JSON.stringify(venue) : 'null');
-  console.log('- festival:', festival ? JSON.stringify(festival) : 'null');
 
   // Handle both naming conventions for time fields
   const startTime = performance.startTime || performance.start_time;
   const endTime = performance.endTime || performance.end_time;
 
-  // Format date and time with proper formatting for mobile display
+  // Format time
   const formattedTime = startTime
     ? `${formatTime(startTime)}${endTime ? ` - ${formatTime(endTime)}` : ''}`
     : 'TBA';
 
-  // Format the date of the performance
+  // Format date
   const formattedDate = startTime ? formatDate(startTime) : 'Date TBD';
 
-  // Check if we have a valid artist name
-  const artistName = artist?.name || 'TBA';
-
-  // Check if we have a valid venue name
+  // Get normalized field values
+  const artistName = artist?.name || performance.artist_name || performance.name || 'TBA';
   const venueName = venue?.name || 'Location TBD';
-
-  // Check if we have a park name from any of the possible paths
   const parkName =
     venue?.parks?.name ||
     venue?.park?.name ||
@@ -91,18 +89,27 @@ const PerformanceCard = ({ performance, showDate = false, featured = false, clas
     performance.theme_park ||
     '';
 
+  // The title to display varies based on context
+  const displayTitle =
+    context === 'artist' ? venueName || 'Concert' : context === 'venue' ? artistName : artistName;
+
   return (
     <Link
       to={`/concerts/${id}`}
       className="block focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 rounded"
     >
-      <Card variant="interactive" featured={featured} className={`w-full ${className}`}>
+      <Card
+        variant="interactive"
+        featured={featured}
+        className={`w-full ${className}`}
+        padding={true}
+      >
         <div className="flex items-center">
-          {/* Artist image */}
-          {artist?.image_url && (
+          {/* Image - Artist image for venue and default context, hidden for artist context */}
+          {(artist?.image_url || performance.artist?.image_url) && context !== 'artist' && (
             <div className="mr-sm flex-shrink-0 self-center">
               <ImageThumbnail
-                src={artist.image_url}
+                src={artist?.image_url || performance.artist?.image_url}
                 alt={artistName}
                 aspectRatio="square"
                 rounded="lg"
@@ -112,14 +119,14 @@ const PerformanceCard = ({ performance, showDate = false, featured = false, clas
           )}
 
           <div className="flex-grow min-w-0 flex flex-col justify-center">
-            {/* Artist name with new branding colors */}
+            {/* Display title based on context */}
             <Typography
               variant="h3"
               color={featured ? 'primary' : 'white'}
               gradient={featured}
               className="mb-xs truncate"
             >
-              {artistName}
+              {displayTitle}
             </Typography>
 
             {/* Date - only shown if requested */}
@@ -160,16 +167,18 @@ const PerformanceCard = ({ performance, showDate = false, featured = false, clas
               </div>
             )}
 
-            {/* Venue */}
-            <div className="flex items-center mb-xs">
-              <Icon name="map-pin" size="sm" className="mr-xs text-sunset-orange flex-shrink-0" />
-              <Typography variant="body1" color="white" className="truncate">
-                {venueName}
-              </Typography>
-            </div>
+            {/* Venue - show only if not in venue context and not in artist context */}
+            {context === 'default' && (
+              <div className="flex items-center mb-xs">
+                <Icon name="map-pin" size="sm" className="mr-xs text-sunset-orange flex-shrink-0" />
+                <Typography variant="body1" color="white" className="truncate">
+                  {venueName}
+                </Typography>
+              </div>
+            )}
 
-            {/* Theme Park - if available from venues.parks */}
-            {parkName && (
+            {/* Theme Park - show if available and not in venue context where it's already known */}
+            {parkName && context !== 'venue' && (
               <div className="flex items-center mb-sm">
                 <Icon name="map" size="sm" className="mr-xs text-sunset-orange flex-shrink-0" />
                 <Typography variant="body1" color="white" className="truncate">
@@ -219,6 +228,8 @@ const performanceShape = PropTypes.shape({
     name: PropTypes.string,
     image_url: PropTypes.string,
   }),
+  artist_name: PropTypes.string,
+  name: PropTypes.string,
   artists: PropTypes.shape({
     id: PropTypes.string,
     name: PropTypes.string,
@@ -263,16 +274,17 @@ const performanceShape = PropTypes.shape({
   performanceTimes: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string,
-      startTime: PropTypes.string,
-      start_time: PropTypes.string,
-      endTime: PropTypes.string,
-      end_time: PropTypes.string,
+      startTime: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+      start_time: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+      endTime: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+      end_time: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
     })
   ),
 });
 
 PerformanceCard.propTypes = {
   performance: performanceShape.isRequired,
+  context: PropTypes.oneOf(['default', 'artist', 'venue']),
   showDate: PropTypes.bool,
   featured: PropTypes.bool,
   className: PropTypes.string,

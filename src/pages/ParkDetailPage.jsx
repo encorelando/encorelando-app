@@ -8,7 +8,7 @@ import HorizontalScroller from '../components/organisms/HorizontalScroller';
 import PerformanceList from '../components/organisms/PerformanceList';
 import Card from '../components/atoms/Card';
 import Icon from '../components/atoms/Icon';
-import FestivalCard from '../components/organisms/FestivalCard';
+import EntityCard from '../components/organisms/EntityCard';
 import useParks from '../hooks/useParks';
 import useVenues from '../hooks/useVenues';
 import useConcerts from '../hooks/useConcerts';
@@ -96,7 +96,7 @@ const ParkDetailPage = () => {
           <HorizontalScroller>
             {festivals.map(festival => (
               <div key={festival.id} className="w-[300px]">
-                <FestivalCard festival={festival} />
+                <EntityCard entity={festival} type="festival" />
               </div>
             ))}
           </HorizontalScroller>

@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import BrandButton from '../../components/atoms/BrandButton';
 import BrandHeading from '../../components/atoms/BrandHeading';
 import { BrandLogo } from '../../components/branding';
-import BrandCard from '../../components/atoms/BrandCard';
+import Card from '../../components/atoms/Card';
 
 /**
  * SignupPage Component
@@ -131,7 +131,7 @@ const SignupPage = () => {
         )}
 
         {/* Signup form */}
-        <BrandCard className="mb-lg">
+        <Card className="mb-lg">
           <form onSubmit={handleSubmit} className="flex flex-col gap-md">
             {/* Display name field */}
             <div>
@@ -195,7 +195,7 @@ const SignupPage = () => {
               {loading ? 'Creating account...' : 'Create account'}
             </BrandButton>
           </form>
-        </BrandCard>
+        </Card>
 
         {/* Login link */}
         <div className="text-center">

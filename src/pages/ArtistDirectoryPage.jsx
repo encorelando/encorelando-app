@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
 import PageLayout from '../components/templates/PageLayout';
 import SearchInput from '../components/molecules/SearchInput';
-import ArtistCard from '../components/organisms/ArtistCard';
+import EntityCard from '../components/organisms/EntityCard';
 import Typography from '../components/atoms/Typography';
 import BrandHeading from '../components/atoms/BrandHeading';
 import Button from '../components/atoms/Button';
 import Spinner from '../components/atoms/Spinner';
 import Icon from '../components/atoms/Icon';
 import FilterAccordion from '../components/organisms/FilterAccordion';
-// eslint-disable-next-line no-unused-vars
-import IconButton from '../components/atoms/IconButton';
 import useArtists from '../hooks/useArtists';
 
 /**
@@ -198,7 +196,7 @@ const ArtistDirectoryPage = () => {
         {artists.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-md">
             {artists.map(artist => (
-              <ArtistCard key={artist.id} artist={artist} />
+              <EntityCard key={artist.id} entity={artist} type="artist" />
             ))}
           </div>
         )}

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import BrandHeading from '../../components/atoms/BrandHeading';
 import { BrandLogo } from '../../components/branding';
-import BrandCard from '../../components/atoms/BrandCard';
+import Card from '../../components/atoms/Card';
 import BrandButton from '../../components/atoms/BrandButton';
 
 /**
@@ -63,7 +63,7 @@ const SignupConfirmationPage = () => {
           </BrandHeading>
         </div>
 
-        <BrandCard className="mb-lg">
+        <Card className="mb-lg">
           <div className="flex flex-col gap-md items-center text-center p-md">
             <div className="w-16 h-16 bg-sunset-orange bg-opacity-20 rounded-full flex items-center justify-center mb-md">
               <svg
@@ -109,7 +109,7 @@ const SignupConfirmationPage = () => {
               </Link>
             </div>
           </div>
-        </BrandCard>
+        </Card>
       </div>
     </div>
   );

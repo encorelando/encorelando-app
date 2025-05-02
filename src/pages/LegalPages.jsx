@@ -211,5 +211,5 @@ export const CopyrightNotice = () => (
 export default {
   PrivacyPolicy,
   TermsAndConditions,
-  CopyrightNotice
+  CopyrightNotice,
 };

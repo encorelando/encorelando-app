@@ -3,8 +3,7 @@ import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import HomePageLayout from '../components/templates/HomePageLayout';
 import HorizontalScroller from '../components/organisms/HorizontalScroller';
 import PerformanceCard from '../components/organisms/PerformanceCard';
-import ArtistCard from '../components/organisms/ArtistCard';
-import FestivalCard from '../components/organisms/FestivalCard';
+import EntityCard from '../components/organisms/EntityCard';
 import Typography from '../components/atoms/Typography';
 import Button from '../components/atoms/Button';
 import Spinner from '../components/atoms/Spinner';
@@ -17,6 +16,7 @@ import useFestivals from '../hooks/useFestivals';
 
 /**
  * Groups performances by artist to consolidate multiple shows
+ * Ensures artist image data is preserved
  * @param {Array} concerts - List of concert performances
  * @returns {Array} - Grouped performances by artist
  */
@@ -29,8 +29,14 @@ const groupPerformancesByArtist = concerts => {
       groups[artistId] = {
         artistId,
         artistName: artist?.name || 'Unknown Artist',
+        artistImageUrl: artist?.image_url || null,
         performances: [],
       };
+    }
+
+    // Store artist image URL if available
+    if (artist?.image_url && !groups[artistId].artistImageUrl) {
+      groups[artistId].artistImageUrl = artist.image_url;
     }
 
     groups[artistId].performances.push(concert);
@@ -129,13 +135,25 @@ const HomePage = () => {
                   return null;
                 }
 
+                // Get the first performance to use as the base
+                const basePerformance = group.performances[0];
+
+                // Extract artist data
+                const artist = basePerformance.artist || basePerformance.artists || {};
+
                 return (
                   <div key={group.artistId} className="w-[340px]">
                     {group.performances.length > 1 ? (
                       <PerformanceCard
                         performance={{
-                          ...group.performances[0],
+                          ...basePerformance,
                           name: group.artistName,
+                          // Make sure we include the full artist object with image
+                          artist: {
+                            id: artist.id || group.artistId,
+                            name: artist.name || group.artistName,
+                            image_url: artist.image_url || basePerformance.artist?.image_url,
+                          },
                           performanceTimes: group.performances.map(p => ({
                             id: p.id,
                             startTime: p.startTime || p.start_time,
@@ -145,7 +163,18 @@ const HomePage = () => {
                         featured={index === 0}
                       />
                     ) : (
-                      <PerformanceCard performance={group.performances[0]} featured={index === 0} />
+                      <PerformanceCard
+                        performance={{
+                          ...basePerformance,
+                          // Ensure the artist has all necessary data including image
+                          artist: {
+                            id: artist.id || group.artistId,
+                            name: artist.name || group.artistName,
+                            image_url: artist.image_url || basePerformance.artist?.image_url,
+                          },
+                        }}
+                        featured={index === 0}
+                      />
                     )}
                   </div>
                 );
@@ -191,7 +220,7 @@ const HomePage = () => {
               <HorizontalScroller itemWidth={250}>
                 {artists.map((artist, index) => (
                   <div key={artist.id} className="w-[250px]">
-                    <ArtistCard artist={artist} featured={index === 0} />
+                    <EntityCard entity={artist} featured={index === 0} type="artist" />
                   </div>
                 ))}
               </HorizontalScroller>
@@ -232,9 +261,10 @@ const HomePage = () => {
                     <HorizontalScroller itemWidth={300}>
                       {festivals.map((festival, index) => (
                         <div key={festival.id} className="w-[300px]">
-                          <FestivalCard
-                            festival={festival}
+                          <EntityCard
+                            entity={festival}
                             featured={index === 0} // Feature the first item
+                            type="festival"
                           />
                         </div>
                       ))}

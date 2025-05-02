@@ -101,8 +101,17 @@ const ArtistDetailPage = () => {
 
           return {
             ...concert,
-            name: 'Concert',
+            // Since we're in artist context, we use venue name as the primary title
+            // and we set name to venue name (not artist name) to be displayed correctly
+            name: venueData?.name || 'Concert',
+            // Still keep artist data for reference
             artist_name: artist.name,
+            // Add artist object with full artist data to ensure image is available
+            artist: {
+              id: artist.id,
+              name: artist.name,
+              image_url: artist.image_url,
+            },
             theme_park: themeParkName,
             date: getValidDateString(startTime), // ✅ use safe date string
           };

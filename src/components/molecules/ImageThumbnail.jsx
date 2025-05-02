@@ -1,97 +1,83 @@
-import { useState } from 'react';
 import PropTypes from 'prop-types';
-import Spinner from '../atoms/Spinner';
-import Icon from '../atoms/Icon';
 
 /**
- * ImageThumbnail component with loading and error states
- * Mobile-optimized with responsive sizing
+ * ImageThumbnail component for consistent image display
+ * Mobile-optimized with appropriate sizing and loading
+ *
+ * @param {string} src - Image source URL
+ * @param {string} alt - Alt text for accessibility
+ * @param {string} aspectRatio - Aspect ratio (e.g., 'square', '16:9', '4:3')
+ * @param {string} rounded - Rounding of corners ('none', 'sm', 'md', 'lg', 'full')
+ * @param {boolean} grayscale - Whether to apply grayscale filter
+ * @param {string} className - Additional CSS classes
  */
 const ImageThumbnail = ({
   src,
   alt,
   aspectRatio = 'square',
   rounded = 'md',
-  objectFit = 'cover',
-  fallbackIcon = 'image',
+  grayscale = false,
   className = '',
 }) => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  // Base container classes
-  const containerBaseClasses = 'relative overflow-hidden bg-light-gray';
-
-  // Aspect ratio classes
-  const aspectRatioClasses = {
-    square: 'aspect-w-1 aspect-h-1',
-    '4:3': 'aspect-w-4 aspect-h-3',
-    '16:9': 'aspect-w-16 aspect-h-9',
-    portrait: 'aspect-w-3 aspect-h-4',
-    custom: '', // No aspect ratio constraint
+  // Determine padding based on aspect ratio
+  const getPaddingBottom = () => {
+    switch (aspectRatio) {
+      case 'square':
+        return '100%'; // 1:1
+      case '16:9':
+        return '56.25%'; // 16:9
+      case '4:3':
+        return '75%'; // 4:3
+      case '3:2':
+        return '66.67%'; // 3:2
+      case '1:2':
+        return '200%'; // 1:2
+      default:
+        return '100%'; // Default to square
+    }
   };
 
-  // Rounded corner classes
-  const roundedClasses = {
-    none: 'rounded-none',
-    sm: 'rounded-sm',
-    md: 'rounded',
-    lg: 'rounded-lg',
-    full: 'rounded-full',
+  // Determine corner rounding classes
+  const getRoundedClass = () => {
+    switch (rounded) {
+      case 'none':
+        return '';
+      case 'sm':
+        return 'rounded-sm';
+      case 'md':
+        return 'rounded-md';
+      case 'lg':
+        return 'rounded-lg';
+      case 'full':
+        return 'rounded-full';
+      default:
+        return 'rounded-md';
+    }
   };
 
-  // Object fit classes
-  const objectFitClasses = {
-    cover: 'object-cover',
-    contain: 'object-contain',
-    fill: 'object-fill',
-  };
-
-  // Combined container classes
-  const containerClasses = `${containerBaseClasses} ${aspectRatioClasses[aspectRatio]} ${roundedClasses[rounded]} ${className}`;
-
-  // Image classes
-  const imageClasses = `w-full h-full ${objectFitClasses[objectFit]}`;
-
-  // Handle image load
-  const handleLoad = () => {
-    setLoading(false);
-  };
-
-  // Handle image error
-  const handleError = () => {
-    setLoading(false);
-    setError(true);
+  // Apply grayscale filter if requested
+  const getFilterStyle = () => {
+    if (grayscale) {
+      return {
+        filter: 'grayscale(100%) brightness(0.7) contrast(1.3)',
+        WebkitFilter: 'grayscale(100%) brightness(0.7) contrast(1.3)',
+      };
+    }
+    return {};
   };
 
   return (
-    <div className={containerClasses}>
-      {/* Loading state */}
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Spinner size="md" color="primary" />
-        </div>
-      )}
-
-      {/* Error fallback */}
-      {error && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-medium-gray">
-          <Icon name={fallbackIcon} size="lg" />
-        </div>
-      )}
-
-      {/* Image */}
-      {!error && (
-        <img
-          src={src}
-          alt={alt}
-          className={imageClasses}
-          onLoad={handleLoad}
-          onError={handleError}
-          style={{ opacity: loading ? 0 : 1 }}
-          loading="lazy"
-        />
-      )}
+    <div
+      className={`w-full relative overflow-hidden ${getRoundedClass()} ${className}`}
+      style={{ paddingBottom: getPaddingBottom() }}
+    >
+      <img
+        src={src}
+        alt={alt}
+        className={`absolute inset-0 w-full h-full object-cover`}
+        style={getFilterStyle()}
+        loading="lazy"
+      />
     </div>
   );
 };
@@ -99,10 +85,9 @@ const ImageThumbnail = ({
 ImageThumbnail.propTypes = {
   src: PropTypes.string.isRequired,
   alt: PropTypes.string.isRequired,
-  aspectRatio: PropTypes.oneOf(['square', '4:3', '16:9', 'portrait', 'custom']),
+  aspectRatio: PropTypes.oneOf(['square', '16:9', '4:3', '3:2', '1:2']),
   rounded: PropTypes.oneOf(['none', 'sm', 'md', 'lg', 'full']),
-  objectFit: PropTypes.oneOf(['cover', 'contain', 'fill']),
-  fallbackIcon: PropTypes.string,
+  grayscale: PropTypes.bool,
   className: PropTypes.string,
 };
 

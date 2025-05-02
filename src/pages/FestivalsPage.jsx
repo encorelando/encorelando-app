@@ -3,7 +3,7 @@ import PageLayout from '../components/templates/PageLayout';
 import Typography from '../components/atoms/Typography';
 import BrandHeading from '../components/atoms/BrandHeading';
 import Spinner from '../components/atoms/Spinner';
-import FestivalCard from '../components/organisms/FestivalCard';
+import EntityCard from '../components/organisms/EntityCard';
 import useFestivals from '../hooks/useFestivals';
 import Button from '../components/atoms/Button';
 
@@ -143,9 +143,10 @@ const FestivalsPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {displayedFestivals.map((festival, index) => (
               <div key={festival.id} className="mb-4">
-                <FestivalCard
-                  festival={festival}
+                <EntityCard
+                  entity={festival}
                   featured={index === 0 && activeFilter === 'all'}
+                  type="festival"
                 />
               </div>
             ))}

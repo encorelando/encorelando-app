@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import PerformanceCard from './PerformanceCard';
-import ArtistPerformanceCard from './ArtistPerformanceCard';
 import Spinner from '../atoms/Spinner';
 import Typography from '../atoms/Typography';
 import Icon from '../atoms/Icon';
@@ -83,10 +82,11 @@ const PerformanceList = ({
             <div className="space-y-md">
               {performancesByDate[dateStr].map(performance =>
                 useArtistCard ? (
-                  <ArtistPerformanceCard
+                  <PerformanceCard
                     key={performance.id}
                     performance={performance}
                     showDate={false}
+                    context="artist"
                   />
                 ) : (
                   <PerformanceCard
@@ -128,7 +128,12 @@ const PerformanceList = ({
     <div className={`space-y-md ${className}`}>
       {performances.map(performance =>
         useArtistCard ? (
-          <ArtistPerformanceCard key={performance.id} performance={performance} showDate={true} />
+          <PerformanceCard
+            key={performance.id}
+            performance={performance}
+            showDate={true}
+            context="artist"
+          />
         ) : (
           <PerformanceCard key={performance.id} performance={performance} showDate={true} />
         )

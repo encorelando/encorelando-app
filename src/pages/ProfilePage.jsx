@@ -5,8 +5,8 @@ import { useFavorites } from '../context/FavoritesContext';
 import Spinner from '../components/atoms/Spinner';
 import BrandButton from '../components/atoms/BrandButton';
 import BrandHeading from '../components/atoms/BrandHeading';
-import BrandCard from '../components/atoms/BrandCard';
 import PageLayout from '../components/templates/PageLayout';
+import Card from '../components/atoms/Card';
 
 /**
  * ProfilePage Component
@@ -160,7 +160,7 @@ const ProfilePage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md mt-md">
         {currentFavorites.map(item => (
           <Link key={item.id} to={`/${activeTab}/${item.id}`} className="block">
-            <BrandCard variant="interactive">
+            <Card variant="interactive">
               {item.image_url && (
                 <div className="h-40 bg-white bg-opacity-5 overflow-hidden rounded">
                   <img
@@ -200,7 +200,7 @@ const ProfilePage = () => {
                   </p>
                 )}
               </div>
-            </BrandCard>
+            </Card>
           </Link>
         ))}
       </div>
@@ -216,7 +216,7 @@ const ProfilePage = () => {
 
       {/* Profile section */}
       <div className="p-md">
-        <BrandCard className="mb-lg">
+        <Card className="mb-lg">
           {editMode ? (
             <form onSubmit={handleProfileUpdate}>
               {error && (
@@ -286,10 +286,10 @@ const ProfilePage = () => {
               <p className="font-manrope text-white text-opacity-70">{user.email}</p>
             </div>
           )}
-        </BrandCard>
+        </Card>
 
         {/* Favorites section */}
-        <BrandCard className="overflow-hidden">
+        <Card className="overflow-hidden">
           <div className="px-md pt-md">
             <BrandHeading level={4} className="mb-md">
               My Favorites
@@ -315,7 +315,7 @@ const ProfilePage = () => {
 
           {/* Tab content */}
           <div className="p-md">{renderTabContent()}</div>
-        </BrandCard>
+        </Card>
       </div>
     </PageLayout>
   );
